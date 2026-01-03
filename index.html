@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HolyVerse - Universo Bíblico Interactivo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/grid.css">
+    <link rel="stylesheet" href="css/bot.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="assets/images/logo.png" alt="HolyVerse" class="logo-img">
+                <h1>HolyVerse</h1>
+            </div>
+            <div class="nav-controls">
+                <button id="themeToggle" class="theme-btn" title="Cambiar tema">🌙</button>
+                <button id="botToggle" class="bot-btn" title="Abre el Bible Bot">
+                    <span class="bot-icon">⚡</span>
+                </button>
+                <div class="lang-selector">
+                    <button id="langES" class="lang-btn active" data-lang="es">ES</button>
+                    <button id="langEN" class="lang-btn" data-lang="en">EN</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h2 data-i18n="hero.title">Universo Bíblico Interactivo</h2>
+                <p data-i18n="hero.subtitle">Explora historias, contextos y conexiones sagradas</p>
+                <div class="hero-cta">
+                    <button id="heroExplore" class="primary-btn" data-i18n="hero.cta.explore">Explorar hoy</button>
+                    <button id="heroSurprise" class="ghost-btn" data-i18n="hero.cta.surprise">Verso sorpresa</button>
+                </div>
+                <div id="heroStats" class="hero-stats"></div>
+            </div>
+        </section>
+
+        <!-- Global Search -->
+        <section class="search-section">
+            <div class="search-header">
+                <h3 data-i18n="search.title">Busca cualquier versículo</h3>
+                <div class="search-meta">
+                    <p data-i18n="search.subtitle">API o fallback local en ES/EN</p>
+                    <span id="searchStatus" class="status-pill"></span>
+                </div>
+            </div>
+            <div class="search-bar">
+                <input id="searchInput" type="text" placeholder="Juan 3:16 o love" data-i18n-placeholder="search.placeholder">
+                <button id="searchBtn" class="primary-btn search-btn" data-i18n="search.action">Buscar</button>
+            </div>
+            <div id="searchHistory" class="search-history hidden">
+                <p class="history-label" data-i18n="search.history.title">Búsquedas recientes:</p>
+                <div id="historyList" class="history-list"></div>
+            </div>
+            <div id="searchResults" class="search-results"></div>
+        </section>
+
+        <!-- Daily Verse Card -->
+        <section class="daily-verse-section">
+            <div class="verse-card">
+                <div class="verse-header">
+                    <h3 data-i18n="daily.title">Versículo del Día</h3>
+                    <button id="refreshVerse" class="refresh-btn" title="Nuevo versículo">↻</button>
+                </div>
+                <div class="verse-content">
+                    <p id="verseText" class="verse-text"></p>
+                    <p id="verseReference" class="verse-reference"></p>
+                </div>
+                <div class="verse-actions">
+                    <button id="shareVerse" class="action-btn" data-i18n="daily.share">Compartir</button>
+                    <button id="favoriteVerse" class="action-btn" data-i18n="daily.favorite">Guardar</button>
+                </div>
+                <div id="shareMenu" class="share-menu hidden">
+                    <button id="shareTwitter" class="share-option" title="Compartir en Twitter">𝕏</button>
+                    <button id="shareWhatsApp" class="share-option" title="Compartir en WhatsApp">💬</button>
+                    <button id="shareFacebook" class="share-option" title="Compartir en Facebook">f</button>
+                    <button id="shareCopy" class="share-option" title="Copiar al portapapeles">📋</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Favorites -->
+        <section class="favorites-section">
+            <div class="favorites-header">
+                <h3 data-i18n="favorites.title">Tus guardados</h3>
+                <button id="favoritesToggle" class="ghost-btn" data-i18n="favorites.toggle">Ver guardados</button>
+            </div>
+            <div id="favoritesList" class="favorites-list hidden"></div>
+        </section>
+
+        <!-- Mood Bot Section -->
+        <section class="mood-section">
+            <div class="mood-container">
+                <h3 data-i18n="mood.title">¿Cómo te sientes hoy?</h3>
+                <div class="mood-grid">
+                    <button class="mood-btn" data-mood="hopeful" title="Esperanzado">
+                        <span class="mood-emoji">🌅</span>
+                        <span data-i18n="moods.hopeful">Esperanzado</span>
+                    </button>
+                    <button class="mood-btn" data-mood="anxious" title="Ansioso">
+                        <span class="mood-emoji">🌪️</span>
+                        <span data-i18n="moods.anxious">Ansioso</span>
+                    </button>
+                    <button class="mood-btn" data-mood="grieving" title="Dolido">
+                        <span class="mood-emoji">🌧️</span>
+                        <span data-i18n="moods.grieving">Dolido</span>
+                    </button>
+                    <button class="mood-btn" data-mood="joyful" title="Alegre">
+                        <span class="mood-emoji">✨</span>
+                        <span data-i18n="moods.joyful">Alegre</span>
+                    </button>
+                    <button class="mood-btn" data-mood="confused" title="Confundido">
+                        <span class="mood-emoji">🌀</span>
+                        <span data-i18n="moods.confused">Confundido</span>
+                    </button>
+                    <button class="mood-btn" data-mood="peaceful" title="Tranquilo">
+                        <span class="mood-emoji">🌿</span>
+                        <span data-i18n="moods.peaceful">Tranquilo</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exploration Grid -->
+        <section class="exploration-section">
+            <h3 data-i18n="explore.title">Explora el Universo</h3>
+            <div class="exploration-grid">
+                <div class="explore-card" data-section="books">
+                    <div class="card-icon">📖</div>
+                    <h4 data-i18n="explore.books">Libros</h4>
+                    <p data-i18n="explore.books.desc">Navega por los 66 libros</p>
+                </div>
+                <div class="explore-card" data-section="characters">
+                    <div class="card-icon">👥</div>
+                    <h4 data-i18n="explore.characters">Personajes</h4>
+                    <p data-i18n="explore.characters.desc">Descubre historias épicas</p>
+                </div>
+                <div class="explore-card" data-section="maps">
+                    <div class="card-icon">🗺️</div>
+                    <h4 data-i18n="explore.maps">Mapas</h4>
+                    <p data-i18n="explore.maps.desc">Contexto geográfico</p>
+                </div>
+                <div class="explore-card" data-section="timeline">
+                    <div class="card-icon">⏳</div>
+                    <h4 data-i18n="explore.timeline">Línea de Tiempo</h4>
+                    <p data-i18n="explore.timeline.desc">Conecta los eventos</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exploration Sections (Hidden by default) -->
+        <section id="booksSection" class="exploration-detail hidden">
+            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
+            <h3 data-i18n="explore.books">Libros de la Biblia</h3>
+            <div class="books-container">
+                <div class="books-group">
+                    <h4 id="otTitle">Antiguo Testamento (39 libros)</h4>
+                    <div class="books-list" id="otBooks"></div>
+                </div>
+                <div class="books-group">
+                    <h4 id="ntTitle">Nuevo Testamento (27 libros)</h4>
+                    <div class="books-list" id="ntBooks"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="charactersSection" class="exploration-detail hidden">
+            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
+            <h3 data-i18n="explore.characters">Personajes Bíblicos</h3>
+            <div id="charactersList" class="characters-grid"></div>
+        </section>
+
+        <section id="mapsSection" class="exploration-detail hidden">
+            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
+            <h3 data-i18n="explore.maps">Mapa de Tierra Santa</h3>
+            <div id="mapContainer" class="map-wrapper">
+                <div id="map" class="map-canvas"></div>
+                <div id="mapFallback" class="map-fallback hidden"></div>
+                <p id="mapPlaceholder" class="map-note">Próximamente: Mapa interactivo de Tierra Santa 🗺️</p>
+            </div>
+        </section>
+
+        <section id="timelineSection" class="exploration-detail hidden">
+            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
+            <h3 data-i18n="explore.timeline">Línea de Tiempo</h3>
+            <div id="timelineContainer" class="timeline"></div>
+        </section>
+    </main>
+
+    <!-- Bible Bot Panel -->
+    <div id="botPanel" class="bot-panel hidden">
+        <div class="bot-header">
+            <h3>⚡ Bible Bot</h3>
+            <button id="botClose" class="close-btn">✕</button>
+        </div>
+        <div id="botContent" class="bot-content">
+            <p class="bot-greeting" data-i18n="bot.greeting">Hola, soy tu guía del universo bíblico. ¿En qué puedo ayudarte?</p>
+        </div>
+        <div class="bot-input">
+            <input type="text" id="botInput" placeholder="Pregunta algo..." data-i18n-placeholder="bot.placeholder">
+            <button id="botSend" class="send-btn">→</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="assets/images/logo.png" alt="HolyVerse" class="footer-logo-img">
+                        <h4>HolyVerse</h4>
+                    </div>
+                    <p data-i18n="footer.desc">Explora el universo bíblico de forma interactiva</p>
+                </div>
+                <div class="footer-section">
+                    <h4 data-i18n="footer.links.title">Enlaces</h4>
+                    <ul>
+                        <li><a href="#" onclick="scrollToTop()" data-i18n="footer.links.top">Arriba</a></li>
+                        <li><a href="#" onclick="document.getElementById('searchInput').focus()" data-i18n="footer.links.search">Buscar</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p data-i18n="footer.copyright">© 2026 HolyVerse. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/bot.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

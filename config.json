@@ -1,0 +1,77 @@
+{
+  "name": "HolyVerse",
+  "version": "1.0.0",
+  "description": "Interactive Biblical Universe - Universo Bíblico Interactivo",
+  "author": "Your Name",
+  "license": "MIT",
+  "settings": {
+    "defaultLanguage": "es",
+    "theme": "dark",
+    "animationsEnabled": true,
+    "offlineMode": true
+  },
+  "features": {
+    "daily_verse": {
+      "enabled": true,
+      "cache_days": 1
+    },
+    "bible_bot": {
+      "enabled": true,
+      "languages": ["es", "en"],
+      "response_delay": 300
+    },
+    "mood_selector": {
+      "enabled": true,
+      "moods": ["hopeful", "anxious", "grieving", "joyful", "confused", "peaceful"]
+    },
+    "multiLanguage": {
+      "enabled": true,
+      "supported": ["es", "en"],
+      "persist": true
+    }
+  },
+  "api": {
+    "bible_api": {
+      "name": "Scripture.api.bible",
+      "url": "https://api.scripture.api.bible/v1",
+      "key": "YOUR_API_KEY_HERE",
+      "version": "1"
+    },
+    "fallback": "local_verses"
+  },
+  "future_modules": {
+    "maps": {
+      "description": "Geographic context of Bible stories",
+      "status": "planned"
+    },
+    "timeline": {
+      "description": "Complete chronology of biblical events",
+      "status": "planned"
+    },
+    "characters": {
+      "description": "Interactive biblical characters database",
+      "status": "planned"
+    },
+    "connections": {
+      "description": "Graph visualization of biblical connections",
+      "status": "planned"
+    },
+    "search": {
+      "description": "Advanced verse search with filters",
+      "status": "planned"
+    },
+    "notes": {
+      "description": "Personal notes and highlights",
+      "status": "planned"
+    }
+  },
+  "storage": {
+    "local": {
+      "daily_verse": "holyverse-daily-verse",
+      "verse_date": "holyverse-verse-date",
+      "favorites": "holyverse-favorites",
+      "language": "holyverse-lang",
+      "notes": "holyverse-notes"
+    }
+  }
+}

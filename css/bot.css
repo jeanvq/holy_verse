@@ -1,0 +1,201 @@
+/* Bible Bot Styles */
+
+.bot-panel {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 400px;
+    max-height: 600px;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.98), rgba(22, 33, 62, 0.98));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    z-index: 2000;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.bot-panel.hidden {
+    display: none;
+}
+
+.bot-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bot-header h3 {
+    color: var(--gold);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.3rem;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(233, 69, 96, 0.1);
+    color: var(--highlight);
+}
+
+.bot-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bot-greeting {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.95rem;
+}
+
+.bot-message {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bot-message.user {
+    align-self: flex-end;
+    background: var(--highlight);
+    color: white;
+    padding: 0.8rem 1rem;
+    border-radius: 8px 8px 0 8px;
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.bot-message.bot {
+    align-self: flex-start;
+    background: rgba(15, 52, 96, 0.6);
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    border-radius: 8px 8px 8px 0;
+    max-width: 85%;
+    word-wrap: break-word;
+    border-left: 3px solid var(--gold);
+}
+
+.bot-input {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.5rem;
+}
+
+#botInput {
+    flex: 1;
+    background: rgba(15, 52, 96, 0.3);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.7rem;
+    border-radius: 6px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+#botInput:focus {
+    outline: none;
+    border-color: var(--highlight);
+    background: rgba(15, 52, 96, 0.5);
+}
+
+#botInput::placeholder {
+    color: var(--text-secondary);
+}
+
+.send-btn {
+    background: var(--highlight);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+}
+
+.send-btn:active {
+    transform: scale(0.95);
+}
+
+/* Scrollbar styling */
+.bot-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bot-content::-webkit-scrollbar-track {
+    background: rgba(26, 26, 46, 0.5);
+    border-radius: 10px;
+}
+
+.bot-content::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+.bot-content::-webkit-scrollbar-thumb:hover {
+    background: var(--highlight);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .bot-panel {
+        width: calc(100% - 2rem);
+        height: auto;
+        max-height: 60vh;
+        right: 1rem;
+        left: 1rem;
+    }
+}

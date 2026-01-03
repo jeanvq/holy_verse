@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test API</title>
+</head>
+<body>
+    <h1>Test de API de Biblia</h1>
+    <button onclick="testAPI()">Probar API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Probando...';
+            
+            const apiKey = '4q6iw2TMlGMKmm7j8R1hu';
+            const bibleId = '592420522e16049f-01'; // Español
+            
+            try {
+                console.log('Haciendo petición...');
+                const res = await fetch(`https://api.scripture.api.bible/v1/bibles/${bibleId}/search?query=amor&limit=3`, {
+                    headers: { 'api-key': apiKey }
+                });
+                
+                console.log('Response status:', res.status);
+                const data = await res.json();
+                console.log('Data:', data);
+                
+                resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (err) {
+                console.error('Error:', err);
+                resultDiv.innerHTML = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

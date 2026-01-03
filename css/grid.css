@@ -1,0 +1,82 @@
+/* CSS Grid System */
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1rem;
+}
+
+/* Flexible grid for exploration cards */
+@supports (display: grid) {
+    .grid-responsive {
+        display: grid;
+        auto-flow: dense;
+        grid-auto-rows: minmax(200px, auto);
+    }
+
+    @media (min-width: 1200px) {
+        .grid-responsive {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (min-width: 768px) and (max-width: 1199px) {
+        .grid-responsive {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 767px) {
+        .grid-responsive {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+/* Masonry-like effect for future content */
+.masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    auto-rows: auto;
+    gap: 1.5rem;
+}
+
+.masonry-item {
+    break-inside: avoid;
+}
+
+/* Hero grid layout */
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    place-items: center;
+}
+
+/* Dashboard grid for future analytics/stats */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    background: rgba(26, 26, 46, 0.8);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}

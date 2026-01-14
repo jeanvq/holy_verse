@@ -8,10 +8,10 @@ function stripTags(html) {
 // API Integration
 const API = {
     // Bible API (https://api.scripture.api.bible)
-    BIBLE_API_URL: 'https://rest.api.bible/v1/bibles',
-    BIBLE_API_KEY: 'Z2cS3kURbkESQWaeO5Lr-',
+    BIBLE_API_URL: 'https://api.scripture.api.bible/v1/bibles',
+    BIBLE_API_KEY: '4q6iw2TMlGMKmm7j8R1hu',
     EN_BIBLE_ID: 'bba9f40183526463-01', // Berean Standard Bible
-    ES_BIBLE_ID: '826f63861180e056-01', // Spanish Bible from your plan
+    ES_BIBLE_ID: '592420522e16049f-01', // Spanish Bible from your plan
     
     // Fallback data for demo / offline
     fallbackVerses: [

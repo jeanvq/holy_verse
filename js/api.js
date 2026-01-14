@@ -326,10 +326,15 @@ const API = {
 
         // If no API key, search locally in fallback
         if (!this.BIBLE_API_KEY || this.BIBLE_API_KEY === 'YOUR_API_KEY_HERE') {
-            return this.fallbackVerses
+            const filtered = this.fallbackVerses
                 .map(v => v[lang] || v.es)
-                .filter(v => v.text.toLowerCase().includes(q.toLowerCase()) || v.reference.toLowerCase().includes(q.toLowerCase()))
-                .slice(offset, offset + limit);
+                .filter(v => v.text.toLowerCase().includes(q.toLowerCase()) || v.reference.toLowerCase().includes(q.toLowerCase()));
+            const results = filtered.slice(offset, offset + limit);
+            return { 
+                results, 
+                total: filtered.length, 
+                hasMore: filtered.length > (offset + limit) 
+            };
         }
 
         const bibleId = lang === 'en' ? this.EN_BIBLE_ID : this.ES_BIBLE_ID;

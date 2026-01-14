@@ -1635,6 +1635,23 @@ body > * {
         overflow-x: hidden;
     }
 
+    .exploration-detail {
+        padding: 1.5rem 1rem;
+        margin-top: 1rem;
+        border-radius: 8px;
+    }
+
+    .back-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .back-label {
+        display: none;
+    }
+
     .search-bar {
         flex-direction: column;
     }
@@ -1985,7 +2002,51 @@ body > * {
     .surprise-verse-modal h2 {
         font-size: 1.4rem;
     }
+}
 
+/* Extra small devices - Mobile */
+@media (max-width: 480px) {
+    .exploration-detail {
+        padding: 1rem 0.75rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+    }
+
+    .books-list {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .book-item {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.7rem;
+    }
+
+    .exploration-detail h3 {
+        font-size: 1.3rem;
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .books-group h4 {
+        font-size: 1rem;
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .books-list {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .hero-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .verse-text {
+        font-size: 0.95rem;
+    }
     .surprise-verse-text {
         font-size: 1.1rem;
     }

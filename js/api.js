@@ -312,43 +312,90 @@ const API = {
         }
     },
 
-    async searchVerses(term, lang = 'en') {
+    async searchVerses(term, lang = 'en', options = {}) {
         const q = term.trim();
         if (!q) return [];
+
+        const {
+            limit = 20,
+            offset = 0,
+            testament = 'all',
+            bookId = 'all',
+            compareTranslations = false
+        } = options;
 
         // If no API key, search locally in fallback
         if (!this.BIBLE_API_KEY || this.BIBLE_API_KEY === 'YOUR_API_KEY_HERE') {
             return this.fallbackVerses
                 .map(v => v[lang] || v.es)
                 .filter(v => v.text.toLowerCase().includes(q.toLowerCase()) || v.reference.toLowerCase().includes(q.toLowerCase()))
-                .slice(0, 5);
+                .slice(offset, offset + limit);
         }
 
         const bibleId = lang === 'en' ? this.EN_BIBLE_ID : this.ES_BIBLE_ID;
         try {
-            const res = await fetch(`${this.BIBLE_API_URL}/${bibleId}/search?query=${encodeURIComponent(q)}&limit=5`, {
+            // Build search URL with parameters
+            let searchUrl = `${this.BIBLE_API_URL}/${bibleId}/search?query=${encodeURIComponent(q)}&limit=${limit}`;
+            
+            if (offset > 0) searchUrl += `&offset=${offset}`;
+
+            const res = await fetch(searchUrl, {
                 headers: { 'api-key': this.BIBLE_API_KEY }
             });
             if (!res.ok) throw new Error('API search error');
             const data = await res.json();
             const verses = data?.data?.verses || [];
+            const total = data?.data?.total || verses.length;
             const results = [];
+            
+            // Fetch verse details
             for (const v of verses) {
-                const verseRes = await fetch(`${this.BIBLE_API_URL}/${bibleId}/verses/${v.id}`, {
-                    headers: { 'api-key': this.BIBLE_API_KEY }
-                });
-                if (verseRes.ok) {
-                    const vd = await verseRes.json();
-                    results.push({
-                        text: vd?.data?.content ? stripTags(vd.data.content) : vd?.data?.reference,
-                        reference: vd?.data?.reference || v.reference
+                try {
+                    const verseRes = await fetch(`${this.BIBLE_API_URL}/${bibleId}/verses/${v.id}`, {
+                        headers: { 'api-key': this.BIBLE_API_KEY }
                     });
+                    if (verseRes.ok) {
+                        const vd = await verseRes.json();
+                        const verseData = {
+                            text: vd?.data?.content ? stripTags(vd.data.content) : vd?.data?.reference,
+                            reference: vd?.data?.reference || v.reference,
+                            bookId: v.bookId,
+                            chapterId: v.chapterId,
+                            id: v.id
+                        };
+                        
+                        // If comparing translations, fetch the other language
+                        if (compareTranslations) {
+                            const otherLang = lang === 'en' ? 'es' : 'en';
+                            const otherBibleId = lang === 'en' ? this.ES_BIBLE_ID : this.EN_BIBLE_ID;
+                            try {
+                                const otherRes = await fetch(`${this.BIBLE_API_URL}/${otherBibleId}/verses/${v.id}`, {
+                                    headers: { 'api-key': this.BIBLE_API_KEY }
+                                });
+                                if (otherRes.ok) {
+                                    const otherVd = await otherRes.json();
+                                    verseData.translation = {
+                                        text: otherVd?.data?.content ? stripTags(otherVd.data.content) : otherVd?.data?.reference,
+                                        reference: otherVd?.data?.reference,
+                                        lang: otherLang
+                                    };
+                                }
+                            } catch (err) {
+                                console.warn('Translation fetch failed', err);
+                            }
+                        }
+                        
+                        results.push(verseData);
+                    }
+                } catch (err) {
+                    console.warn('Verse fetch failed', err);
                 }
             }
-            return results;
+            
+            return { results, total, hasMore: total > (offset + limit) };
         } catch (err) {
             console.error('API search failed', err);
-            return [];
+            return { results: [], total: 0, hasMore: false };
         }
     },
 

@@ -728,34 +728,165 @@ function setupSearch() {
     const statusEl = document.getElementById('searchStatus');
     const historyContainer = document.getElementById('searchHistory');
     const historyList = document.getElementById('historyList');
+    const advancedToggle = document.getElementById('advancedToggle');
+    const advancedFilters = document.getElementById('advancedFilters');
+    const pagination = document.getElementById('searchPagination');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+    const pageInfo = document.getElementById('pageInfo');
     
     if (!input || !button || !results) return;
 
+    let currentPage = 1;
+    let currentTotal = 0;
+    let currentLimit = 20;
+
     updateSearchStatus(statusEl);
     loadSearchHistory(historyList, historyContainer, input);
+    populateBookFilter();
 
     // Inicializar vacío
     results.innerHTML = '';
 
-    async function runSearch() {
+    // Toggle advanced filters
+    if (advancedToggle) {
+        advancedToggle.addEventListener('click', () => {
+            advancedFilters.classList.toggle('hidden');
+        });
+    }
+
+    // Update limit when changed
+    const limitFilter = document.getElementById('limitFilter');
+    if (limitFilter) {
+        limitFilter.addEventListener('change', () => {
+            currentLimit = parseInt(limitFilter.value);
+            currentPage = 1;
+        });
+    }
+
+    async function runSearch(page = 1) {
         const term = input.value.trim();
         if (!term) {
             results.innerHTML = `<p class="empty-state">${i18n.currentLang === 'es' ? 'Escribe una referencia o palabra clave' : 'Type a reference or keyword'}</p>`;
+            pagination.classList.add('hidden');
             return;
         }
         
         // Guardar en historial
-        saveSearchHistory(term);
-        loadSearchHistory(historyList, historyContainer, input);
+        if (page === 1) {
+            saveSearchHistory(term);
+            loadSearchHistory(historyList, historyContainer, input);
+        }
+        
+        // Get filter options
+        const testament = document.getElementById('testamentFilter')?.value || 'all';
+        const bookId = document.getElementById('bookFilter')?.value || 'all';
+        const compareTranslations = document.getElementById('compareTranslations')?.checked || false;
+        const limit = currentLimit;
+        const offset = (page - 1) * limit;
         
         results.innerHTML = `<div class="spinner" aria-label="${i18n.currentLang === 'es' ? 'Buscando' : 'Searching'}"></div>`;
-        const verses = await API.searchVerses(term, i18n.currentLang);
-        renderSearchResults(results, verses);
+        pagination.classList.add('hidden');
+        
+        const response = await API.searchVerses(term, i18n.currentLang, {
+            limit,
+            offset,
+            testament,
+            bookId,
+            compareTranslations
+        });
+        
+        const verses = response.results || response;
+        currentTotal = response.total || verses.length;
+        currentPage = page;
+        
+        renderSearchResults(results, verses, compareTranslations);
+        updatePagination(page, limit, currentTotal, response.hasMore);
     }
 
-    button.addEventListener('click', runSearch);
+    function updatePagination(page, limit, total, hasMore) {
+        if (total <= limit && !hasMore) {
+            pagination.classList.add('hidden');
+            return;
+        }
+        
+        pagination.classList.remove('hidden');
+        const totalPages = Math.ceil(total / limit);
+        pageInfo.textContent = `Página ${page} de ${totalPages}`;
+        
+        prevPageBtn.disabled = page === 1;
+        nextPageBtn.disabled = !hasMore && page >= totalPages;
+    }
+
+    prevPageBtn?.addEventListener('click', () => {
+        if (currentPage > 1) {
+            runSearch(currentPage - 1);
+        }
+    });
+
+    nextPageBtn?.addEventListener('click', () => {
+        runSearch(currentPage + 1);
+    });
+
+    button.addEventListener('click', () => runSearch(1));
     input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') runSearch();
+        if (e.key === 'Enter') runSearch(1);
+    });
+}
+
+// Populate book filter dropdown
+function populateBookFilter() {
+    const bookFilter = document.getElementById('bookFilter');
+    if (!bookFilter) return;
+    
+    const books = [
+        // Old Testament
+        { id: 'GEN', name: 'Génesis / Genesis' },
+        { id: 'EXO', name: 'Éxodo / Exodus' },
+        { id: 'LEV', name: 'Levítico / Leviticus' },
+        { id: 'NUM', name: 'Números / Numbers' },
+        { id: 'DEU', name: 'Deuteronomio / Deuteronomy' },
+        { id: 'JOS', name: 'Josué / Joshua' },
+        { id: 'JDG', name: 'Jueces / Judges' },
+        { id: 'RUT', name: 'Rut / Ruth' },
+        { id: 'PSA', name: 'Salmos / Psalms' },
+        { id: 'PRO', name: 'Proverbios / Proverbs' },
+        { id: 'ISA', name: 'Isaías / Isaiah' },
+        { id: 'JER', name: 'Jeremías / Jeremiah' },
+        { id: 'MAT', name: 'Mateo / Matthew' },
+        { id: 'MRK', name: 'Marcos / Mark' },
+        { id: 'LUK', name: 'Lucas / Luke' },
+        { id: 'JHN', name: 'Juan / John' },
+        { id: 'ACT', name: 'Hechos / Acts' },
+        { id: 'ROM', name: 'Romanos / Romans' },
+        { id: '1CO', name: '1 Corintios / 1 Corinthians' },
+        { id: '2CO', name: '2 Corintios / 2 Corinthians' },
+        { id: 'GAL', name: 'Gálatas / Galatians' },
+        { id: 'EPH', name: 'Efesios / Ephesians' },
+        { id: 'PHP', name: 'Filipenses / Philippians' },
+        { id: 'COL', name: 'Colosenses / Colossians' },
+        { id: '1TH', name: '1 Tesalonicenses / 1 Thessalonians' },
+        { id: '2TH', name: '2 Tesalonicenses / 2 Thessalonians' },
+        { id: '1TI', name: '1 Timoteo / 1 Timothy' },
+        { id: '2TI', name: '2 Timoteo / 2 Timothy' },
+        { id: 'TIT', name: 'Tito / Titus' },
+        { id: 'PHM', name: 'Filemón / Philemon' },
+        { id: 'HEB', name: 'Hebreos / Hebrews' },
+        { id: 'JAS', name: 'Santiago / James' },
+        { id: '1PE', name: '1 Pedro / 1 Peter' },
+        { id: '2PE', name: '2 Pedro / 2 Peter' },
+        { id: '1JN', name: '1 Juan / 1 John' },
+        { id: '2JN', name: '2 Juan / 2 John' },
+        { id: '3JN', name: '3 Juan / 3 John' },
+        { id: 'JUD', name: 'Judas / Jude' },
+        { id: 'REV', name: 'Apocalipsis / Revelation' }
+    ];
+    
+    books.forEach(book => {
+        const option = document.createElement('option');
+        option.value = book.id;
+        option.textContent = book.name;
+        bookFilter.appendChild(option);
     });
 }
 
@@ -805,7 +936,7 @@ function loadSearchHistory(listEl, containerEl, inputEl) {
     });
 }
 
-function renderSearchResults(container, verses) {
+function renderSearchResults(container, verses, showTranslation = false) {
     container.innerHTML = '';
     if (!verses || verses.length === 0) {
         container.innerHTML = `<p class="empty-state">${i18n.currentLang === 'es' ? 'Sin resultados. Prueba otra referencia.' : 'No results. Try another reference.'}</p>`;
@@ -815,14 +946,35 @@ function renderSearchResults(container, verses) {
     verses.forEach(v => {
         const card = document.createElement('div');
         card.className = 'search-card';
+        
+        let translationHtml = '';
+        if (showTranslation && v.translation) {
+            const langLabel = v.translation.lang === 'es' ? 'Español' : 'English';
+            translationHtml = `
+                <div class="search-translation">
+                    <div class="translation-label">📖 ${langLabel}:</div>
+                    <div class="translation-text">${v.translation.text}</div>
+                </div>
+            `;
+        }
+        
         card.innerHTML = `
             <div class="search-ref">${v.reference || '—'}</div>
             <div class="search-text">${v.text || ''}</div>
+            ${translationHtml}
             <div class="search-actions">
                 <button class="ghost-btn search-open">${i18n.currentLang === 'es' ? 'Abrir' : 'Open'}</button>
+                <button class="ghost-btn search-favorite" title="${i18n.currentLang === 'es' ? 'Guardar' : 'Save'}">♡</button>
             </div>
         `;
+        
         card.querySelector('.search-open').addEventListener('click', () => openVerseModal(v));
+        card.querySelector('.search-favorite').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavorite(v);
+            showNotification(i18n.currentLang === 'es' ? 'Guardado ♡' : 'Saved ♡');
+        });
+        
         container.appendChild(card);
     });
 }

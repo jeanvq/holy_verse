@@ -88,15 +88,63 @@
                     <span id="searchStatus" class="status-pill"></span>
                 </div>
             </div>
+            
+            <!-- Search Bar -->
             <div class="search-bar">
-                <input id="searchInput" type="text" placeholder="Juan 3:16 o love" data-i18n-placeholder="search.placeholder">
+                <input id="searchInput" type="text" placeholder="Juan 3:16 o 'amor'" data-i18n-placeholder="search.placeholder">
                 <button id="searchBtn" class="primary-btn search-btn" data-i18n="search.action">Buscar</button>
+                <button id="advancedToggle" class="ghost-btn" title="Filtros avanzados">⚙️</button>
             </div>
+            
+            <!-- Advanced Filters -->
+            <div id="advancedFilters" class="advanced-filters hidden">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="testamentFilter">Testamento:</label>
+                        <select id="testamentFilter" class="filter-select">
+                            <option value="all">Todos</option>
+                            <option value="old">Antiguo</option>
+                            <option value="new">Nuevo</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="bookFilter">Libro:</label>
+                        <select id="bookFilter" class="filter-select">
+                            <option value="all">Todos los libros</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="limitFilter">Resultados:</label>
+                        <select id="limitFilter" class="filter-select">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>
+                            <input type="checkbox" id="compareTranslations">
+                            Comparar traducciones
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search History -->
             <div id="searchHistory" class="search-history hidden">
                 <p class="history-label" data-i18n="search.history.title">Búsquedas recientes:</p>
                 <div id="historyList" class="history-list"></div>
             </div>
+            
+            <!-- Search Results -->
             <div id="searchResults" class="search-results"></div>
+            
+            <!-- Pagination -->
+            <div id="searchPagination" class="search-pagination hidden">
+                <button id="prevPage" class="ghost-btn" disabled>← Anterior</button>
+                <span id="pageInfo" class="page-info">Página 1</span>
+                <button id="nextPage" class="ghost-btn">Siguiente →</button>
+            </div>
         </section>
 
         <!-- Daily Verse Card -->

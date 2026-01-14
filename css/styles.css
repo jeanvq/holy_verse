@@ -52,6 +52,17 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     position: relative;
+    overflow-x: hidden;
+}
+
+body.bot-open,
+body.modal-open {
+    overflow: hidden;
+}
+
+html.bot-open,
+html.modal-open {
+    overflow: hidden;
 }
 
 body::before {
@@ -1558,12 +1569,16 @@ body > * {
 
     .hero-cta {
         flex-direction: column;
+        gap: 0.8rem;
     }
 
     .hero-cta .primary-btn,
     .hero-cta .ghost-btn,
     .verse-actions {
         width: 100%;
+        min-height: 44px;
+        font-size: 1rem;
+        padding: 0.8rem 1.2rem;
     }
 
     .verse-actions {

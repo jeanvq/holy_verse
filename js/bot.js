@@ -626,7 +626,8 @@ const botContent = document.getElementById('botContent');
 botToggle.addEventListener('click', () => {
     if (bot.togglePanel()) {
         botPanel.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent scroll on mobile
+        document.documentElement.classList.add('bot-open');
+        document.body.classList.add('bot-open');
         botInput.focus();
         
         // Show greeting if first time
@@ -651,8 +652,20 @@ botToggle.addEventListener('click', () => {
 botClose.addEventListener('click', () => {
     bot.isOpen = false;
     botPanel.classList.add('hidden');
-    document.body.style.overflow = ''; // Restore scroll
+    document.documentElement.classList.remove('bot-open');
+    document.body.classList.remove('bot-open');
 });
+
+// Also restore overflow when modal is hidden via togglePanel
+const originalToggle = bot.togglePanel;
+bot.togglePanel = function() {
+    const result = originalToggle.call(this);
+    if (!this.isOpen) {
+        document.documentElement.classList.remove('bot-open');
+        document.body.classList.remove('bot-open');
+    }
+    return result;
+};
 
 async function sendMessage() {
     const message = botInput.value.trim();

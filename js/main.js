@@ -99,6 +99,10 @@ function openSurpriseVerseModal() {
     const closeBtn = document.getElementById('closeModal');
     const modalContent = document.querySelector('.modal-content');
     
+    // Prevent scroll on mobile when modal opens
+    document.documentElement.classList.add('modal-open');
+    document.body.classList.add('modal-open');
+    
     // Get a random verse
     const randomIndex = Math.floor(Math.random() * API.fallbackVerses.length);
     const verse = API.fallbackVerses[randomIndex];
@@ -117,6 +121,8 @@ function openSurpriseVerseModal() {
     // Close modal handlers
     const closeModal = () => {
         modal.classList.add('hidden');
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
     };
     
     closeBtn.addEventListener('click', closeModal);

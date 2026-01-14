@@ -340,20 +340,6 @@ const API = {
             compareTranslations = false
         } = options;
 
-        // Use fallback for Spanish if not available in API
-        if (lang === 'es' && this.USE_FALLBACK_FOR_ES) {
-            const filtered = this.fallbackVerses
-                .map(v => v[lang] || v.es)
-                .filter(v => v.text.toLowerCase().includes(q.toLowerCase()) || v.reference.toLowerCase().includes(q.toLowerCase()));
-            const results = filtered.slice(offset, offset + limit);
-            return { 
-                results, 
-                total: filtered.length, 
-                hasMore: filtered.length > (offset + limit) 
-            };
-        }ranslations = false
-        } = options;
-
         // If no API key, search locally in fallback
         if (!this.BIBLE_API_KEY || this.BIBLE_API_KEY === 'YOUR_API_KEY_HERE') {
             const filtered = this.fallbackVerses
@@ -374,10 +360,77 @@ const API = {
             
             if (offset > 0) searchUrl += `&offset=${offset}`;
 
-            console.log('Search URL:', searchUrl);
-            console.log('API Key:', this.BIBLE_API_KEY);
-
             const res = await fetch(searchUrl, {
+                headers: { 'api-key': this.BIBLE_API_KEY }
+            });
+            
+            if (!res.ok) {
+                throw new Error(`API search error: ${res.status}`);
+            }
+            const data = await res.json();
+            const verses = data?.data?.verses || [];
+            const total = data?.data?.total || verses.length;
+            const results = [];
+            
+            // Fetch verse details
+            for (const v of verses) {
+                try {
+                    const verseRes = await fetch(`${this.BIBLE_API_URL}/${bibleId}/verses/${v.id}`, {
+                        headers: { 'api-key': this.BIBLE_API_KEY }
+                    });
+                    if (verseRes.ok) {
+                        const vd = await verseRes.json();
+                        const verseData = {
+                            text: vd?.data?.content ? stripTags(vd.data.content) : vd?.data?.reference,
+                            reference: vd?.data?.reference || v.reference,
+                            bookId: v.bookId,
+                            chapterId: v.chapterId,
+                            id: v.id
+                        };
+                        
+                        // If comparing translations, fetch the other language
+                        if (compareTranslations) {
+                            const otherLang = lang === 'en' ? 'es' : 'en';
+                            const otherBibleId = lang === 'en' ? this.ES_BIBLE_ID : this.EN_BIBLE_ID;
+                            try {
+                                const otherRes = await fetch(`${this.BIBLE_API_URL}/${otherBibleId}/verses/${v.id}`, {
+                                    headers: { 'api-key': this.BIBLE_API_KEY }
+                                });
+                                if (otherRes.ok) {
+                                    const otherVd = await otherRes.json();
+                                    verseData.translation = {
+                                        text: otherVd?.data?.content ? stripTags(otherVd.data.content) : otherVd?.data?.reference,
+                                        reference: otherVd?.data?.reference,
+                                        lang: otherLang
+                                    };
+                                }
+                            } catch (err) {
+                                console.warn('Translation fetch failed', err);
+                            }
+                        }
+                        
+                        results.push(verseData);
+                    }
+                } catch (err) {
+                    console.warn('Verse fetch failed', err);
+                }
+            }
+            
+            return { results, total, hasMore: total > (offset + limit) };
+        } catch (err) {
+            console.error('API search failed, using fallback data', err);
+            // If API fails, use fallback data
+            const filtered = this.fallbackVerses
+                .map(v => v[lang] || v.es)
+                .filter(v => v.text.toLowerCase().includes(q.toLowerCase()) || v.reference.toLowerCase().includes(q.toLowerCase()));
+            const results = filtered.slice(offset, offset + limit);
+            return { 
+                results, 
+                total: filtered.length, 
+                hasMore: filtered.length > (offset + limit) 
+            };
+        }
+    },
                 headers: { 'api-key': this.BIBLE_API_KEY }
             });
             

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Búsqueda en Español</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .box { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        pre { background: #f9f9f9; padding: 10px; overflow-x: auto; font-size: 12px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
+        .error { border-left: 4px solid red; }
+        .success { border-left: 4px solid green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug: Búsqueda en Español</h1>
+        
+        <div class="box">
+            <h3>1. Verificar ID de Biblia</h3>
+            <button onclick="checkBibleId()">Chequear ID de Biblia</button>
+            <div id="bibleCheck"></div>
+        </div>
+        
+        <div class="box">
+            <h3>2. Búsqueda Directa (API Raw)</h3>
+            <input type="text" id="searchTerm" value="amor" placeholder="Término de búsqueda">
+            <button onclick="searchDirect()">Buscar Directamente en API</button>
+            <div id="directResult"></div>
+        </div>
+        
+        <div class="box">
+            <h3>3. Búsqueda por API.js</h3>
+            <button onclick="searchViaAPI()">Buscar via API.searchVerses()</button>
+            <div id="apiResult"></div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function checkBibleId() {
+            const div = document.getElementById('bibleCheck');
+            div.innerHTML = 'Verificando...';
+            
+            try {
+                // Mostrar config
+                div.innerHTML = `
+                    <div class="box success">
+                        <strong>Configuración API:</strong>
+                        <pre>API Key: ${API.BIBLE_API_KEY}
+ES Bible ID: ${API.ES_BIBLE_ID}
+EN Bible ID: ${API.EN_BIBLE_ID}
+Fallback verses: ${API.fallbackVerses.length}</pre>
+                        <p><strong>Intentando obtener lista de Biblias disponibles...</strong></p>
+                    </div>
+                `;
+                
+                const bibles = await API.getAvailableBibles();
+                const spanishBibles = bibles.filter(b => 
+                    b.language?.id === 'spa' || 
+                    b.name?.toLowerCase().includes('spanish') ||
+                    b.name?.toLowerCase().includes('español')
+                );
+                
+                div.innerHTML += `
+                    <div class="box success">
+                        <strong>Biblias disponibles (Total: ${bibles.length}):</strong>
+                        <pre>${JSON.stringify(bibles.map(b => ({ id: b.id, name: b.name, language: b.language?.name })), null, 2)}</pre>
+                        <p><strong>Biblias en Español encontradas: ${spanishBibles.length}</strong></p>
+                        ${spanishBibles.length > 0 ? `<pre>${JSON.stringify(spanishBibles, null, 2)}</pre>` : '<p style="color:red;">⚠️ No se encontraron Biblias en español</p>'}
+                    </div>
+                `;
+            } catch (err) {
+                div.innerHTML += `<div class="box error"><strong>Error:</strong> ${err.message}</div>`;
+            }
+        }
+        
+        async function searchDirect() {
+            const term = document.getElementById('searchTerm').value;
+            const div = document.getElementById('directResult');
+            div.innerHTML = 'Buscando...';
+            
+            try {
+                const url = `https://rest.api.bible/v1/bibles/${API.ES_BIBLE_ID}/search?query=${encodeURIComponent(term)}&limit=10`;
+                console.log('URL:', url);
+                
+                const res = await fetch(url, {
+                    headers: { 'api-key': API.BIBLE_API_KEY }
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    div.innerHTML = `
+                        <div class="box error">
+                            <strong>Error HTTP ${res.status}:</strong>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                div.innerHTML = `
+                    <div class="box success">
+                        <strong>Búsqueda directa de "${term}" en ES:</strong>
+                        <p>Total encontrado: <strong>${data.data?.total || 0}</strong></p>
+                        <p>Resultados en respuesta: <strong>${data.data?.verses?.length || 0}</strong></p>
+                        <pre>${JSON.stringify(data.data?.verses?.slice(0, 3) || [], null, 2)}</pre>
+                    </div>
+                `;
+            } catch (err) {
+                div.innerHTML = `<div class="box error"><strong>Error en búsqueda directa:</strong> ${err.message}</div>`;
+            }
+        }
+        
+        async function searchViaAPI() {
+            const term = document.getElementById('searchTerm').value;
+            const div = document.getElementById('apiResult');
+            div.innerHTML = 'Buscando...';
+            
+            try {
+                const results = await API.searchVerses(term, 'es', { limit: 10 });
+                
+                div.innerHTML = `
+                    <div class="box ${results.results.length > 0 ? 'success' : 'error'}">
+                        <strong>Búsqueda via API.searchVerses("${term}", "es"):</strong>
+                        <p>Total: <strong>${results.total}</strong></p>
+                        <p>Resultados: <strong>${results.results.length}</strong></p>
+                        <p>Tiene más: <strong>${results.hasMore ? 'Sí' : 'No'}</strong></p>
+                        ${results.results.length > 0 ? `
+                            <pre>${JSON.stringify(results.results.slice(0, 3), null, 2)}</pre>
+                        ` : '<p style="color:red;">❌ Sin resultados - revisando fallback...</p>'}
+                    </div>
+                `;
+            } catch (err) {
+                div.innerHTML = `<div class="box error"><strong>Error:</strong> ${err.message}</div>`;
+            }
+        }
+        
+        // Auto-run checks on load
+        window.addEventListener('load', () => {
+            checkBibleId();
+        });
+    </script>
+</body>
+</html>

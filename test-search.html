@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #3a3a3a;
+            border-radius: 4px;
+        }
+        pre {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Bible Search API</h1>
+    <input type="text" id="searchInput" placeholder="Buscar versículo (ej: Juan 3:16 o amor)" style="width: 70%;">
+    <button onclick="testSearch()">Buscar</button>
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'https://rest.api.bible/v1/bibles';
+        const API_KEY = 'Z2cS3kURbkESQWaeO5Lr-';
+        const ES_BIBLE_ID = '592420522e16049f-01';
+
+        async function testSearch() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('results');
+            
+            resultsDiv.innerHTML = '<p>Buscando...</p>';
+            
+            try {
+                console.log('Searching for:', query);
+                const searchUrl = `${API_URL}/${ES_BIBLE_ID}/search?query=${encodeURIComponent(query)}&limit=5`;
+                console.log('URL:', searchUrl);
+                
+                const response = await fetch(searchUrl, {
+                    headers: { 'api-key': API_KEY }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    resultsDiv.innerHTML = `<p style="color: red;">Error ${response.status}: ${errorText}</p>`;
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (!data.data || !data.data.verses || data.data.verses.length === 0) {
+                    resultsDiv.innerHTML = '<p>No se encontraron resultados</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    return;
+                }
+                
+                let html = `<h3>Encontrados: ${data.data.verses.length}</h3>`;
+                
+                for (const verse of data.data.verses) {
+                    html += `<div class="result">
+                        <strong>${verse.reference}</strong><br>
+                        ID: ${verse.id}
+                    </div>`;
+                }
+                
+                html += '<h4>Respuesta completa:</h4><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

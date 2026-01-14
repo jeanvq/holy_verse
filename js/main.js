@@ -820,6 +820,7 @@ function setupSearch() {
 
     async function runSearch(page = 1) {
         const term = input.value.trim();
+        
         if (!term) {
             results.innerHTML = `<p class="empty-state">${i18n.currentLang === 'es' ? 'Escribe una referencia o palabra clave' : 'Type a reference or keyword'}</p>`;
             pagination.classList.add('hidden');
@@ -832,6 +833,10 @@ function setupSearch() {
             loadSearchHistory(historyList, historyContainer, input);
         }
         
+        // Detectar si es una referencia (ej: "Juan 3:16", "Genesis 1", "Galatas 2:20")
+        const referencePattern = /^[a-záéíóúñ]+\s+\d+(?::\d+)?(?:-\d+)?$/i;
+        const isReference = referencePattern.test(term);
+        
         // Get filter options
         const testament = document.getElementById('testamentFilter')?.value || 'all';
         const bookId = document.getElementById('bookFilter')?.value || 'all';
@@ -843,6 +848,18 @@ function setupSearch() {
         pagination.classList.add('hidden');
         
         try {
+            // Si es una referencia específica, usar getVerseByReference
+            if (isReference && page === 1) {
+                const verse = await API.getVerseByReference(term, i18n.currentLang);
+                
+                if (verse) {
+                    const verses = [verse];
+                    renderSearchResults(results, verses, false);
+                    return;
+                }
+            }
+            
+            // Búsqueda normal por contenido
             const response = await API.searchVerses(term, i18n.currentLang, {
                 limit,
                 offset,

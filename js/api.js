@@ -124,24 +124,47 @@ const API = {
     // Get verse by reference
     async getVerseByReference(reference, lang = 'en') {
         const bibleId = lang === 'en' ? this.EN_BIBLE_ID : this.ES_BIBLE_ID;
+        
         try {
-            const res = await fetch(`${this.BIBLE_API_URL}/${bibleId}/search?query=${encodeURIComponent(reference)}&limit=1`, {
+            const searchUrl = `${this.BIBLE_API_URL}/${bibleId}/search?query=${encodeURIComponent(reference)}&limit=1`;
+            
+            const res = await fetch(searchUrl, {
                 headers: { 'api-key': this.BIBLE_API_KEY }
             });
+            
             if (!res.ok) throw new Error('API search error');
+            
             const data = await res.json();
+            
+            // La API puede retornar "verses" o "passages" dependiendo de la búsqueda
             const verses = data?.data?.verses || [];
-            if (verses.length === 0) return null;
-
-            const verseRes = await fetch(`${this.BIBLE_API_URL}/${bibleId}/verses/${verses[0].id}`, {
-                headers: { 'api-key': this.BIBLE_API_KEY }
-            });
-            if (!verseRes.ok) throw new Error('API verse error');
-            const vd = await verseRes.json();
-            return {
-                text: vd?.data?.content ? stripTags(vd.data.content) : vd?.data?.reference,
-                reference: vd?.data?.reference || reference
-            };
+            const passages = data?.data?.passages || [];
+            
+            if (verses.length === 0 && passages.length === 0) return null;
+            
+            // Si hay passages, usar el primero
+            if (passages.length > 0) {
+                const passage = passages[0];
+                return {
+                    text: passage.content ? stripTags(passage.content) : passage.reference,
+                    reference: passage.reference || reference,
+                    bookId: passage.bookId,
+                    id: passage.id
+                };
+            }
+            
+            // Si hay verses, obtener detalles del primero
+            if (verses.length > 0) {
+                const verseRes = await fetch(`${this.BIBLE_API_URL}/${bibleId}/verses/${verses[0].id}`, {
+                    headers: { 'api-key': this.BIBLE_API_KEY }
+                });
+                if (!verseRes.ok) throw new Error('API verse error');
+                const vd = await verseRes.json();
+                return {
+                    text: vd?.data?.content ? stripTags(vd.data.content) : vd?.data?.reference,
+                    reference: vd?.data?.reference || reference
+                };
+            }
         } catch (err) {
             console.error('API verse lookup failed', err);
             return null;

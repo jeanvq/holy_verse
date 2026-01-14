@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Biblias Disponibles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 { color: #4fd1c5; }
+        .loading { text-align: center; padding: 40px; }
+        .bible-card {
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .spanish { border-color: #4fd1c5; }
+        .bible-id {
+            font-family: monospace;
+            background: #0a0a0a;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 0;
+            color: #4fd1c5;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .bible-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .bible-lang {
+            color: #f6c177;
+            font-size: 14px;
+        }
+        .section {
+            margin: 30px 0;
+        }
+        .count {
+            background: #f6c177;
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        button {
+            background: #4fd1c5;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #3fb3a2;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Verificar Biblias Disponibles</h1>
+    <button onclick="loadBibles()">Recargar Biblias</button>
+    <div id="content" class="loading">Cargando...</div>
+
+    <script>
+        const API_URL = 'https://rest.api.bible/v1/bibles';
+        const API_KEY = 'Z2cS3kURbkESQWaeO5Lr-';
+
+        async function loadBibles() {
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = '<div class="loading">Cargando biblias...</div>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    headers: { 'api-key': API_KEY }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const bibles = data.data || [];
+                
+                const spanishBibles = bibles.filter(b => 
+                    b.language?.id === 'spa' || 
+                    b.language?.name?.toLowerCase().includes('spanish') ||
+                    b.name?.toLowerCase().includes('spanish') ||
+                    b.name?.toLowerCase().includes('español') ||
+                    b.nameLocal?.toLowerCase().includes('español')
+                );
+                
+                const englishBibles = bibles.filter(b => 
+                    b.language?.id === 'eng' || 
+                    b.language?.name?.toLowerCase().includes('english')
+                );
+                
+                let html = `<h2>Total de Biblias: <span class="count">${bibles.length}</span></h2>`;
+                
+                // Spanish Bibles
+                html += `<div class="section">`;
+                html += `<h2>📖 Biblias en Español: <span class="count">${spanishBibles.length}</span></h2>`;
+                if (spanishBibles.length > 0) {
+                    spanishBibles.forEach(b => {
+                        html += `
+                            <div class="bible-card spanish">
+                                <div class="bible-name">${b.name}</div>
+                                <div class="bible-lang">Idioma: ${b.language?.name || 'N/A'}</div>
+                                <div class="bible-id">${b.id}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p>⚠️ No tienes Biblias en español. Ve a <a href="https://scripture.api.bible/admin" target="_blank">scripture.api.bible/admin</a> para agregar una.</p>';
+                }
+                html += `</div>`;
+                
+                // English Bibles
+                html += `<div class="section">`;
+                html += `<h2>📖 Biblias en Inglés: <span class="count">${englishBibles.length}</span></h2>`;
+                if (englishBibles.length > 0) {
+                    englishBibles.forEach(b => {
+                        html += `
+                            <div class="bible-card">
+                                <div class="bible-name">${b.name}</div>
+                                <div class="bible-lang">Idioma: ${b.language?.name || 'N/A'}</div>
+                                <div class="bible-id">${b.id}</div>
+                            </div>
+                        `;
+                    });
+                }
+                html += `</div>`;
+                
+                // Other Bibles
+                const otherBibles = bibles.filter(b => 
+                    !spanishBibles.includes(b) && !englishBibles.includes(b)
+                );
+                
+                if (otherBibles.length > 0) {
+                    html += `<div class="section">`;
+                    html += `<h2>🌍 Otras Biblias: <span class="count">${otherBibles.length}</span></h2>`;
+                    otherBibles.forEach(b => {
+                        html += `
+                            <div class="bible-card">
+                                <div class="bible-name">${b.name}</div>
+                                <div class="bible-lang">Idioma: ${b.language?.name || 'N/A'}</div>
+                                <div class="bible-id">${b.id}</div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                
+                contentDiv.innerHTML = html;
+                
+            } catch (error) {
+                contentDiv.innerHTML = `<p style="color: #f87171;">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        loadBibles();
+    </script>
+</body>
+</html>

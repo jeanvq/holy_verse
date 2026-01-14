@@ -2047,6 +2047,7 @@ body > * {
     .verse-text {
         font-size: 0.95rem;
     }
+    
     .surprise-verse-text {
         font-size: 1.1rem;
     }
@@ -2061,5 +2062,25 @@ body > * {
         padding: 0.8rem 1rem;
         min-height: 44px;
     }
-}
 
+    /* Mobile modal improvements */
+    .modal-content {
+        width: 90%;
+        max-width: 100%;
+        padding: 1.5rem 1rem;
+        padding-top: 3rem;
+        border-radius: 12px;
+    }
+
+    .modal-close {
+        top: 10px;
+        right: 10px;
+        width: 44px;
+        height: 44px;
+        font-size: 1.5rem;
+    }
+
+    .surprise-verse-modal {
+        padding: 1rem 0.75rem;
+    }
+}

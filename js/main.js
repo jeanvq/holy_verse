@@ -127,14 +127,17 @@ function setupHero() {
 
     if (surpriseBtn) {
         // Touch and click support for mobile
-        surpriseBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+        const handleSurprise = (e) => {
+            if (e) {
+                e.preventDefault?.();
+                e.stopPropagation?.();
+            }
             openSurpriseVerseModal();
-        });
-        surpriseBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            openSurpriseVerseModal();
-        }, { passive: false });
+        };
+        
+        surpriseBtn.addEventListener('click', handleSurprise);
+        surpriseBtn.addEventListener('touchend', handleSurprise, { passive: false });
+        surpriseBtn.addEventListener('pointerdown', handleSurprise);
     }
 }
 

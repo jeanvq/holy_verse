@@ -229,10 +229,73 @@ export const VerseCache = {
     }
 };
 
+// Native Share API Utility
+export const ShareUtils = {
+    // Check if Web Share API is supported
+    isSupported() {
+        return navigator.share !== undefined;
+    },
+    
+    // Share verse using native share
+    async shareVerse(verseText, verseReference) {
+        const shareData = {
+            title: 'HolyVerse - ' + verseReference,
+            text: `${verseText}\n\n— ${verseReference}`,
+            url: window.location.href
+        };
+        
+        if (this.isSupported()) {
+            try {
+                await navigator.share(shareData);
+                return { success: true, method: 'native' };
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    return { success: false, cancelled: true };
+                }
+                console.log('Native share failed, falling back to custom menu');
+                return { success: false, error: err };
+            }
+        } else {
+            // Fallback to custom share menu
+            return { success: false, method: 'custom' };
+        }
+    },
+    
+    // Copy to clipboard
+    async copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                console.error('Clipboard write failed', err);
+                return false;
+            }
+        } else {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                return true;
+            } catch (err) {
+                document.body.removeChild(textarea);
+                return false;
+            }
+        }
+    }
+};
+
 export default {
     StringUtils,
     BibleAPI,
     ConversationAnalytics,
     SuggestionEngine,
-    VerseCache
+    VerseCache,
+    ShareUtils
 };

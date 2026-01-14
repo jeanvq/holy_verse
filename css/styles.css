@@ -2088,3 +2088,125 @@ body > * {
         padding: 1rem 0.75rem;
     }
 }
+/* Mobile Enhancements CSS */
+
+/* Pull to Refresh Indicator */
+.pull-refresh-indicator {
+    position: fixed;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: var(--secondary);
+    border: 2px solid var(--highlight);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.pull-refresh-indicator .refresh-spinner {
+    font-size: 2rem;
+    color: var(--highlight);
+    animation: none;
+}
+
+.pull-refresh-indicator.ready .refresh-spinner {
+    animation: spin 1s linear infinite;
+}
+
+.pull-refresh-indicator.refreshing .refresh-spinner {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Voice Search Button */
+#voiceSearchBtn {
+    background: var(--highlight);
+    border: none;
+    color: var(--primary);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(79, 209, 197, 0.3);
+}
+
+#voiceSearchBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(79, 209, 197, 0.4);
+}
+
+#voiceSearchBtn.listening {
+    animation: pulse 1.5s ease-in-out infinite;
+    background: var(--gold);
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Install PWA Button */
+#installPWA {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--highlight), var(--violet));
+    border: none;
+    color: var(--primary);
+    padding: 0.8rem 1.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 20px rgba(79, 209, 197, 0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+#installPWA:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(79, 209, 197, 0.5);
+}
+
+#installPWA.hidden {
+    display: none;
+}
+
+/* Touch-friendly button improvements */
+@media (max-width: 768px) {
+    button, .btn, .action-btn, .mood-btn, .explore-card {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .action-btn {
+        padding: 0.9rem 1.2rem;
+        font-size: 1rem;
+    }
+    
+    .mood-btn {
+        padding: 1.2rem 0.8rem;
+    }
+    
+    .explore-card {
+        padding: 1.8rem 1.2rem;
+    }
+}

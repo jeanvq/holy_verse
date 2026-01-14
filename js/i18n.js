@@ -57,6 +57,8 @@ const i18n = {
             'footer.links.top': 'Arriba',
             'footer.links.search': 'Buscar',
             'footer.copyright': '© 2026 HolyVerse. Todos los derechos reservados.',
+            
+            'pwa.install': 'Instalar App',
         },
         en: {
             'hero.title': 'Interactive Biblical Universe',
@@ -112,6 +114,8 @@ const i18n = {
             'footer.links.top': 'Top',
             'footer.links.search': 'Search',
             'footer.copyright': '© 2026 HolyVerse. All rights reserved.',
+            
+            'pwa.install': 'Install App',
         }
     },
     

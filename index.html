@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>HolyVerse - Universo Bíblico Interactivo</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Explora historias, contextos y conexiones sagradas de la Biblia">
+    <meta name="theme-color" content="#4fd1c5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HolyVerse">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/grid.css">
     <link rel="stylesheet" href="css/bot.css">
@@ -92,6 +102,7 @@
             <!-- Search Bar -->
             <div class="search-bar">
                 <input id="searchInput" type="text" placeholder="Juan 3:16 o 'amor'" data-i18n-placeholder="search.placeholder">
+                <button id="voiceSearchBtn" class="voice-btn" title="Búsqueda por voz">🎤</button>
                 <button id="searchBtn" class="primary-btn search-btn" data-i18n="search.action">Buscar</button>
                 <button id="advancedToggle" class="ghost-btn" title="Filtros avanzados">⚙️</button>
             </div>
@@ -319,12 +330,30 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
+    <!-- PWA Install Button -->
+    <button id="installPWA" class="hidden">
+        <span>📱</span>
+        <span data-i18n="pwa.install">Instalar App</span>
+    </button>
+
+    <!-- Scripts -->obile-enhancements.js"></script>
+    <script src="js/m
     <script src="js/i18n.js"></script>
     <script src="js/api.js"></script>
     <script src="js/bot.js"></script>
     <script src="js/bot-enhancements.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/main.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/holy_verse/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed', err));
+            });
+        }
+    </script>
 </body>
 </html>

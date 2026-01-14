@@ -626,6 +626,7 @@ const botContent = document.getElementById('botContent');
 botToggle.addEventListener('click', () => {
     if (bot.togglePanel()) {
         botPanel.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent scroll on mobile
         botInput.focus();
         
         // Show greeting if first time
@@ -650,6 +651,7 @@ botToggle.addEventListener('click', () => {
 botClose.addEventListener('click', () => {
     bot.isOpen = false;
     botPanel.classList.add('hidden');
+    document.body.style.overflow = ''; // Restore scroll
 });
 
 async function sendMessage() {

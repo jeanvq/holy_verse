@@ -1480,6 +1480,25 @@ body > * {
         grid-template-columns: 1fr;
     }
 
+    /* Fix books overflow in mobile */
+    .books-list {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+
+    .book-item {
+        font-size: 0.85rem;
+        padding: 0.7rem 0.85rem;
+        word-break: break-word;
+    }
+
+    .book-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
     .search-bar {
         flex-direction: column;
     }
@@ -1777,6 +1796,16 @@ body > * {
 @media (max-width: 640px) {
     .modal-content {
         padding: 1.5rem;
+        width: 90%;
+        max-height: 90vh;
+    }
+
+    .modal-close {
+        width: 45px;
+        height: 45px;
+        font-size: 1.8rem;
+        top: 15px;
+        right: 15px;
     }
 
     .surprise-verse-modal h2 {
@@ -1794,6 +1823,8 @@ body > * {
     .surprise-verse-actions .action-btn {
         flex-direction: row;
         justify-content: center;
+        padding: 0.8rem 1rem;
+        min-height: 44px;
     }
 }
 

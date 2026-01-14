@@ -80,9 +80,15 @@ function setupHero() {
     }
 
     if (surpriseBtn) {
-        surpriseBtn.addEventListener('click', () => {
+        // Touch and click support for mobile
+        surpriseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             openSurpriseVerseModal();
         });
+        surpriseBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            openSurpriseVerseModal();
+        }, { passive: false });
     }
 }
 

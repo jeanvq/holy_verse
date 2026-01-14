@@ -13,6 +13,31 @@ async function initializeApp() {
     setupSearch();
     setupFavoritesUI();
     setupMap();
+    
+    // Check available bibles
+    checkAvailableBibles();
+}
+
+async function checkAvailableBibles() {
+    const bibles = await API.getAvailableBibles();
+    const spanishBibles = bibles.filter(b => 
+        b.language?.id === 'spa' || 
+        b.language?.name?.toLowerCase().includes('spanish') ||
+        b.name?.toLowerCase().includes('spanish') ||
+        b.name?.toLowerCase().includes('español')
+    );
+    
+    console.log('=== BIBLIAS EN ESPAÑOL DISPONIBLES ===');
+    if (spanishBibles.length > 0) {
+        spanishBibles.forEach(b => {
+            console.log(`ID: ${b.id}`);
+            console.log(`Nombre: ${b.name}`);
+            console.log(`---`);
+        });
+    } else {
+        console.log('No se encontraron Biblias en español. Necesitas agregar una desde https://scripture.api.bible/admin');
+    }
+    console.log('=======================================');
 }
 
 // Theme Toggle

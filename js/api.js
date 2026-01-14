@@ -10,9 +10,9 @@ const API = {
     // Bible API (https://api.scripture.api.bible)
     BIBLE_API_URL: 'https://rest.api.bible/v1/bibles',
     BIBLE_API_KEY: 'Z2cS3kURbkESQWaeO5Lr-',
-    EN_BIBLE_ID: 'bba9f40183526463-01', // Berean Standard Bible (available in your plan)
-    ES_BIBLE_ID: '592420522e16049f-01', // RVR09 - needs to be added to your plan
-    USE_FALLBACK_FOR_ES: true, // Use local data for Spanish until you add Spanish bible to your plan 
+    EN_BIBLE_ID: 'bba9f40183526463-01', // Berean Standard Bible
+    ES_BIBLE_ID: '826f63861180e056-01', // Spanish Bible from your plan
+    USE_FALLBACK_FOR_ES: false, // Now using API for Spanish 
     
     // Function to get available bibles for this API key
     async getAvailableBibles() {
@@ -386,10 +386,9 @@ const API = {
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
                 console.error('API Error:', errorData);
-                throw new Error(`API search error: ${res.status} - ${JSON.stringify(errorData)}`);
+                throw new Error(`API search error: ${res.status}`);
             }
             const data = await res.json();
-            console.log('API Data:', data);
             const verses = data?.data?.verses || [];
             const total = data?.data?.total || verses.length;
             const results = [];

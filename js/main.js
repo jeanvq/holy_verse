@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initializeApp() {
     setupThemeToggle();
     setupLanguageSwitcher();
+    await setupVerseOfTheDay();
     setupHero();
-    setupVerseOfTheDay();
     setupMoodSelector();
     setupExplorationCards();
     setupSearch();
@@ -81,10 +81,104 @@ function setupHero() {
 
     if (surpriseBtn) {
         surpriseBtn.addEventListener('click', () => {
-            const refreshBtn = document.getElementById('refreshVerse');
-            if (refreshBtn) refreshBtn.click();
+            openSurpriseVerseModal();
         });
     }
+}
+
+// Surprise Verse Modal
+function openSurpriseVerseModal() {
+    const modal = document.getElementById('surpriseVerseModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeBtn = document.getElementById('closeModal');
+    const modalContent = document.querySelector('.modal-content');
+    
+    // Get a random verse
+    const randomIndex = Math.floor(Math.random() * API.fallbackVerses.length);
+    const verse = API.fallbackVerses[randomIndex];
+    const currentLang = i18n.currentLang;
+    
+    // Display verse
+    document.getElementById('surpriseVerseText').textContent = verse[currentLang].text;
+    document.getElementById('surpriseVerseReference').textContent = verse[currentLang].reference;
+    
+    // Store current verse for actions
+    modalContent.dataset.verse = JSON.stringify(verse[currentLang]);
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    
+    // Close modal handlers
+    const closeModal = () => {
+        modal.classList.add('hidden');
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', closeModal);
+    
+    // Favorite button
+    const favBtn = document.getElementById('surpriseFavorite');
+    favBtn.onclick = (e) => {
+        e.stopPropagation();
+        const verse = JSON.parse(modalContent.dataset.verse);
+        const saved = toggleFavorite(verse);
+        syncFavoriteButton(favBtn, verse);
+        renderFavorites();
+        showNotification(saved ? (currentLang === 'es' ? 'Guardado ♡' : 'Saved ♡') : (currentLang === 'es' ? 'Eliminado' : 'Removed'));
+    };
+    
+    // Share button
+    const shareBtn = document.getElementById('surpriseShare');
+    const shareMenu = document.getElementById('surpriseShareMenu');
+    shareBtn.onclick = (e) => {
+        e.stopPropagation();
+        shareMenu.classList.toggle('hidden');
+    };
+    
+    // Share options
+    const getVerseText = () => {
+        const v = JSON.parse(modalContent.dataset.verse);
+        return `${v.text}\n\n— ${v.reference}`;
+    };
+    
+    document.getElementById('surpriseShareTwitter').onclick = (e) => {
+        e.stopPropagation();
+        const text = getVerseText();
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.origin + window.location.pathname)}`;
+        window.open(url, '_blank', 'width=600,height=400');
+        shareMenu.classList.add('hidden');
+    };
+    
+    document.getElementById('surpriseShareWhatsApp').onclick = (e) => {
+        e.stopPropagation();
+        const text = getVerseText();
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+        shareMenu.classList.add('hidden');
+    };
+    
+    document.getElementById('surpriseShareFacebook').onclick = (e) => {
+        e.stopPropagation();
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin + window.location.pathname)}`;
+        window.open(url, '_blank', 'width=600,height=400');
+        shareMenu.classList.add('hidden');
+    };
+    
+    document.getElementById('surpriseShareCopy').onclick = (e) => {
+        e.stopPropagation();
+        const text = getVerseText();
+        navigator.clipboard.writeText(text).then(() => {
+            showNotification(currentLang === 'es' ? 'Copiado al portapapeles' : 'Copied to clipboard');
+            shareMenu.classList.add('hidden');
+        });
+    };
+    
+    // New verse button
+    const newVerseBtn = document.getElementById('newSurpriseVerse');
+    newVerseBtn.onclick = (e) => {
+        e.stopPropagation();
+        openSurpriseVerseModal();
+    };
 }
 
 function updateHeroStats(targetEl) {

@@ -85,7 +85,7 @@ body > * {
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 100;
     box-shadow: var(--shadow);
 }
 
@@ -640,19 +640,26 @@ body > * {
 }
 
 .back-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
+    background: var(--highlight);
+    border: 2px solid var(--highlight);
+    color: var(--primary);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
     cursor: pointer;
     margin-bottom: 1.5rem;
     transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .back-btn:hover {
-    border-color: var(--highlight);
-    color: var(--highlight);
+    border-color: var(--gold);
+    background: var(--gold);
+    color: var(--primary);
+    transform: translateX(-5px);
 }
 
 /* Books Section */
@@ -1553,3 +1560,240 @@ body > * {
         align-items: flex-start;
     }
 }
+
+/* Surprise Verse Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+}
+
+.modal-content {
+    position: relative;
+    z-index: 10000;
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    padding-top: 2.5rem;
+    max-width: 500px;
+    width: 85%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.4s ease-out;
+    margin: 0 auto;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--highlight);
+    border: 3px solid var(--secondary);
+    color: var(--primary);
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 10001;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close:hover {
+    color: var(--secondary);
+    background: var(--gold);
+    transform: scale(1.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.surprise-verse-modal h2 {
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.surprise-verse-container {
+    animation: fadeIn 0.5s ease;
+}
+
+.surprise-verse-body {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent) 100%);
+    border-left: 4px solid var(--highlight);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.surprise-verse-body::before {
+    content: '"';
+    position: absolute;
+    top: -20px;
+    left: 10px;
+    font-size: 120px;
+    color: var(--highlight);
+    opacity: 0.1;
+}
+
+.surprise-verse-text {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.surprise-verse-reference {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    text-align: right;
+    font-style: italic;
+    font-weight: 600;
+}
+
+.surprise-verse-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.surprise-verse-actions .action-btn {
+    flex: 1;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-primary);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.surprise-verse-actions .action-btn .icon {
+    font-size: 1.5rem;
+}
+
+.surprise-verse-actions .action-btn:hover {
+    background: var(--accent);
+    border-color: var(--highlight);
+    color: var(--highlight);
+    transform: translateY(-2px);
+}
+
+.surprise-verse-actions .favorite-btn:hover {
+    border-color: var(--error);
+    color: var(--error);
+}
+
+.surprise-verse-actions .share-btn:hover {
+    border-color: var(--highlight);
+}
+
+/* Share Menu */
+.share-menu {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    background: var(--accent);
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.share-menu.hidden {
+    display: none;
+}
+
+.share-option {
+    flex: 1;
+    padding: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.share-option:hover {
+    background: linear-gradient(135deg, var(--highlight), var(--violet));
+    border-color: var(--highlight);
+    color: var(--primary);
+    transform: scale(1.05);
+}
+
+#newSurpriseVerse {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+#newSurpriseVerse:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(79, 209, 197, 0.3);
+}
+
+@media (max-width: 640px) {
+    .modal-content {
+        padding: 1.5rem;
+    }
+
+    .surprise-verse-modal h2 {
+        font-size: 1.4rem;
+    }
+
+    .surprise-verse-text {
+        font-size: 1.1rem;
+    }
+
+    .surprise-verse-actions {
+        flex-direction: column;
+    }
+
+    .surprise-verse-actions .action-btn {
+        flex-direction: row;
+        justify-content: center;
+    }
+}
+

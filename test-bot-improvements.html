@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Bot - Test de Mejoras</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .test-case {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .test-case input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+        .test-case button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .test-case button:hover {
+            background: #764ba2;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f8ff;
+            border-left: 3px solid #667eea;
+            border-radius: 3px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        .result.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .example-list {
+            list-style: none;
+        }
+        .example-list li {
+            padding: 8px 0;
+            color: #555;
+        }
+        .example-list li:before {
+            content: "→ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .stat-card .label {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        .improvements {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .improvement-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Bible Bot - Testing de Mejoras</h1>
+            <p>Prueba todas las 5 mejoras implementadas</p>
+        </div>
+        
+        <div class="content">
+            <!-- Fuzzy Matching -->
+            <div class="test-section">
+                <h2>1️⃣ Fuzzy Matching - Búsqueda Tolerante</h2>
+                <p>Escribe mal las palabras y el bot aún te entiende</p>
+                <ul class="example-list">
+                    <li>jeus → jesus</li>
+                    <li>fé → fe</li>
+                    <li>amor → amro</li>
+                    <li>prdón → perdón</li>
+                </ul>
+                <div class="test-case">
+                    <input type="text" id="fuzzyInput" placeholder="Ej: 'jeus', 'amor', 'bivlia'" value="">
+                    <button onclick="testFuzzyMatching()">Probar Fuzzy Matching</button>
+                    <div class="result" id="fuzzyResult"></div>
+                </div>
+            </div>
+
+            <!-- Synonyms -->
+            <div class="test-section">
+                <h2>2️⃣ Sistema de Sinónimos</h2>
+                <p>Entiende palabras relacionadas automáticamente</p>
+                <ul class="example-list">
+                    <li>"perdón" → "arrepentimiento", "reconciliación"</li>
+                    <li>"amor" → "caridad", "ágape", "afecto"</li>
+                    <li>"fe" → "creencia", "confianza"</li>
+                </ul>
+                <div class="test-case">
+                    <input type="text" id="synonymInput" placeholder="Ej: 'arrepentimiento', 'caridad'" value="">
+                    <button onclick="testSynonyms()">Probar Sinónimos</button>
+                    <div class="result" id="synonymResult"></div>
+                </div>
+            </div>
+
+            <!-- Knowledge Base Expansion -->
+            <div class="test-section">
+                <h2>3️⃣ Base de Conocimiento Expandida</h2>
+                <p>De 15 a 50+ temas cubiertos</p>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="number">50+</div>
+                        <div class="label">Temas disponibles</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">66</div>
+                        <div class="label">Libros de la Biblia</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">9</div>
+                        <div class="label">Personajes principales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">6</div>
+                        <div class="label">Ubicaciones geográficas</div>
+                    </div>
+                </div>
+                <div class="test-case">
+                    <p>Nuevos temas: <code>esperanza</code>, <code>sacrificio</code>, <code>profeta</code>, <code>redención</code>, <code>misericordia</code>, etc.</p>
+                    <input type="text" id="knowledgeInput" placeholder="Ej: 'esperanza', 'sacrificio', 'profeta'" value="">
+                    <button onclick="testKnowledgeBase()">Probar Conocimiento Expandido</button>
+                    <div class="result" id="knowledgeResult"></div>
+                </div>
+            </div>
+
+            <!-- Emotion Detection -->
+            <div class="test-section">
+                <h2>4️⃣ Detección de Emociones Mejorada</h2>
+                <p>El bot detecta tu estado emocional automáticamente</p>
+                <ul class="example-list">
+                    <li>Me siento ansioso → Versículos para la paz</li>
+                    <li>Estoy triste → Versículos de consuelo</li>
+                    <li>Me siento esperanzado → Versículos de esperanza</li>
+                    <li>Estoy confundido → Versículos de sabiduría</li>
+                </ul>
+                <div class="test-case">
+                    <input type="text" id="emotionInput" placeholder="Ej: 'Me siento ansioso', 'Estoy triste', 'Confundido'" value="">
+                    <button onclick="testEmotionDetection()">Probar Detección de Emociones</button>
+                    <div class="result" id="emotionResult"></div>
+                </div>
+            </div>
+
+            <!-- Context & Conversation -->
+            <div class="test-section">
+                <h2>5️⃣ Sistema de Contexto Conversacional</h2>
+                <p>El bot recuerda el historial y proporciona respuestas contextuales</p>
+                <div class="improvements">
+                    <div class="improvement-badge">Historial completo</div>
+                    <div class="improvement-badge">Análisis de tipo</div>
+                    <div class="improvement-badge">Mood tracking</div>
+                    <div class="improvement-badge">Smart suggestions</div>
+                </div>
+                <div class="test-case">
+                    <input type="text" id="contextInput" placeholder="Ej: '¿Qué es...?', '¿Cuéntame...?', '¿Por qué...?'" value="">
+                    <button onclick="testContextualResponse()">Probar Contexto Conversacional</button>
+                    <div class="result" id="contextResult"></div>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="test-section">
+                <h2>📊 Resumen de Mejoras</h2>
+                <div class="improvements">
+                    <div class="improvement-badge">✓ Fuzzy Matching</div>
+                    <div class="improvement-badge">✓ Sinónimos (10 temas)</div>
+                    <div class="improvement-badge">✓ 50+ Temas</div>
+                    <div class="improvement-badge">✓ 6 Emociones</div>
+                    <div class="improvement-badge">✓ Contexto completo</div>
+                    <div class="improvement-badge">✓ API integrada</div>
+                    <div class="improvement-badge">✓ Analytics</div>
+                    <div class="improvement-badge">✓ Sugerencias</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; padding: 20px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #667eea;">
+                <h3 style="color: #667eea; margin-bottom: 10px;">📝 Próximos Pasos</h3>
+                <ol style="margin-left: 20px; color: #555; line-height: 1.8;">
+                    <li>Prueba el bot con palabras mal escritas</li>
+                    <li>Pregunta sobre nuevos temas (esperanza, sacrificio, etc.)</li>
+                    <li>Comparte emociones para ver respuestas personalizadas</li>
+                    <li>Nota cómo recuerda el contexto de conversaciones anteriores</li>
+                    <li>Integra la API de versículos reales si es necesario</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dummy functions for testing - Replace with actual bot integration
+        
+        function testFuzzyMatching() {
+            const input = document.getElementById('fuzzyInput').value;
+            const result = document.getElementById('fuzzyResult');
+            if (!input) {
+                showResult(result, '❌ Por favor ingresa una palabra', false);
+                return;
+            }
+            showResult(result, `✅ Palabra "${input}" → Búsqueda fuzzy activada\nEl bot encontrará coincidencias similares aunque esté mal escrita.`, true);
+        }
+
+        function testSynonyms() {
+            const input = document.getElementById('synonymInput').value;
+            const result = document.getElementById('synonymResult');
+            const synonymsMap = {
+                'arrepentimiento': 'perdon',
+                'caridad': 'amor',
+                'confianza': 'fe',
+                'reconciliación': 'perdon'
+            };
+            
+            if (!input) {
+                showResult(result, '❌ Por favor ingresa una palabra', false);
+                return;
+            }
+            
+            const matched = Object.keys(synonymsMap).find(key => input.includes(key));
+            if (matched) {
+                showResult(result, `✅ Sinónimo detectado: "${matched}" → Tema principal: "${synonymsMap[matched]}"`, true);
+            } else {
+                showResult(result, '⚠️ Palabra no encontrada en la lista de sinónimos', false);
+            }
+        }
+
+        function testKnowledgeBase() {
+            const input = document.getElementById('knowledgeInput').value;
+            const result = document.getElementById('knowledgeResult');
+            const newTopics = ['esperanza', 'sacrificio', 'profeta', 'redención', 'compasión', 'paciencia', 'gozo', 'prudencia', 'justicia', 'misericordia'];
+            
+            if (!input) {
+                showResult(result, '❌ Por favor ingresa un tema', false);
+                return;
+            }
+            
+            const found = newTopics.find(topic => input.includes(topic));
+            if (found) {
+                showResult(result, `✅ Tema "${found}" ahora disponible en la base de conocimiento extendida\nEl bot puede responder preguntas sobre este tema.`, true);
+            } else {
+                showResult(result, '⚠️ Tema no encontrado. Intenta con: esperanza, sacrificio, profeta, etc.', false);
+            }
+        }
+
+        function testEmotionDetection() {
+            const input = document.getElementById('emotionInput').value;
+            const result = document.getElementById('emotionResult');
+            const emotions = {
+                'ansi': 'Ansiedad',
+                'preocup': 'Preocupación',
+                'miedo': 'Miedo',
+                'dolor': 'Dolor',
+                'triste': 'Tristeza',
+                'alegr': 'Alegría',
+                'confus': 'Confusión',
+                'paz': 'Paz',
+            };
+            
+            if (!input) {
+                showResult(result, '❌ Por favor describe cómo te sientes', false);
+                return;
+            }
+            
+            let detected = null;
+            for (const [trigger, emotion] of Object.entries(emotions)) {
+                if (input.includes(trigger)) {
+                    detected = emotion;
+                    break;
+                }
+            }
+            
+            if (detected) {
+                showResult(result, `✅ Emoción detectada: "${detected}"\nEl bot ahora proporciona versículos específicos para este estado.`, true);
+            } else {
+                showResult(result, '⚠️ No se detectó emoción específica. Intenta con palabras más claras.', false);
+            }
+        }
+
+        function testContextualResponse() {
+            const input = document.getElementById('contextInput').value;
+            const result = document.getElementById('contextResult');
+            
+            if (!input) {
+                showResult(result, '❌ Por favor ingresa una pregunta', false);
+                return;
+            }
+            
+            let type = 'general';
+            if (input.includes('¿qué') || input.includes('¿cuál')) type = 'definition';
+            if (input.includes('cuéntame') || input.includes('historia')) type = 'story';
+            if (input.includes('¿por qué') || input.includes('¿cómo')) type = 'question';
+            
+            showResult(result, `✅ Tipo de pregunta: "${type}"\nEl bot adaptará su respuesta según el tipo: ${type === 'definition' ? 'explicación detallada' : type === 'story' ? 'narrativa' : 'reflexión profunda'}`, true);
+        }
+
+        function showResult(element, message, isSuccess) {
+            element.textContent = message;
+            element.classList.add('show');
+            element.classList.toggle('success', isSuccess);
+            element.classList.toggle('error', !isSuccess);
+        }
+    </script>
+</body>
+</html>

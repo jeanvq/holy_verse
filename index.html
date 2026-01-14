@@ -45,6 +45,40 @@
             </div>
         </section>
 
+        <!-- Surprise Verse Modal -->
+        <div id="surpriseVerseModal" class="modal hidden">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <div class="modal-overlay" id="modalOverlay"></div>
+            <div class="modal-content surprise-verse-modal">
+                <div class="surprise-verse-container">
+                    <h2>✨ Verso para Ti</h2>
+                    <div class="surprise-verse-body">
+                        <p id="surpriseVerseText" class="surprise-verse-text"></p>
+                        <p id="surpriseVerseReference" class="surprise-verse-reference"></p>
+                    </div>
+                    <div class="surprise-verse-actions">
+                        <button id="surpriseFavorite" class="action-btn favorite-btn" title="Guardar versículo">
+                            <span class="icon">♡</span>
+                            <span class="label">Guardar</span>
+                        </button>
+                        <button id="surpriseShare" class="action-btn share-btn" title="Compartir versículo">
+                            <span class="icon">↗</span>
+                            <span class="label">Compartir</span>
+                        </button>
+                    </div>
+                    <div id="surpriseShareMenu" class="share-menu hidden">
+                        <button id="surpriseShareTwitter" class="share-option" title="Compartir en Twitter">𝕏</button>
+                        <button id="surpriseShareWhatsApp" class="share-option" title="Compartir en WhatsApp">💬</button>
+                        <button id="surpriseShareFacebook" class="share-option" title="Compartir en Facebook">f</button>
+                        <button id="surpriseShareCopy" class="share-option" title="Copiar al portapapeles">📋</button>
+                    </div>
+                    <button id="newSurpriseVerse" class="primary-btn" style="width: 100%; margin-top: 20px;">
+                        <span>↻ Otro verso</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Global Search -->
         <section class="search-section">
             <div class="search-header">
@@ -241,6 +275,7 @@
     <script src="js/i18n.js"></script>
     <script src="js/api.js"></script>
     <script src="js/bot.js"></script>
+    <script src="js/bot-enhancements.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/main.js"></script>
 </body>

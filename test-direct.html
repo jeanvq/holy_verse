@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Directo</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: #fff; max-width: 900px; margin: 0 auto; }
+        h1 { color: #4fd1c5; }
+        button { padding: 10px 20px; margin: 10px 5px; background: #4fd1c5; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #3fb3a2; }
+        #result { background: #2a2a2a; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #3a3a3a; }
+        .verse { background: #1a1a1a; padding: 15px; margin: 10px 0; border-left: 3px solid #4fd1c5; border-radius: 4px; }
+        .error { color: #f87171; }
+        .success { color: #6ee7b7; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Directo de la API</h1>
+    <button onclick="testSearch()">Test Búsqueda ES</button>
+    <button onclick="testSearchEN()">Test Búsqueda EN</button>
+    <button onclick="testVerse()">Test Versículo</button>
+    <button onclick="testAPIConnection()">Test Conexión API</button>
+    <div id="result"></div>
+
+    <script>
+        const API_URL = 'https://rest.api.bible/v1/bibles';
+        const API_KEY = 'Z2cS3kURbkESQWaeO5Lr-';
+        const ES_BIBLE_ID = '826f63861180e056-01';
+        const EN_BIBLE_ID = 'bba9f40183526463-01';
+
+        // Datos locales de fallback
+        const fallbackVerses = [
+            {
+                es: {
+                    text: 'Porque Dios amó tanto al mundo que dio a su único Hijo, para que todo el que crea en él no se pierda, sino que tenga vida eterna.',
+                    reference: 'Juan 3:16',
+                    book: 'Juan',
+                    chapter: 3,
+                    verse: 16
+                },
+                en: {
+                    text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.',
+                    reference: 'John 3:16',
+                    book: 'John',
+                    chapter: 3,
+                    verse: 16
+                }
+            },
+            {
+                es: {
+                    text: 'En el principio era el Verbo, y el Verbo estaba con Dios, y el Verbo era Dios.',
+                    reference: 'Juan 1:1',
+                    book: 'Juan',
+                    chapter: 1,
+                    verse: 1
+                },
+                en: {
+                    text: 'In the beginning was the Word, and the Word was with God, and the Word was God.',
+                    reference: 'John 1:1',
+                    book: 'John',
+                    chapter: 1,
+                    verse: 1
+                }
+            }
+        ];
+
+        async function testAPIConnection() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Probando conexión a la API...</p>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    headers: { 'api-key': API_KEY }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.data?.length || 0;
+                    result.innerHTML = `<p class="success">✅ API conectada correctamente</p><p>Biblias disponibles: ${count}</p>`;
+                } else {
+                    result.innerHTML = `<p class="error">❌ Error ${response.status}: ${response.statusText}</p>`;
+                }
+            } catch (err) {
+                result.innerHTML = `<p class="error">❌ Error de conexión: ${err.message}</p>`;
+            }
+        }
+
+        async function testSearch() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>🔍 Buscando "amor" en español...</p>';
+            
+            try {
+                const searchUrl = `${API_URL}/${ES_BIBLE_ID}/search?query=amor&limit=3`;
+                console.log('Searching:', searchUrl);
+                
+                const response = await fetch(searchUrl, {
+                    headers: { 'api-key': API_KEY }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Search data:', data);
+                
+                const verses = data.data?.verses || [];
+                
+                if (verses.length === 0) {
+                    result.innerHTML = '<p>⚠️ Sin resultados en API, usando fallback...</p>';
+                    displayFallback('es');
+                    return;
+                }
+                
+                result.innerHTML = `<h3>✅ Encontrados: ${verses.length}</h3>`;
+                verses.forEach(v => {
+                    result.innerHTML += `<div class="verse"><strong>${v.reference}</strong></div>`;
+                });
+            } catch (err) {
+                console.error('Error:', err);
+                result.innerHTML = `<p class="error">❌ Error: ${err.message}</p><p>Usando fallback local...</p>`;
+                displayFallback('es');
+            }
+        }
+
+        async function testSearchEN() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>🔍 Buscando "love" en inglés...</p>';
+            
+            try {
+                const searchUrl = `${API_URL}/${EN_BIBLE_ID}/search?query=love&limit=3`;
+                console.log('Searching:', searchUrl);
+                
+                const response = await fetch(searchUrl, {
+                    headers: { 'api-key': API_KEY }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Search data:', data);
+                
+                const verses = data.data?.verses || [];
+                
+                if (verses.length === 0) {
+                    result.innerHTML = '<p>⚠️ Sin resultados en API, usando fallback...</p>';
+                    displayFallback('en');
+                    return;
+                }
+                
+                result.innerHTML = `<h3>✅ Encontrados: ${verses.length}</h3>`;
+                verses.forEach(v => {
+                    result.innerHTML += `<div class="verse"><strong>${v.reference}</strong></div>`;
+                });
+            } catch (err) {
+                console.error('Error:', err);
+                result.innerHTML = `<p class="error">❌ Error: ${err.message}</p><p>Usando fallback local...</p>`;
+                displayFallback('en');
+            }
+        }
+
+        function testVerse() {
+            const result = document.getElementById('result');
+            const randomVerse = fallbackVerses[Math.floor(Math.random() * fallbackVerses.length)];
+            
+            result.innerHTML = `
+                <h3>✅ Versículo del Día (fallback)</h3>
+                <div class="verse">
+                    <strong>${randomVerse.es.reference}</strong>
+                    <p>${randomVerse.es.text}</p>
+                </div>
+            `;
+        }
+
+        function displayFallback(lang) {
+            const result = document.getElementById('result');
+            result.innerHTML += '<h3>📚 Datos Locales:</h3>';
+            
+            fallbackVerses.forEach(v => {
+                const verse = v[lang] || v.es;
+                result.innerHTML += `
+                    <div class="verse">
+                        <strong>${verse.reference}</strong>
+                        <p>${verse.text}</p>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

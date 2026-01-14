@@ -19,25 +19,23 @@ async function initializeApp() {
 }
 
 async function checkAvailableBibles() {
-    const bibles = await API.getAvailableBibles();
-    const spanishBibles = bibles.filter(b => 
-        b.language?.id === 'spa' || 
-        b.language?.name?.toLowerCase().includes('spanish') ||
-        b.name?.toLowerCase().includes('spanish') ||
-        b.name?.toLowerCase().includes('español')
-    );
-    
-    console.log('=== BIBLIAS EN ESPAÑOL DISPONIBLES ===');
-    if (spanishBibles.length > 0) {
-        spanishBibles.forEach(b => {
-            console.log(`ID: ${b.id}`);
-            console.log(`Nombre: ${b.name}`);
-            console.log(`---`);
-        });
-    } else {
-        console.log('No se encontraron Biblias en español. Necesitas agregar una desde https://scripture.api.bible/admin');
+    try {
+        const bibles = await API.getAvailableBibles();
+        const spanishBibles = bibles.filter(b => 
+            b.language?.id === 'spa' || 
+            b.language?.name?.toLowerCase().includes('spanish') ||
+            b.name?.toLowerCase().includes('spanish') ||
+            b.name?.toLowerCase().includes('español')
+        );
+        
+        if (spanishBibles.length > 0) {
+            console.log('✅ Biblias en español disponibles:', spanishBibles.length);
+        } else {
+            console.warn('⚠️ No se encontraron Biblias en español');
+        }
+    } catch (err) {
+        console.warn('No se pudieron verificar las Biblias disponibles:', err);
     }
-    console.log('=======================================');
 }
 
 // Theme Toggle
@@ -760,13 +758,21 @@ function setupSearch() {
     const nextPageBtn = document.getElementById('nextPage');
     const pageInfo = document.getElementById('pageInfo');
     
-    if (!input || !button || !results) return;
+    if (!input || !button || !results) {
+        console.warn('Search elements not found');
+        return;
+    }
 
     let currentPage = 1;
     let currentTotal = 0;
     let currentLimit = 20;
 
-    updateSearchStatus(statusEl);
+    try {
+        updateSearchStatus(statusEl);
+    } catch (err) {
+        console.warn('Error updating search status:', err);
+    }
+    
     loadSearchHistory(historyList, historyContainer, input);
     populateBookFilter();
 
@@ -813,20 +819,25 @@ function setupSearch() {
         results.innerHTML = `<div class="spinner" aria-label="${i18n.currentLang === 'es' ? 'Buscando' : 'Searching'}"></div>`;
         pagination.classList.add('hidden');
         
-        const response = await API.searchVerses(term, i18n.currentLang, {
-            limit,
-            offset,
-            testament,
-            bookId,
-            compareTranslations
-        });
-        
-        const verses = response.results || response;
-        currentTotal = response.total || verses.length;
-        currentPage = page;
-        
-        renderSearchResults(results, verses, compareTranslations);
-        updatePagination(page, limit, currentTotal, response.hasMore);
+        try {
+            const response = await API.searchVerses(term, i18n.currentLang, {
+                limit,
+                offset,
+                testament,
+                bookId,
+                compareTranslations
+            });
+            
+            const verses = response.results || response;
+            currentTotal = response.total || verses.length;
+            currentPage = page;
+            
+            renderSearchResults(results, verses, compareTranslations);
+            updatePagination(page, limit, currentTotal, response.hasMore);
+        } catch (err) {
+            console.error('Search error:', err);
+            results.innerHTML = `<p class="empty-state error">Error: ${err.message}</p>`;
+        }
     }
 
     function updatePagination(page, limit, total, hasMore) {

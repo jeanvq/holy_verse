@@ -329,7 +329,8 @@ const API = {
     },
 
     async searchVerses(term, lang = 'en', options = {}) {
-        const q = term.{ results: [], total: 0, hasMore: false };
+        const q = term.trim();
+        if (!q) return { results: [], total: 0, hasMore: false };
 
         const {
             limit = 20,

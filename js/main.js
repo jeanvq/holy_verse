@@ -1,4 +1,27 @@
 // Main Application Logic
+
+// Cache manager for verses
+const verseCache = {
+    getDaily() {
+        const cached = localStorage.getItem('holyverse-daily-verse');
+        const cachedDate = localStorage.getItem('holyverse-daily-verse-date');
+        const today = new Date().toDateString();
+        
+        if (cached && cachedDate === today) {
+            return JSON.parse(cached);
+        }
+        return null;
+    },
+    setDaily(verse) {
+        localStorage.setItem('holyverse-daily-verse', JSON.stringify(verse));
+        localStorage.setItem('holyverse-daily-verse-date', new Date().toDateString());
+    },
+    clearCache() {
+        localStorage.removeItem('holyverse-daily-verse');
+        localStorage.removeItem('holyverse-daily-verse-date');
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     initializeApp();
 });

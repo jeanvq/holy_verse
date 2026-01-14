@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Final Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .pass { border-left: 4px solid green; }
+        .fail { border-left: 4px solid red; }
+        .pending { border-left: 4px solid orange; }
+        h1 { color: #333; }
+        pre { background: #f9f9f9; padding: 10px; overflow-x: auto; border-radius: 3px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>HolyVerse API - Final Verification Test</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="runTests()">Run All Tests</button>
+    <button onclick="testSearch()">Test Search Only</button>
+    <button onclick="location.reload()">Reload</button>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(title, status, content) {
+            const className = status === 'pass' ? 'pass' : status === 'fail' ? 'fail' : 'pending';
+            const div = document.createElement('div');
+            div.className = `test ${className}`;
+            div.innerHTML = `
+                <strong>${title}</strong> [${status.toUpperCase()}]
+                ${content ? `<pre>${content}</pre>` : ''}
+            `;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function runTests() {
+            resultsDiv.innerHTML = '';
+            
+            // Test 1: API object exists
+            if (typeof API !== 'undefined') {
+                log('API Object Loaded', 'pass', 'API object is defined');
+            } else {
+                log('API Object Loaded', 'fail', 'API object is NOT defined');
+                return;
+            }
+            
+            // Test 2: Fallback data exists
+            if (API.fallbackVerses && API.fallbackVerses.length > 0) {
+                log('Fallback Data', 'pass', `${API.fallbackVerses.length} verses in fallback`);
+            } else {
+                log('Fallback Data', 'fail', 'No fallback verses found');
+            }
+            
+            // Test 3: Random verse
+            try {
+                const verse = await API.getRandomVerse();
+                log('Random Verse', 'pass', JSON.stringify(verse, null, 2));
+            } catch (err) {
+                log('Random Verse', 'fail', err.message);
+            }
+            
+            // Test 4: Search in Spanish
+            try {
+                const results = await API.searchVerses('amor', 'es', { limit: 5 });
+                log('Search Spanish (amor)', 'pass', `Found ${results.total} results, ${results.results.length} shown`);
+            } catch (err) {
+                log('Search Spanish', 'fail', err.message);
+            }
+            
+            // Test 5: Search in English
+            try {
+                const results = await API.searchVerses('love', 'en', { limit: 5 });
+                log('Search English (love)', 'pass', `Found ${results.total} results, ${results.results.length} shown`);
+            } catch (err) {
+                log('Search English', 'fail', err.message);
+            }
+            
+            // Test 6: Verses by mood
+            try {
+                const verse = await API.getVersesByMood('hopeful');
+                log('Verses by Mood', 'pass', JSON.stringify(verse, null, 2));
+            } catch (err) {
+                log('Verses by Mood', 'fail', err.message);
+            }
+            
+            // Test 7: i18n
+            if (typeof i18n !== 'undefined') {
+                log('i18n Available', 'pass', `Current language: ${i18n.currentLang}`);
+            } else {
+                log('i18n Available', 'fail', 'i18n not defined');
+            }
+        }
+        
+        async function testSearch() {
+            resultsDiv.innerHTML = '';
+            const term = prompt('Enter search term:', 'amor');
+            if (!term) return;
+            
+            const lang = prompt('Language (es/en):', 'es');
+            
+            try {
+                resultsDiv.innerHTML = '<p>Searching...</p>';
+                const results = await API.searchVerses(term, lang, { limit: 20 });
+                let html = `<div class="test pass"><strong>Search Results for "${term}"</strong><pre>`;
+                html += `Total found: ${results.total}\n`;
+                html += `Results shown: ${results.results.length}\n\n`;
+                results.results.forEach((v, i) => {
+                    html += `${i+1}. ${v.reference}\n${v.text.substring(0, 100)}...\n\n`;
+                });
+                html += `</pre></div>`;
+                resultsDiv.innerHTML = html;
+            } catch (err) {
+                log('Search Error', 'fail', err.message);
+            }
+        }
+        
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            log('Page Loaded', 'pass', 'Ready for testing');
+        });
+    </script>
+</body>
+</html>

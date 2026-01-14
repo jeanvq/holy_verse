@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Rápido</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: #fff; }
+        button { padding: 10px 20px; margin: 10px; background: #4fd1c5; border: none; border-radius: 5px; cursor: pointer; }
+        #result { background: #2a2a2a; padding: 20px; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Rápido API</h1>
+    <button onclick="testSearch()">Test Búsqueda</button>
+    <button onclick="testVerse()">Test Versículo del Día</button>
+    <div id="result"></div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Initialize i18n if needed
+        if (typeof i18n === 'undefined') {
+            const i18n = {
+                currentLang: 'es',
+                translations: {}
+            };
+        }
+        
+        async function testSearch() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Buscando "amor"...</p>';
+            
+            try {
+                const response = await API.searchVerses('amor', 'es', { limit: 5 });
+                console.log('Search response:', response);
+                result.innerHTML = '<h3>Resultados:</h3>';
+                if (response.results && response.results.length > 0) {
+                    response.results.forEach(v => {
+                        result.innerHTML += `<p><strong>${v.reference}</strong>: ${v.text}</p>`;
+                    });
+                } else {
+                    result.innerHTML += '<p>❌ No hay resultados</p>';
+                }
+            } catch (err) {
+                result.innerHTML = `<p>❌ Error: ${err.message}</p>`;
+                console.error(err);
+            }
+        }
+
+        async function testVerse() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Obteniendo versículo...</p>';
+            
+            try {
+                const verse = await API.getRandomVerse();
+                console.log('Random verse:', verse);
+                result.innerHTML = `
+                    <h3>Versículo del Día:</h3>
+                    <p><strong>${verse.reference}</strong></p>
+                    <p>${verse.text}</p>
+                `;
+            } catch (err) {
+                result.innerHTML = `<p>❌ Error: ${err.message}</p>`;
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -11,8 +11,7 @@ const API = {
     BIBLE_API_URL: 'https://rest.api.bible/v1/bibles',
     BIBLE_API_KEY: 'Z2cS3kURbkESQWaeO5Lr-',
     EN_BIBLE_ID: 'bba9f40183526463-01', // Berean Standard Bible
-    ES_BIBLE_ID: '826f63861180e056-01', // Spanish Bible from your plan
-    USE_FALLBACK_FOR_ES: false, // Now using API for Spanish 
+    ES_BIBLE_ID: '826f63861180e056-01', // Spanish Bible from your plan 
     
     // Function to get available bibles for this API key
     async getAvailableBibles() {
@@ -439,8 +438,17 @@ const API = {
             
             return { results, total, hasMore: total > (offset + limit) };
         } catch (err) {
-            console.error('API search failed', err);
-            return { results: [], total: 0, hasMore: false };
+            console.error('API search failed, using fallback data', err);
+            // If API fails, use fallback data
+            const filtered = this.fallbackVerses
+                .map(v => v[lang] || v.es)
+                .filter(v => v.text.toLowerCase().includes(q.toLowerCase()) || v.reference.toLowerCase().includes(q.toLowerCase()));
+            const results = filtered.slice(offset, offset + limit);
+            return { 
+                results, 
+                total: filtered.length, 
+                hasMore: filtered.length > (offset + limit) 
+            };
         }
     },
 
@@ -448,10 +456,11 @@ const API = {
         try {
             const randomIndex = Math.floor(Math.random() * this.fallbackVerses.length);
             const verse = this.fallbackVerses[randomIndex];
-            return verse[i18n.currentLang];
+            const lang = (typeof i18n !== 'undefined') ? i18n.currentLang : 'es';
+            return verse[lang];
         } catch (error) {
             console.error('Error fetching verse:', error);
-            return this.fallbackVerses[0][i18n.currentLang];
+            return this.fallbackVerses[0]['es'];
         }
     },
     
@@ -459,10 +468,11 @@ const API = {
         try {
             const indices = this.moodVerses[mood] || [0, 1, 2];
             const randomIndex = indices[Math.floor(Math.random() * indices.length)];
-            return this.fallbackVerses[randomIndex][i18n.currentLang];
+            const lang = (typeof i18n !== 'undefined') ? i18n.currentLang : 'es';
+            return this.fallbackVerses[randomIndex][lang];
         } catch (error) {
-            console.error('Error fetching mood verses:', error);
-            return this.fallbackVerses[0][i18n.currentLang];
+            console.error('Error fetching mood verse:', error);
+            return this.fallbackVerses[0]['es'];
         }
     },
     

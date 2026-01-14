@@ -10,8 +10,25 @@ const API = {
     // Bible API (https://api.scripture.api.bible)
     BIBLE_API_URL: 'https://rest.api.bible/v1/bibles',
     BIBLE_API_KEY: 'Z2cS3kURbkESQWaeO5Lr-',
-    EN_BIBLE_ID: 'de4e12af7f28f599-02', 
-    ES_BIBLE_ID: '592420522e16049f-01', 
+    EN_BIBLE_ID: 'bba9f40183526463-01', // Berean Standard Bible (available in your plan)
+    ES_BIBLE_ID: '592420522e16049f-01', // RVR09 - needs to be added to your plan
+    USE_FALLBACK_FOR_ES: true, // Use local data for Spanish until you add Spanish bible to your plan 
+    
+    // Function to get available bibles for this API key
+    async getAvailableBibles() {
+        try {
+            const res = await fetch(this.BIBLE_API_URL, {
+                headers: { 'api-key': this.BIBLE_API_KEY }
+            });
+            if (!res.ok) throw new Error('Failed to fetch bibles');
+            const data = await res.json();
+            console.log('Available Bibles:', data.data);
+            return data.data;
+        } catch (err) {
+            console.error('Error fetching bibles:', err);
+            return [];
+        }
+    }, 
     
     // Fallback data for demo / offline
     fallbackVerses: [
@@ -313,8 +330,7 @@ const API = {
     },
 
     async searchVerses(term, lang = 'en', options = {}) {
-        const q = term.trim();
-        if (!q) return [];
+        const q = term.{ results: [], total: 0, hasMore: false };
 
         const {
             limit = 20,
@@ -322,6 +338,20 @@ const API = {
             testament = 'all',
             bookId = 'all',
             compareTranslations = false
+        } = options;
+
+        // Use fallback for Spanish if not available in API
+        if (lang === 'es' && this.USE_FALLBACK_FOR_ES) {
+            const filtered = this.fallbackVerses
+                .map(v => v[lang] || v.es)
+                .filter(v => v.text.toLowerCase().includes(q.toLowerCase()) || v.reference.toLowerCase().includes(q.toLowerCase()));
+            const results = filtered.slice(offset, offset + limit);
+            return { 
+                results, 
+                total: filtered.length, 
+                hasMore: filtered.length > (offset + limit) 
+            };
+        }ranslations = false
         } = options;
 
         // If no API key, search locally in fallback
@@ -344,11 +374,22 @@ const API = {
             
             if (offset > 0) searchUrl += `&offset=${offset}`;
 
+            console.log('Search URL:', searchUrl);
+            console.log('API Key:', this.BIBLE_API_KEY);
+
             const res = await fetch(searchUrl, {
                 headers: { 'api-key': this.BIBLE_API_KEY }
             });
-            if (!res.ok) throw new Error('API search error');
+            
+            console.log('API Response status:', res.status);
+            
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                console.error('API Error:', errorData);
+                throw new Error(`API search error: ${res.status} - ${JSON.stringify(errorData)}`);
+            }
             const data = await res.json();
+            console.log('API Data:', data);
             const verses = data?.data?.verses || [];
             const total = data?.data?.total || verses.length;
             const results = [];

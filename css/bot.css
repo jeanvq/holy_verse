@@ -224,17 +224,19 @@
 
 @media (max-width: 480px) {
     .bot-panel {
-        width: 100%;
-        max-height: 85vh;
-        bottom: 0;
-        right: 0;
-        left: 0;
+        width: calc(100% - 1rem);
+        max-height: 80vh;
+        bottom: 0.5rem;
+        right: 0.5rem;
+        left: 0.5rem;
         border-radius: 16px 16px 0 0;
+        box-sizing: border-box;
     }
 
     .bot-content {
-        max-height: calc(85vh - 140px);
+        max-height: calc(80vh - 140px);
         padding: 1rem 0.8rem;
+        overflow-y: auto;
     }
 
     .bot-message.user,

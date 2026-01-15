@@ -22,6 +22,13 @@ const BotAI = {
         const botInput = document.getElementById('botInput');
         const botSend = document.getElementById('botSend');
         
+        console.log('🔍 Elementos encontrados:');
+        console.log('  - botInput:', botInput);
+        console.log('  - botSend:', botSend);
+        console.log('  - modeChat:', modeChat);
+        console.log('  - modeSearch:', modeSearch);
+        console.log('  - modeDevotional:', modeDevotional);
+        
         if (setupBtn) {
             setupBtn.addEventListener('click', () => {
                 if (!this.isAiEnabled) {
@@ -122,9 +129,13 @@ const BotAI = {
         
         const botInput = document.getElementById('botInput');
         const botContent = document.getElementById('botContent');
-        const message = botInput.value.trim();
         
-        console.log('🤖 Mensaje capturado:', message);
+        console.log('🤖 botInput element:', botInput);
+        console.log('🤖 botInput.value (RAW):', JSON.stringify(botInput?.value));
+        
+        const message = botInput?.value?.trim() || '';
+        
+        console.log('🤖 Mensaje capturado (después trim):', JSON.stringify(message));
         console.log('🤖 Modo actual:', this.currentMode);
         
         if (!message) {

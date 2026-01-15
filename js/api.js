@@ -176,10 +176,32 @@ const API = {
         const q = term.trim();
         if (!q) return { results: [], total: 0, hasMore: false };
 
-        // Check if searching for a full chapter (e.g., "Hechos 1:10" or "Hechos 1")
-        const chapterMatch = q.match(/^(\w+\s*\d+):?\d*$/i);
+        // Check if searching for a specific verse (e.g., "Hechos 1:10" or "Juan 3:16")
+        const specificVerseMatch = q.match(/^([A-Za-z\s]+)\s*(\d+):(\d+)$/i);
+        if (specificVerseMatch) {
+            const bookName = specificVerseMatch[1].trim();
+            const chapterNum = parseInt(specificVerseMatch[2]);
+            const verseNum = parseInt(specificVerseMatch[3]);
+            
+            // Get the specific verse
+            const chapterResult = await this.getChapter(bookName, chapterNum, lang);
+            if (chapterResult.verses.length > 0) {
+                const specificVerse = chapterResult.verses.find(v => v.verse === verseNum);
+                if (specificVerse) {
+                    return {
+                        results: [specificVerse],
+                        total: 1,
+                        hasMore: false,
+                        isSpecific: true
+                    };
+                }
+            }
+        }
+
+        // Check if searching for a full chapter (e.g., "Hechos 1" without verse)
+        const chapterMatch = q.match(/^(\w+\s*\d+)$/i);
         if (chapterMatch) {
-            const parts = chapterMatch[1].match(/^(\w+)\s*(\d+)$/i);
+            const parts = chapterMatch[0].match(/^(\w+)\s*(\d+)$/i);
             if (parts) {
                 const bookName = parts[1];
                 const chapterNum = parseInt(parts[2]);
@@ -196,7 +218,7 @@ const API = {
         }
 
         const {
-            limit = 20,
+            limit = 10,  // Changed from 20 to 10 for keyword searches
             offset = 0,
             testament = 'all',
             bookId = 'all',

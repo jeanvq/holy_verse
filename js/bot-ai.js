@@ -1,12 +1,16 @@
 // AI Integration for Bible Bot
 // Integra las funciones de AI con el Bible Bot existente
 
+console.log('🚀 BotAI.js cargado');
+
 const BotAI = {
     currentMode: 'chat', // chat, search, devotional
     isAiEnabled: false,
     
     // Initialize AI Bot Features
     init() {
+        console.log('🚀 BotAI.init() ejecutado - Modo inicial:', this.currentMode);
+        
         // Check if AI is configured
         this.isAiEnabled = AI.isConfigured();
         
@@ -68,7 +72,9 @@ const BotAI = {
     
     // Switch between modes
     switchMode(mode) {
+        console.log('🔄 switchMode llamado con modo:', mode);
         this.currentMode = mode;
+        console.log('🔄 currentMode ahora es:', this.currentMode);
         
         // Update button styles
         document.querySelectorAll('.bot-mode-btn').forEach(btn => {

@@ -76,7 +76,6 @@ const AuthSystem = {
             };
             
             // Save user
-            const allUsers = this.getAllUsers();
             allUsers.push(user);
             localStorage.setItem('holyverse-users', JSON.stringify(allUsers));
             

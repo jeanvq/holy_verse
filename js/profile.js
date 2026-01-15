@@ -423,19 +423,19 @@ const UserProfile = {
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        if (AuthSystem.getCurrentUser()) {
+        if (typeof AuthSystem !== 'undefined' && AuthSystem.getCurrentUser()) {
             UserProfile.init();
         }
     });
 } else {
-    if (AuthSystem.getCurrentUser()) {
+    if (typeof AuthSystem !== 'undefined' && AuthSystem.getCurrentUser()) {
         UserProfile.init();
     }
 }
 
 // Listen for auth changes to reinit profile
 document.addEventListener('authStatusChanged', () => {
-    if (AuthSystem.getCurrentUser()) {
+    if (typeof AuthSystem !== 'undefined' && AuthSystem.getCurrentUser()) {
         UserProfile.init();
     }
 });

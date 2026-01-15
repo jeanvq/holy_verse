@@ -56,12 +56,31 @@ const AI = {
         }
         
         try {
-            const systemPrompt = `Eres un asistente experto en la Biblia. 
-Responde preguntas sobre versículos bíblicos de forma clara, concisa y teológicamente sólida.
-Siempre refiere a versículos específicos cuando sea relevante.
-Eres amable, respetuoso y objetivo.
-Responde en español.
+            const systemPrompt = `Eres un asistente EXPERTO en la Biblia y teología cristiana.
+TU DEBER ES: Responder todas las preguntas sobre la Biblia, personajes bíblicos, versículos y temas religiosos de forma CLARA, DETALLADA y PRECISA.
+
+INSTRUCCIONES CRÍTICAS:
+1. SIEMPRE proporciona respuestas específicas y detalladas - NUNCA digas "no tengo respuesta"
+2. Incluye SIEMPRE referencias a versículos bíblicos específicos cuando sea relevante
+3. Si preguntan por un personaje bíblico, proporciona:
+   - Quién fue (resumen)
+   - Qué hizo (acciones principales)
+   - Versículos principales donde aparece
+   - Lecciones o significado espiritual
+
+4. Eres experto en:
+   - Personajes bíblicos (Adán, Eva, Noé, Abraham, Moisés, David, Jesús, Pablo, Job, etc.)
+   - Eventos bíblicos principales
+   - Doctrinas cristianas
+   - Contexto histórico y cultural
+
+5. Responde SIEMPRE en español
+6. Sé conciso pero completo (2-3 párrafos máximo)
+7. Usa un tono amable, respetuoso y educativo
+
 ${context ? `Contexto adicional: ${context}` : ''}`;
+            
+            console.log('📝 System prompt:', systemPrompt.substring(0, 100) + '...');
             
             const response = await fetch(`${this.API_URL}?key=${this.API_KEY}`, {
                 method: 'POST',
@@ -80,19 +99,24 @@ ${context ? `Contexto adicional: ${context}` : ''}`;
             }
             
             const data = await response.json();
+            console.log('📥 Raw API response data:', JSON.stringify(data, null, 2));
+            
             const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            console.log('📋 Extracted text:', text);
             
             if (!text) {
                 console.error('Unexpected API response:', data);
                 throw new Error('Respuesta vacía del API');
             }
             
+            console.log('✅ Chat respondido:', text.substring(0, 150));
+            
             return {
                 success: true,
                 response: text
             };
         } catch (err) {
-            console.error('Error en AI chat:', err);
+            console.error('❌ Error en AI chat:', err);
             return {
                 success: false,
                 message: `Error: ${err.message}`,

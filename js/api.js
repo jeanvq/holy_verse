@@ -378,7 +378,8 @@ const API = {
         return verses;
     },
 
-    // Get verses by mood
+    // Get random verse
+    async getRandomVerse() {
         try {
             const randomIndex = Math.floor(Math.random() * this.fallbackVerses.length);
             const verse = this.fallbackVerses[randomIndex];

@@ -153,14 +153,19 @@ const BotAI = {
             let response;
             
             if (this.currentMode === 'chat') {
+                console.log('🤖 Chat mode - sending message:', message);
                 response = await AI.chat(message);
+                console.log('🤖 Chat response received:', response);
                 
                 if (response.success) {
+                    console.log('🤖 Chat success - displaying response');
                     this.displayChatResponse(botContent, response.response, loading);
                 } else if (response.needsSetup) {
+                    console.log('🤖 Chat setup needed');
                     this.displayError(botContent, 'IA no configurada. Haz clic en 🤖 para configurarla.', loading);
                 } else {
-                    this.displayError(botContent, response.message, loading);
+                    console.log('🤖 Chat error:', response.message);
+                    this.displayError(botContent, response.message || 'Error desconocido en el chat', loading);
                 }
             } 
             else if (this.currentMode === 'search') {

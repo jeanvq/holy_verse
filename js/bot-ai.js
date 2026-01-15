@@ -177,7 +177,8 @@ const BotAI = {
                 response = await AI.smartSearch(message, verses.slice(0, 5));
                 
                 if (response.success) {
-                    this.displaySearchResponse(botContent, response.data, loading);
+                    loading.remove();
+                    this.displaySearchResponse(botContent, response);
                 } else if (response.needsSetup) {
                     this.displayError(botContent, 'IA no configurada.', loading);
                 } else {
@@ -188,7 +189,8 @@ const BotAI = {
                 response = await AI.generateDevotional(message, 7, 'es');
                 
                 if (response.success) {
-                    this.displayDevotionalResponse(botContent, response.data, loading);
+                    loading.remove();
+                    this.displayDevotionalResponse(botContent, response);
                 } else if (response.needsSetup) {
                     this.displayError(botContent, 'IA no configurada.', loading);
                 } else {
@@ -222,9 +224,7 @@ const BotAI = {
     },
     
     // Display search response
-    displaySearchResponse(container, data, loading) {
-        loading.remove();
-        
+    displaySearchResponse(container, data) {
         const msg = document.createElement('div');
         msg.style.cssText = `
             padding: 1rem;
@@ -241,12 +241,34 @@ const BotAI = {
             </div>
         `;
         
-        if (data.topVerses && data.topVerses.length > 0) {
+        // Handle both topVerses and relevantVerses
+        const verses = data.relevantVerses || data.topVerses || [];
+        if (verses && verses.length > 0) {
             html += `
                 <div style="margin-bottom: 0.5rem;">
                     <strong>Versículos principales:</strong>
                     <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
-                        ${data.topVerses.map(v => `<li>${v}</li>`).join('')}
+                        ${verses.map(v => `<li>${v}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        if (data.explanation) {
+            html += `
+                <div style="margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                    <strong>Explicación:</strong><br>
+                    ${data.explanation}
+                </div>
+            `;
+        }
+        
+        if (data.connections && data.connections.length > 0) {
+            html += `
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>Conexiones temáticas:</strong>
+                    <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+                        ${data.connections.map(c => `<li>${c}</li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -255,7 +277,7 @@ const BotAI = {
         if (data.reflection) {
             html += `
                 <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-style: italic; font-size: 0.9rem;">
-                    "${data.reflection}"
+                    💭 "${data.reflection}"
                 </div>
             `;
         }
@@ -265,9 +287,7 @@ const BotAI = {
     },
     
     // Display devotional response
-    displayDevotionalResponse(container, data, loading) {
-        loading.remove();
-        
+    displayDevotionalResponse(container, data) {
         const msg = document.createElement('div');
         msg.style.cssText = `
             padding: 1rem;
@@ -276,32 +296,33 @@ const BotAI = {
             color: var(--text-primary);
             border-radius: 8px;
             border-left: 3px solid var(--highlight);
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
         `;
         
         let html = `
-            <div style="font-weight: 600; margin-bottom: 1rem; color: var(--highlight);">
+            <div style="font-weight: 600; margin-bottom: 1rem; color: var(--highlight); text-align: center;">
                 📚 Devocional: ${data.topic || 'Plan de Estudio'}
             </div>
         `;
         
-        if (data.devotionals && data.devotionals.length > 0) {
-            html += data.devotionals.slice(0, 3).map(dev => `
-                <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
-                    <strong>Día ${dev.day}: ${dev.title}</strong>
-                    <div style="font-size: 0.85rem; margin-top: 0.25rem;">
-                        📖 ${dev.verses ? dev.verses.join(', ') : 'Versículos'}
+        if (data.devotionals && Array.isArray(data.devotionals) && data.devotionals.length > 0) {
+            // Show all devotionals
+            html += data.devotionals.map(dev => `
+                <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                    <div style="font-weight: 600; color: var(--gold); margin-bottom: 0.5rem;">
+                        Día ${dev.day}: ${dev.title || 'Devocional'}
                     </div>
-                    <div style="font-size: 0.85rem; margin-top: 0.25rem; line-height: 1.4;">
-                        ${dev.reflection || dev.context || 'Devocional'}
+                    <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        <strong>📖 Versículos:</strong> ${Array.isArray(dev.verses) ? dev.verses.join(', ') : dev.verses || 'N/A'}
                     </div>
+                    ${dev.context ? `<div style="font-size: 0.85rem; margin-bottom: 0.5rem; line-height: 1.4;"><strong>Contexto:</strong> ${dev.context}</div>` : ''}
+                    ${dev.reflection ? `<div style="font-size: 0.85rem; margin-bottom: 0.5rem; line-height: 1.4; font-style: italic;"><strong>Reflexión:</strong> ${dev.reflection}</div>` : ''}
+                    ${dev.prayer ? `<div style="font-size: 0.85rem; margin-bottom: 0.5rem; line-height: 1.4; color: var(--text-secondary);"><strong>💭 Oración:</strong> ${dev.prayer}</div>` : ''}
                 </div>
             `).join('');
-            
-            if (data.devotionals.length > 3) {
-                html += `<p style="text-align: center; font-size: 0.8rem; color: var(--text-secondary);">... y ${data.devotionals.length - 3} días más</p>`;
-            }
+        } else {
+            html += `<p style="color: var(--text-secondary);">No se pudo generar el devocional</p>`;
         }
         
         msg.innerHTML = html;

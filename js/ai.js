@@ -13,7 +13,36 @@ const AI = {
             return false;
         }
         this.API_KEY = apiKey;
+        console.log('✅ AI inicializado con Gemini API');
         return true;
+    },
+    
+    // Helper: Limpiar respuesta JSON de markdown blocks
+    cleanJsonResponse(text) {
+        if (!text) return '{}';
+        // Remover código blocks markdown
+        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+        // Remover espacios/saltos al inicio y final
+        text = text.trim();
+        // Si empieza y termina con llaves, es JSON
+        if (!text.startsWith('{') && !text.startsWith('[')) {
+            // Buscar primer { o [
+            const jsonStart = Math.min(
+                text.indexOf('{') >= 0 ? text.indexOf('{') : Infinity,
+                text.indexOf('[') >= 0 ? text.indexOf('[') : Infinity
+            );
+            if (jsonStart !== Infinity) {
+                text = text.substring(jsonStart);
+            }
+        }
+        // Encontrar el último } o ] válido
+        let lastBrace = text.lastIndexOf('}');
+        let lastBracket = text.lastIndexOf(']');
+        let endIndex = Math.max(lastBrace, lastBracket);
+        if (endIndex > 0) {
+            text = text.substring(0, endIndex + 1);
+        }
+        return text;
     },
     
     // Simple chat - responde preguntas sobre versículos
@@ -28,10 +57,11 @@ const AI = {
         
         try {
             const systemPrompt = `Eres un asistente experto en la Biblia. 
-            Responde preguntas sobre versículos bíblicos de forma clara, concisa y teológicamente sólida.
-            Siempre refiere a versículos específicos cuando sea relevante.
-            Eres amable, respetuoso y objetivo.
-            ${context ? `Contexto adicional: ${context}` : ''}`;
+Responde preguntas sobre versículos bíblicos de forma clara, concisa y teológicamente sólida.
+Siempre refiere a versículos específicos cuando sea relevante.
+Eres amable, respetuoso y objetivo.
+Responde en español.
+${context ? `Contexto adicional: ${context}` : ''}`;
             
             const response = await fetch(`${this.API_URL}?key=${this.API_KEY}`, {
                 method: 'POST',
@@ -44,11 +74,18 @@ const AI = {
             });
             
             if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
+                const error = await response.text();
+                console.error('API Response Error:', error);
+                throw new Error(`API error ${response.status}: ${error.substring(0, 100)}`);
             }
             
             const data = await response.json();
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No se pudo generar respuesta';
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (!text) {
+                console.error('Unexpected API response:', data);
+                throw new Error('Respuesta vacía del API');
+            }
             
             return {
                 success: true,
@@ -67,30 +104,34 @@ const AI = {
     // Smart search - busca por significado/tema
     async smartSearch(theme, verses = []) {
         if (!this.API_KEY) {
-            return { success: false, needsSetup: true };
+            return { 
+                success: false, 
+                message: 'IA no configurada',
+                needsSetup: true 
+            };
         }
         
         try {
-            const versesList = verses.map(v => `${v.reference}: ${v.text}`).join('\n\n');
+            const versesList = verses && verses.length > 0
+                ? verses.map(v => `${v.reference}: ${v.text.substring(0, 150)}`).join('\n\n')
+                : `Buscar versículos relacionados con: ${theme}`;
             
-            const prompt = `Analiza estos versículos bíblicos y relacionados con el tema "${theme}":
+            const prompt = `Analiza estos versículos bíblicos relacionados con el tema "${theme}":
 
 ${versesList}
 
-Proporciona:
-1. Los versículos más relevantes al tema
-2. Por qué son relevantes
-3. Conexiones temáticas entre ellos
-4. Una reflexión breve (2-3 líneas)
-
-Responde en formato JSON:
+Proporciona análisis en formato JSON exacto:
 {
   "theme": "${theme}",
-  "topVerses": ["ref1", "ref2", "ref3"],
-  "explanation": "texto",
-  "connections": ["conexión1", "conexión2"],
-  "reflection": "reflexión"
-}`;
+  "relevantVerses": ["ref1", "ref2", "ref3"],
+  "explanation": "explicación clara del tema en 2-3 líneas",
+  "connections": ["conexión temática 1", "conexión temática 2"],
+  "reflection": "reflexión breve aplicable hoy (2 líneas)"
+}
+
+IMPORTANTE: Responde SOLO con el JSON válido. Sin markdown, sin explicaciones adicionales.`;
+            
+            console.log('📤 Enviando búsqueda inteligente:', theme);
             
             const response = await fetch(`${this.API_URL}?key=${this.API_KEY}`, {
                 method: 'POST',
@@ -102,23 +143,40 @@ Responde en formato JSON:
                 })
             });
             
-            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('❌ API Error:', error);
+                throw new Error(`API error ${response.status}`);
+            }
             
             const data = await response.json();
-            let result = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            console.log('📥 Respuesta del API:', data);
             
-            // Limpiar JSON si viene envuelto en markdown
-            result = result.replace(/```json\n?|\n?```/g, '').trim();
+            let result = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (!result) {
+                throw new Error('Respuesta vacía del API');
+            }
+            
+            // Limpiar JSON
+            result = this.cleanJsonResponse(result);
+            console.log('🧹 JSON limpiado:', result.substring(0, 100));
+            
+            // Parse JSON
+            const parsed = JSON.parse(result);
+            
+            console.log('✅ Búsqueda procesada:', parsed.theme);
             
             return {
                 success: true,
-                data: JSON.parse(result)
+                ...parsed
             };
         } catch (err) {
-            console.error('Error en smart search:', err);
+            console.error('❌ Error en smart search:', err);
             return {
                 success: false,
-                message: err.message
+                message: `Error: ${err.message}`,
+                error: err.message
             };
         }
     },
@@ -126,29 +184,42 @@ Responde en formato JSON:
     // Generate devotional - crea devocionales/planes de estudio
     async generateDevotional(topic, days = 7, lang = 'es') {
         if (!this.API_KEY) {
-            return { success: false, needsSetup: true };
+            return { 
+                success: false, 
+                message: 'IA no configurada',
+                needsSetup: true 
+            };
         }
         
         try {
             const language = lang === 'es' ? 'español' : 'inglés';
+            
             const prompt = `Crea un plan devocional de ${days} días sobre "${topic}" en ${language}.
 
-Para cada día proporciona:
+Para CADA uno de los ${days} días proporciona EXACTAMENTE:
 - Título del día
-- Versículo(s) principal(es) (referencia bíblica)
+- Versículo(s) principal(es) - REFERENCIAS BÍBLICAS REALES
 - Contexto/explicación breve
 - Reflexión personal
 - Oración sugerida
 
-Responde en formato JSON:
+Responde SOLO en formato JSON válido sin markdown:
 {
   "topic": "${topic}",
   "days": ${days},
   "devotionals": [
     {
       "day": 1,
-      "title": "Título",
-      "verses": ["Juan 1:1"],
+      "title": "Título del día",
+      "verses": ["Juan 1:1", "Génesis 1:1"],
+      "context": "explicación del contexto",
+      "reflection": "reflexión personal aplicable",
+      "prayer": "oración corta"
+    },
+    {
+      "day": 2,
+      "title": "Título del día",
+      "verses": ["Salmos 23:1"],
       "context": "explicación",
       "reflection": "reflexión",
       "prayer": "oración"
@@ -156,7 +227,13 @@ Responde en formato JSON:
   ]
 }
 
-Por favor, asegúrate de que sea bíblicamente preciso y espiritualmente enriquecedor.`;
+IMPORTANTE: 
+1. Responde SOLO con JSON válido
+2. Incluye TODOS los ${days} días
+3. Sin markdown, sin código blocks, sin explicaciones adicionales
+4. Versículos DEBEN ser referencias reales y válidas`;
+            
+            console.log('📤 Generando devocional:', topic);
             
             const response = await fetch(`${this.API_URL}?key=${this.API_KEY}`, {
                 method: 'POST',
@@ -168,23 +245,44 @@ Por favor, asegúrate de que sea bíblicamente preciso y espiritualmente enrique
                 })
             });
             
-            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('❌ API Error:', error);
+                throw new Error(`API error ${response.status}`);
+            }
             
             const data = await response.json();
-            let result = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            console.log('📥 Respuesta del API (primeros 200 chars):', data?.candidates?.[0]?.content?.parts?.[0]?.text?.substring(0, 200));
+            
+            let result = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (!result) {
+                throw new Error('Respuesta vacía del API');
+            }
             
             // Limpiar JSON
-            result = result.replace(/```json\n?|\n?```/g, '').trim();
+            result = this.cleanJsonResponse(result);
+            console.log('🧹 JSON limpiado (primeros 200 chars):', result.substring(0, 200));
+            
+            // Parse JSON
+            const parsed = JSON.parse(result);
+            
+            if (!parsed.devotionals || !Array.isArray(parsed.devotionals)) {
+                throw new Error('Formato de devocional inválido');
+            }
+            
+            console.log('✅ Devocional generado:', parsed.devotionals.length, 'días');
             
             return {
                 success: true,
-                data: JSON.parse(result)
+                ...parsed
             };
         } catch (err) {
-            console.error('Error generating devotional:', err);
+            console.error('❌ Error generating devotional:', err);
             return {
                 success: false,
-                message: err.message
+                message: `Error: ${err.message}`,
+                error: err.message
             };
         }
     },
@@ -192,7 +290,11 @@ Por favor, asegúrate de que sea bíblicamente preciso y espiritualmente enrique
     // Analyze verse - explicación detallada de un versículo
     async analyzeVerse(reference, text) {
         if (!this.API_KEY) {
-            return { success: false, needsSetup: true };
+            return { 
+                success: false, 
+                message: 'IA no configurada',
+                needsSetup: true 
+            };
         }
         
         try {
@@ -208,7 +310,9 @@ Proporciona:
 4. Conexiones con otros versículos
 5. Enseñanzas clave
 
-Responde de forma clara y accesible.`;
+Responde de forma clara y accesible en español.`;
+            
+            console.log('📤 Analizando versículo:', reference);
             
             const response = await fetch(`${this.API_URL}?key=${this.API_KEY}`, {
                 method: 'POST',
@@ -220,10 +324,20 @@ Responde de forma clara y accesible.`;
                 })
             });
             
-            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('❌ API Error:', error);
+                throw new Error(`API error: ${response.status}`);
+            }
             
             const data = await response.json();
-            const analysis = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No se pudo analizar';
+            const analysis = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (!analysis) {
+                throw new Error('Respuesta vacía del API');
+            }
+            
+            console.log('✅ Análisis completado');
             
             return {
                 success: true,
@@ -231,7 +345,7 @@ Responde de forma clara y accesible.`;
                 analysis: analysis
             };
         } catch (err) {
-            console.error('Error analyzing verse:', err);
+            console.error('❌ Error analyzing verse:', err);
             return {
                 success: false,
                 message: err.message

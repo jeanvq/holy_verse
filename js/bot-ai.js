@@ -112,11 +112,19 @@ const BotAI = {
     
     // Handle bot message with AI
     async handleBotMessage() {
+        console.log('🤖🤖🤖 handleBotMessage INICIADO 🤖🤖🤖');
+        
         const botInput = document.getElementById('botInput');
         const botContent = document.getElementById('botContent');
         const message = botInput.value.trim();
         
-        if (!message) return;
+        console.log('🤖 Mensaje capturado:', message);
+        console.log('🤖 Modo actual:', this.currentMode);
+        
+        if (!message) {
+            console.log('🤖 Mensaje vacío, abortando');
+            return;
+        }
         
         // Show user message
         const userMsg = document.createElement('div');
@@ -152,8 +160,11 @@ const BotAI = {
         try {
             let response;
             
+            console.log('🤖 Entrando en try block');
+            
             if (this.currentMode === 'chat') {
-                console.log('🤖 Chat mode - sending message:', message);
+                console.log('🤖 CHAT MODE DETECTADO - sending message:', message);
+                console.log('🤖 Llamando a AI.chat()...');
                 response = await AI.chat(message);
                 console.log('🤖 Chat response received:', response);
                 
@@ -203,6 +214,8 @@ const BotAI = {
                 }
             }
         } catch (err) {
+            console.error('❌❌❌ ERROR CAPTURADO EN CATCH:', err);
+            console.error('Stack:', err.stack);
             this.displayError(botContent, `Error: ${err.message}`, loading);
         }
         

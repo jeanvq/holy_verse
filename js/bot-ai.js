@@ -12,10 +12,16 @@ const BotAI = {
         console.log('🚀 BotAI.init() ejecutado - Modo inicial:', this.currentMode);
         
         // Check if AI is configured
-        this.isAiEnabled = AI.isConfigured();
+        // IMPORTANTE: Verificar localStorage directamente también
+        const savedKey = localStorage.getItem('gemini_api_key');
+        const aiConfigured = AI.isConfigured() || !!savedKey;
         
-        // Setup buttons
-        const setupBtn = document.getElementById('botAiSetup');
+        this.isAiEnabled = aiConfigured;
+        
+        console.log('🔍 BotAI.init():');
+        console.log('   - savedKey in localStorage:', !!savedKey);
+        console.log('   - AI.isConfigured():', AI.isConfigured());
+        console.log('   - this.isAiEnabled:', this.isAiEnabled);
         const modeChat = document.getElementById('botModeChat');
         const modeSearch = document.getElementById('botModeSearch');
         const modeDevotional = document.getElementById('botModeDevotional');
@@ -29,9 +35,12 @@ const BotAI = {
         console.log('  - modeSearch:', modeSearch);
         console.log('  - modeDevotional:', modeDevotional);
         
-        if (setupBtn) {
+        const botAiSetup = document.getElementById('botAiSetup');
+        console.log('  - botAiSetup:', botAiSetup);
+        
+        if (botAiSetup) {
             // Click simple: toggle modos o abrir setup si no configurado
-            setupBtn.addEventListener('click', () => {
+            botAiSetup.addEventListener('click', () => {
                 if (!this.isAiEnabled) {
                     AISetup.showSetupModal();
                 } else {
@@ -40,13 +49,13 @@ const BotAI = {
             });
             
             // Click derecho o mantener presionado: siempre abrir setup para reconfigurar
-            setupBtn.addEventListener('contextmenu', (e) => {
+            botAiSetup.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 AISetup.showSetupModal();
             });
             
             // Double click: reconfigurar API key
-            setupBtn.addEventListener('dblclick', () => {
+            botAiSetup.addEventListener('dblclick', () => {
                 AISetup.showSetupModal();
             });
         }
@@ -424,15 +433,25 @@ const BotAI = {
 // Initialize when AI setup is complete
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => BotAI.init(), 500);
+        // Esperar a que AI.init() se ejecute primero
+        setTimeout(() => {
+            console.log('✅ DOMContentLoaded: Inicializando BotAI');
+            console.log('   AI.isConfigured():', AI.isConfigured());
+            BotAI.init();
+        }, 1000); // Aumentado a 1 segundo para asegurar que AI se carga
     });
 } else {
-    setTimeout(() => BotAI.init(), 500);
+    console.log('✅ Document ya está listo: Inicializando BotAI');
+    setTimeout(() => {
+        console.log('   AI.isConfigured():', AI.isConfigured());
+        BotAI.init();
+    }, 1000);
 }
 
 // Also initialize when page becomes visible
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !BotAI.initialized) {
+        console.log('📱 Página visible: Re-inicializando BotAI');
         BotAI.init();
     }
 });

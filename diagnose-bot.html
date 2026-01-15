@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Diagnóstico Bot</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+        .section { background: #16213e; padding: 1.5rem; margin: 1rem 0; border-radius: 4px; border-left: 4px solid #4fd1c5; }
+        .ok { color: #4fd1c5; }
+        .error { color: #e95555; }
+        .warning { color: #f39c12; }
+        button { background: #4fd1c5; color: #1a1a2e; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 0.5rem; }
+        pre { background: #0f3460; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🤖 Diagnóstico del Bot</h1>
+    
+    <div class="section">
+        <h3>1. Elementos del DOM</h3>
+        <div id="domStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h3>2. Estado del Objeto Bot</h3>
+        <div id="botStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h3>3. Estado de i18n</h3>
+        <div id="i18nStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h3>4. Funciones Disponibles</h3>
+        <div id="functionsStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h3>5. Consola de Errores</h3>
+        <pre id="errors"></pre>
+    </div>
+
+    <script>
+        const errors = [];
+        
+        // Capturar errores globales
+        window.addEventListener('error', (e) => {
+            errors.push(`❌ Error: ${e.message} (${e.filename}:${e.lineno})`);
+            updateErrors();
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            errors.push(`❌ Promise Rejection: ${e.reason}`);
+            updateErrors();
+        });
+        
+        function updateErrors() {
+            const el = document.getElementById('errors');
+            if (errors.length === 0) {
+                el.innerHTML = '<span class="ok">✅ Sin errores</span>';
+            } else {
+                el.innerHTML = errors.join('\n');
+            }
+        }
+        
+        function diagnose() {
+            // Diagnóstico de DOM
+            const domStatus = document.getElementById('domStatus');
+            let domHTML = '';
+            
+            const elements = {
+                'botToggle': document.getElementById('botToggle'),
+                'botPanel': document.getElementById('botPanel'),
+                'botClose': document.getElementById('botClose'),
+                'botInput': document.getElementById('botInput'),
+                'botSend': document.getElementById('botSend'),
+                'botContent': document.getElementById('botContent')
+            };
+            
+            Object.entries(elements).forEach(([name, el]) => {
+                if (el) {
+                    domHTML += `<div class="ok">✅ ${name}: encontrado</div>`;
+                } else {
+                    domHTML += `<div class="error">❌ ${name}: NO ENCONTRADO</div>`;
+                }
+            });
+            domStatus.innerHTML = domHTML;
+            
+            // Diagnóstico de Bot
+            const botStatus = document.getElementById('botStatus');
+            let botHTML = '';
+            if (typeof BibleBot === 'function') {
+                botHTML += `<div class="ok">✅ BibleBot class: definida</div>`;
+            } else {
+                botHTML += `<div class="error">❌ BibleBot class: NO definida</div>`;
+            }
+            
+            if (typeof bot !== 'undefined') {
+                botHTML += `<div class="ok">✅ bot object: existe</div>`;
+                botHTML += `<div>  - isOpen: ${bot.isOpen}</div>`;
+                botHTML += `<div>  - conversationHistory.length: ${bot.conversationHistory.length}</div>`;
+            } else {
+                botHTML += `<div class="error">❌ bot object: NO definido</div>`;
+            }
+            botStatus.innerHTML = botHTML;
+            
+            // Diagnóstico de i18n
+            const i18nStatus = document.getElementById('i18nStatus');
+            let i18nHTML = '';
+            if (typeof i18n !== 'undefined') {
+                i18nHTML += `<div class="ok">✅ i18n object: existe</div>`;
+                i18nHTML += `<div>  - currentLang: ${i18n.currentLang}</div>`;
+            } else {
+                i18nHTML += `<div class="error">❌ i18n object: NO definido</div>`;
+            }
+            i18nStatus.innerHTML = i18nHTML;
+            
+            // Diagnóstico de funciones
+            const functionsStatus = document.getElementById('functionsStatus');
+            let functionsHTML = '';
+            
+            const functions = [
+                'setupBotListeners',
+                'sendMessage',
+                'escapeHtml',
+                'extractReferenceFromText',
+                'openVerseFromReference'
+            ];
+            
+            functions.forEach(fn => {
+                if (typeof window[fn] === 'function') {
+                    functionsHTML += `<div class="ok">✅ ${fn}: función</div>`;
+                } else {
+                    functionsHTML += `<div class="warning">⚠️  ${fn}: no disponible</div>`;
+                }
+            });
+            
+            functionsStatus.innerHTML = functionsHTML;
+            
+            updateErrors();
+        }
+        
+        // Ejecutar diagnóstico cuando todo esté cargado
+        window.addEventListener('load', diagnose);
+        setTimeout(diagnose, 3000);
+    </script>
+
+    <!-- Cargar los scripts -->
+    <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/ai-setup.js"></script>
+    <script src="js/bot.js"></script>
+    <script src="js/bot-ai.js"></script>
+    <script src="js/bot-enhancements.js"></script>
+</body>
+</html>

@@ -614,115 +614,149 @@ class BibleBot {
 // Initialize bot
 const bot = new BibleBot();
 
-// DOM Elements
-const botToggle = document.getElementById('botToggle');
-const botPanel = document.getElementById('botPanel');
-const botClose = document.getElementById('botClose');
-const botInput = document.getElementById('botInput');
-const botSend = document.getElementById('botSend');
-const botContent = document.getElementById('botContent');
+// DOM Elements - obtenerlos cuando sea
+function getElements() {
+    return {
+        botToggle: document.getElementById('botToggle'),
+        botPanel: document.getElementById('botPanel'),
+        botClose: document.getElementById('botClose'),
+        botInput: document.getElementById('botInput'),
+        botSend: document.getElementById('botSend'),
+        botContent: document.getElementById('botContent')
+    };
+}
 
-// Event Listeners
-botToggle.addEventListener('click', () => {
-    if (bot.togglePanel()) {
-        botPanel.classList.remove('hidden');
-        document.documentElement.classList.add('bot-open');
-        document.body.classList.add('bot-open');
-        botInput.focus();
-        
-        // Show greeting if first time
-        if (bot.conversationHistory.length === 0) {
-            const lang = i18n.currentLang;
-            const greetingKey = lang === 'es' ? 'hola' : 'hello';
-            const greeting = bot.knowledgeBase[lang][greetingKey];
-            
-            setTimeout(() => {
-                const botMsg = document.createElement('div');
-                botMsg.className = 'bot-message bot';
-                botMsg.textContent = greeting;
-                botContent.appendChild(botMsg);
-                botContent.scrollTop = botContent.scrollHeight;
-            }, 200);
-        }
-    } else {
-        botPanel.classList.add('hidden');
+// Event Listeners - en una función separada
+function setupBotListeners() {
+    const { botToggle, botPanel, botClose, botInput, botSend, botContent } = getElements();
+    
+    if (!botToggle) {
+        console.error('❌ botToggle no encontrado');
+        return;
     }
-});
+    
+    console.log('✅ Configurando listeners del bot');
+    
+    botToggle.addEventListener('click', () => {
+        if (!botPanel || !botInput || !botContent) {
+            console.error('❌ Elementos del bot no encontrados');
+            return;
+        }
+        
+        if (bot.togglePanel()) {
+            botPanel.classList.remove('hidden');
+            botPanel.style.display = 'flex';
+            document.documentElement.classList.add('bot-open');
+            document.body.classList.add('bot-open');
+            botInput.focus();
+            
+            // Show greeting if first time
+            if (bot.conversationHistory.length === 0) {
+                const lang = i18n.currentLang;
+                const greetingKey = lang === 'es' ? 'hola' : 'hello';
+                const greeting = bot.knowledgeBase[lang][greetingKey];
+                
+                setTimeout(() => {
+                    const botMsg = document.createElement('div');
+                    botMsg.className = 'bot-message bot';
+                    botMsg.textContent = greeting;
+                    botContent.appendChild(botMsg);
+                    botContent.scrollTop = botContent.scrollHeight;
+                }, 200);
+            }
+        } else {
+            botPanel.classList.add('hidden');
+            botPanel.style.display = 'none';
+        }
+    });
 
-botClose.addEventListener('click', () => {
-    bot.isOpen = false;
-    botPanel.classList.add('hidden');
-    document.documentElement.classList.remove('bot-open');
-    document.body.classList.remove('bot-open');
-});
-
-// Also restore overflow when modal is hidden via togglePanel
-const originalToggle = bot.togglePanel;
-bot.togglePanel = function() {
-    const result = originalToggle.call(this);
-    if (!this.isOpen) {
+    botClose.addEventListener('click', () => {
+        bot.isOpen = false;
+        botPanel.classList.add('hidden');
+        botPanel.style.display = 'none';
         document.documentElement.classList.remove('bot-open');
         document.body.classList.remove('bot-open');
-    }
-    return result;
-};
+    });
 
-async function sendMessage() {
-    const message = botInput.value.trim();
-    if (!message) return;
-    
-    // Disable input while processing
-    botInput.disabled = true;
-    botSend.disabled = true;
-    
-    // Add user message to UI
-    const userMsg = document.createElement('div');
-    userMsg.className = 'bot-message user';
-    userMsg.innerHTML = `<span>${escapeHtml(message)}</span>`;
-    botContent.appendChild(userMsg);
-    
-    botInput.value = '';
-    
-    // Get bot response
-    const response = await bot.processQuery(message);
-    
-    // Add bot message to UI with typing effect
-    setTimeout(() => {
-        const botMsg = document.createElement('div');
-        botMsg.className = 'bot-message bot';
-        botMsg.innerHTML = `<span>${escapeHtml(response)}</span>`;
-        botContent.appendChild(botMsg);
-        botContent.scrollTop = botContent.scrollHeight;
-        
-        // Re-enable input
-        botInput.disabled = false;
-        botSend.disabled = false;
-        botInput.focus();
-    }, 300);
-
-    // Try to extract and open verse reference
-    const ref = typeof extractReferenceFromText === 'function' ? extractReferenceFromText(message) : null;
-    if (ref && typeof openVerseFromReference === 'function') {
-        openVerseFromReference(ref);
-    }
-}
-
-// Helper function to escape HTML and preserve newlines
-function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
+    // Also restore overflow when modal is hidden via togglePanel
+    const originalToggle = bot.togglePanel;
+    bot.togglePanel = function() {
+        const result = originalToggle.call(this);
+        if (!this.isOpen) {
+            document.documentElement.classList.remove('bot-open');
+            document.body.classList.remove('bot-open');
+        }
+        return result;
     };
-    return text.replace(/[&<>"']/g, m => map[m]).replace(/\n/g, '<br>');
+
+    // Send message handler
+    const handleSendMessage = async function() {
+        const { botInput, botSend, botContent } = getElements();
+        const message = botInput.value.trim();
+        if (!message) return;
+        
+        // Disable input while processing
+        botInput.disabled = true;
+        botSend.disabled = true;
+        
+        // Add user message to UI
+        const userMsg = document.createElement('div');
+        userMsg.className = 'bot-message user';
+        userMsg.innerHTML = `<span>${escapeHtml(message)}</span>`;
+        botContent.appendChild(userMsg);
+        
+        botInput.value = '';
+        
+        // Get bot response
+        const response = await bot.processQuery(message);
+        
+        // Add bot message to UI with typing effect
+        setTimeout(() => {
+            const botMsg = document.createElement('div');
+            botMsg.className = 'bot-message bot';
+            botMsg.innerHTML = `<span>${escapeHtml(response)}</span>`;
+            botContent.appendChild(botMsg);
+            botContent.scrollTop = botContent.scrollHeight;
+            
+            // Re-enable input
+            botInput.disabled = false;
+            botSend.disabled = false;
+            botInput.focus();
+        }, 300);
+
+        // Try to extract and open verse reference
+        const ref = typeof extractReferenceFromText === 'function' ? extractReferenceFromText(message) : null;
+        if (ref && typeof openVerseFromReference === 'function') {
+            openVerseFromReference(ref);
+        }
+    };
+    
+    const { botSend: btnSend, botInput: btnInput } = getElements();
+    btnSend.addEventListener('click', handleSendMessage);
+    btnInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    });
+    
+    // Helper function to escape HTML and preserve newlines
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]).replace(/\n/g, '<br>');
+    }
 }
 
-botSend.addEventListener('click', sendMessage);
-botInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
-});
+// Ejecutar setupBotListeners cuando esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupBotListeners);
+} else {
+    setupBotListeners();
+}
+

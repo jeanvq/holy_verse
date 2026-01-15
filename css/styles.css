@@ -2000,6 +2000,7 @@ body > * {
         padding: 1.5rem;
         width: 90%;
         max-height: 90vh;
+        max-width: 95vw;
     }
 
     .modal-close {
@@ -2012,6 +2013,12 @@ body > * {
 
     .surprise-verse-modal h2 {
         font-size: 1.4rem;
+    }
+    
+    /* Mejorar modales de IA en mobile */
+    #aiSetupModal .modal-content {
+        max-width: 95vw !important;
+        width: 95vw !important;
     }
 }
 
@@ -2094,7 +2101,17 @@ body > * {
     .surprise-verse-modal {
         padding: 1rem 0.75rem;
     }
-}
+    
+    /* Optimizar modal de IA para pantallas muy pequeñas */
+    #aiSetupModal .modal-content {
+        max-height: 80vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #aiSetupModal input {
+        font-size: 16px !important;
+    }
 /* Mobile Enhancements CSS */
 
 /* Pull to Refresh Indicator */

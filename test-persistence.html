@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Persistencia de IA - HolyVerse</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+        
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        h1 { color: #4fd1c5; margin-bottom: 1rem; }
+        
+        .section {
+            background: #16213e;
+            border: 1px solid #4fd1c5;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .section h2 { color: #f39c12; margin-bottom: 1rem; margin-top: 0; }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #0f3460;
+            border: 1px solid #4fd1c5;
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        
+        button {
+            background: #4fd1c5;
+            color: #1a1a2e;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        button:hover { background: #3ba39c; }
+        button.danger { background: #e95555; color: white; }
+        
+        .log {
+            background: #0f3460;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border-left: 4px solid #4fd1c5;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
+        .log-line {
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #16213e;
+        }
+        
+        .log-line:last-child { border-bottom: none; }
+        .log-success { color: #4fd1c5; }
+        .log-error { color: #e95555; }
+        .log-warning { color: #f39c12; }
+        
+        .status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+        
+        .status.ok { background: rgba(79, 209, 197, 0.2); color: #4fd1c5; }
+        .status.error { background: rgba(233, 85, 85, 0.2); color: #e95555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de Persistencia de IA</h1>
+        <p style="color: #999;">Verifica que la API key se guarda y recupera correctamente</p>
+        
+        <div class="section">
+            <h2>📝 Prueba Manual de Persistencia</h2>
+            <input type="password" id="testKey" placeholder="Pega una API key de prueba aquí" value="">
+            <button onclick="testSaveKey()">💾 Guardar API Key</button>
+            <button onclick="testLoadKey()">🔄 Recuperar API Key</button>
+            <button onclick="testClearKey()" class="danger">🗑️ Borrar API Key</button>
+            <div class="log" id="testLog"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🔍 Estado del Storage</h2>
+            <button onclick="checkStorage()">Verificar Storage</button>
+            <button onclick="listStorage()">Listar Todo</button>
+            <div class="log" id="storageLog"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 Tests de IA</h2>
+            <button onclick="testAIInit()">Test AI.init()</button>
+            <button onclick="testAIConfigured()">Test AI.isConfigured()</button>
+            <button onclick="testBotAI()">Test BotAI</button>
+            <button onclick="reloadPage()">🔄 Recargar Página</button>
+            <div class="log" id="aiLog"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Flujo Completo</h2>
+            <p style="color: #999; margin-bottom: 1rem;">
+                Este test simula el flujo completo:
+                1. Guarda una API key
+                2. Recarga la página
+                3. Verifica que se recuperó automáticamente
+            </p>
+            <button onclick="runFullTest()">Ejecutar Flujo Completo</button>
+            <div class="log" id="fullLog"></div>
+        </div>
+    </div>
+
+    <script>
+        const testLog = document.getElementById('testLog');
+        const storageLog = document.getElementById('storageLog');
+        const aiLog = document.getElementById('aiLog');
+        const fullLog = document.getElementById('fullLog');
+        
+        function addLog(element, msg, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            element.appendChild(line);
+            element.scrollTop = element.scrollHeight;
+        }
+        
+        function testSaveKey() {
+            const key = document.getElementById('testKey').value.trim();
+            if (!key) {
+                addLog(testLog, '❌ Por favor ingresa una API key', 'error');
+                return;
+            }
+            
+            try {
+                localStorage.setItem('gemini_api_key', key);
+                addLog(testLog, `✅ API key guardada (${key.length} caracteres)`, 'success');
+                addLog(testLog, `   Primeros 10: ${key.substring(0, 10)}...`, 'success');
+            } catch (err) {
+                addLog(testLog, `❌ Error al guardar: ${err.message}`, 'error');
+            }
+        }
+        
+        function testLoadKey() {
+            try {
+                const key = localStorage.getItem('gemini_api_key');
+                if (key) {
+                    addLog(testLog, `✅ API key recuperada (${key.length} caracteres)`, 'success');
+                    addLog(testLog, `   Primeros 10: ${key.substring(0, 10)}...`, 'success');
+                    document.getElementById('testKey').value = key;
+                } else {
+                    addLog(testLog, '⚠️ No hay API key guardada', 'warning');
+                }
+            } catch (err) {
+                addLog(testLog, `❌ Error al recuperar: ${err.message}`, 'error');
+            }
+        }
+        
+        function testClearKey() {
+            try {
+                localStorage.removeItem('gemini_api_key');
+                localStorage.removeItem('gemini_api_url');
+                document.getElementById('testKey').value = '';
+                addLog(testLog, '🗑️ API keys borradas', 'warning');
+            } catch (err) {
+                addLog(testLog, `❌ Error al borrar: ${err.message}`, 'error');
+            }
+        }
+        
+        function checkStorage() {
+            try {
+                const key = localStorage.getItem('gemini_api_key');
+                const url = localStorage.getItem('gemini_api_url');
+                
+                addLog(storageLog, key ? `✅ gemini_api_key guardada` : `❌ gemini_api_key NO guardada`, key ? 'success' : 'error');
+                addLog(storageLog, url ? `✅ gemini_api_url guardada` : `❌ gemini_api_url NO guardada`, url ? 'success' : 'error');
+                addLog(storageLog, `Total items: ${Object.keys(localStorage).length}`, 'info');
+            } catch (err) {
+                addLog(storageLog, `❌ Error: ${err.message}`, 'error');
+            }
+        }
+        
+        function listStorage() {
+            storageLog.innerHTML = '';
+            addLog(storageLog, 'Contenido de localStorage:', 'info');
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                const display = value.length > 50 ? value.substring(0, 50) + '...' : value;
+                addLog(storageLog, `  ${key}: ${display}`, 'info');
+            }
+        }
+        
+        function testAIInit() {
+            aiLog.innerHTML = '';
+            
+            if (typeof window.AI === 'undefined') {
+                addLog(aiLog, '❌ AI object no disponible', 'error');
+                addLog(aiLog, 'Asegúrate de que ai.js esté cargado', 'warning');
+                return;
+            }
+            
+            addLog(aiLog, '✅ AI object disponible', 'success');
+            
+            const testKey = 'AIzaSyDummyKeyForTest1234567890abcdefgh';
+            addLog(aiLog, `Intentando inicializar con test key...`, 'info');
+            
+            const result = AI.init(testKey);
+            if (result) {
+                addLog(aiLog, '✅ AI.init() retornó true', 'success');
+                addLog(aiLog, `   API_KEY establecida`, 'success');
+            } else {
+                addLog(aiLog, '❌ AI.init() retornó false', 'error');
+            }
+        }
+        
+        function testAIConfigured() {
+            aiLog.innerHTML = '';
+            
+            if (typeof window.AI === 'undefined') {
+                addLog(aiLog, '❌ AI object no disponible', 'error');
+                return;
+            }
+            
+            const configured = AI.isConfigured();
+            addLog(aiLog, configured ? '✅ AI está configurado' : '⚠️ AI no está configurado', 
+                   configured ? 'success' : 'warning');
+            addLog(aiLog, `AI.API_KEY: ${AI.API_KEY ? 'establecida' : 'vacía'}`, 'info');
+        }
+        
+        function testBotAI() {
+            aiLog.innerHTML = '';
+            
+            if (typeof window.BotAI === 'undefined') {
+                addLog(aiLog, '⚠️ BotAI no está disponible aún', 'warning');
+                addLog(aiLog, 'Probablemente bot-ai.js no se ha cargado', 'info');
+                return;
+            }
+            
+            addLog(aiLog, '✅ BotAI object disponible', 'success');
+            addLog(aiLog, `BotAI.isAiEnabled: ${BotAI.isAiEnabled}`, 'info');
+        }
+        
+        function runFullTest() {
+            fullLog.innerHTML = '';
+            
+            const testKey = 'AIzaSyTest123456789abcdefghijklmnopqrst';
+            
+            addLog(fullLog, '🚀 Iniciando prueba completa...', 'info');
+            addLog(fullLog, '', 'info');
+            
+            addLog(fullLog, '1️⃣ Guardando API key...', 'info');
+            try {
+                localStorage.setItem('gemini_api_key', testKey);
+                addLog(fullLog, `   ✅ Guardada: ${testKey.substring(0, 15)}...`, 'success');
+            } catch (err) {
+                addLog(fullLog, `   ❌ Error: ${err.message}`, 'error');
+                return;
+            }
+            
+            addLog(fullLog, '', 'info');
+            addLog(fullLog, '2️⃣ Recuperando API key...', 'info');
+            const recovered = localStorage.getItem('gemini_api_key');
+            if (recovered === testKey) {
+                addLog(fullLog, `   ✅ Recuperada correctamente`, 'success');
+            } else {
+                addLog(fullLog, `   ❌ No coincide`, 'error');
+                return;
+            }
+            
+            addLog(fullLog, '', 'info');
+            addLog(fullLog, '3️⃣ Verificando disponibilidad de scripts...', 'info');
+            const scripts = {
+                'AI': typeof window.AI !== 'undefined',
+                'AISetup': typeof window.AISetup !== 'undefined',
+                'BotAI': typeof window.BotAI !== 'undefined'
+            };
+            
+            Object.entries(scripts).forEach(([name, available]) => {
+                addLog(fullLog, `   ${available ? '✅' : '❌'} ${name}`, available ? 'success' : 'warning');
+            });
+            
+            addLog(fullLog, '', 'info');
+            addLog(fullLog, '✅ Prueba completada', 'success');
+            addLog(fullLog, 'Ahora recarga la página con F5 para verificar que se recupera automáticamente', 'info');
+        }
+        
+        function reloadPage() {
+            window.location.reload();
+        }
+        
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            addLog(storageLog, 'Página cargada, verificando storage...', 'info');
+            checkStorage();
+        });
+    </script>
+</body>
+</html>

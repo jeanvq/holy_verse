@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bot JS</title>
+</head>
+<body>
+    <h1>Cargando scripts...</h1>
+    <pre id="output"></pre>
+    
+    <script src="js/bot.js"></script>
+    <script>
+        const out = document.getElementById('output');
+        
+        setTimeout(() => {
+            out.innerHTML = '';
+            
+            // Verificar si setupBotListeners existe
+            if (typeof setupBotListeners === 'function') {
+                out.innerHTML += '✅ setupBotListeners es una función\n';
+            } else {
+                out.innerHTML += `❌ setupBotListeners: ${typeof setupBotListeners}\n`;
+            }
+            
+            // Verificar si BibleBot existe
+            if (typeof BibleBot === 'function') {
+                out.innerHTML += '✅ BibleBot clase existe\n';
+            } else {
+                out.innerHTML += '❌ BibleBot no existe\n';
+            }
+            
+            // Verificar si bot existe
+            if (typeof bot !== 'undefined') {
+                out.innerHTML += '✅ bot objeto existe\n';
+            } else {
+                out.innerHTML += '❌ bot no existe\n';
+            }
+            
+            // Verificar getElements
+            if (typeof getElements === 'function') {
+                out.innerHTML += '✅ getElements existe\n';
+                const els = getElements();
+                out.innerHTML += `   botToggle: ${els.botToggle ? '✅' : '❌'}\n`;
+                out.innerHTML += `   botPanel: ${els.botPanel ? '✅' : '❌'}\n`;
+            } else {
+                out.innerHTML += '❌ getElements no existe\n';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

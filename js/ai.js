@@ -3,6 +3,29 @@
 
 console.log('🚀 AI.js cargado - versión mejorada con logging completo');
 
+// 🛡️ PROTEGER localStorage de borrados accidentales
+(function protectLocalStorage() {
+    const originalClear = localStorage.clear;
+    const protectedKeys = ['gemini_api_key', 'gemini_api_url'];
+    
+    localStorage.clear = function() {
+        console.warn('⚠️ localStorage.clear() interceptado - salvando claves protegidas');
+        const backup = {};
+        protectedKeys.forEach(key => {
+            backup[key] = localStorage.getItem(key);
+        });
+        
+        originalClear.call(this);
+        
+        Object.entries(backup).forEach(([key, value]) => {
+            if (value) {
+                localStorage.setItem(key, value);
+                console.log(`✅ Clave protegida restaurada: ${key}`);
+            }
+        });
+    };
+})();
+
 const AI = {
     // Gemini API Configuration
     API_KEY: '', // El usuario debe proporcionar su clave
@@ -22,9 +45,11 @@ const AI = {
             this.API_URL = savedUrl;
             console.log('✅ AI inicializado - Usando modelo guardado:', savedUrl.split('/models/')[1]?.split(':')[0]);
         } else {
-            // Fallback al modelo por defecto
-            this.API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-            console.log('⚠️ No se encontró modelo guardado, usando gemini-1.5-flash');
+            // Usar gemini-2.5-flash (modelo más nuevo disponible)
+            this.API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
+            console.log('✅ Usando modelo gemini-2.5-flash (versión v1)');
+            // Guardar para usar en próximas inicializaciones
+            localStorage.setItem('gemini_api_url', this.API_URL);
         }
         
         console.log('✅ AI inicializado con Gemini API');
@@ -396,6 +421,23 @@ Responde de forma clara y accesible en español.`;
         return !!this.API_KEY;
     }
 };
+
+// Auto-initialize AI from localStorage if available
+(function autoInitAI() {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+        console.log('🔄 Auto-inicializando AI desde localStorage...');
+        const result = AI.init(savedKey);
+        if (result) {
+            console.log('✅ AI auto-inicializado correctamente');
+        } else {
+            console.warn('⚠️ Error al auto-inicializar AI');
+            localStorage.removeItem('gemini_api_key');
+        }
+    } else {
+        console.log('ℹ️ No hay API key en localStorage');
+    }
+})();
 
 // Exportar para uso global
 if (typeof window !== 'undefined') {

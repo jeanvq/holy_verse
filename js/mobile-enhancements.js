@@ -285,11 +285,66 @@ function initMobileEnhancements() {
         setupNativeShare();
         setupSwipeGestures();
         setupPullToRefresh();
+        setupMobileAIEnhancements();
     }
     
     setupVoiceSearch();
     setupAutoDarkMode();
     setupPWAInstallPrompt();
+}
+
+// Mejorar funcionalidad de IA en mobile
+function setupMobileAIEnhancements() {
+    // Fix para modales en mobile - asegurar que se vean correctamente
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @media (max-width: 768px) {
+            .modal {
+                z-index: 9999 !important;
+            }
+            .modal-overlay {
+                position: fixed !important;
+            }
+            .modal-content {
+                position: fixed !important;
+                max-width: 90vw !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            #aiSetupModal .modal-content {
+                max-width: 95vw !important;
+                width: 95vw !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                top: 50% !important;
+                -webkit-transform: translate(-50%, -50%) !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #aiSetupModal .modal-content {
+                max-height: 80vh !important;
+                max-width: 98vw !important;
+            }
+            #aiSetupModal input {
+                font-size: 16px !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Mejorar handlers táctiles para botones de IA
+    const setupBtn = document.getElementById('botAiSetup');
+    if (setupBtn) {
+        setupBtn.addEventListener('touchstart', function(e) {
+            this.style.background = 'rgba(79, 209, 197, 0.2)';
+        }, false);
+        setupBtn.addEventListener('touchend', function(e) {
+            this.style.background = 'transparent';
+        }, false);
+    }
+    
+    console.log('✅ Mobile AI enhancements aplicados');
 }
 
 // Run when DOM is ready

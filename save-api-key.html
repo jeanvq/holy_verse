@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💾 Guardar API Key Permanentemente</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e0e0e0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4fd1c5;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: rgba(22, 33, 62, 0.8);
+            border: 2px solid #4fd1c5;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        .card h2 {
+            color: #4fd1c5;
+            font-size: 1.2rem;
+            margin-top: 0;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #0f3460;
+            border: 1px solid #4fd1c5;
+            color: #e0e0e0;
+            border-radius: 6px;
+            font-family: monospace;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #7c8ff6;
+            box-shadow: 0 0 10px rgba(124, 143, 246, 0.3);
+        }
+        button {
+            background: linear-gradient(135deg, #4fd1c5, #7c8ff6);
+            color: #1a1a2e;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 209, 197, 0.4);
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-family: monospace;
+        }
+        .success {
+            background: rgba(79, 209, 197, 0.1);
+            border-left: 4px solid #4fd1c5;
+            color: #4fd1c5;
+        }
+        .error {
+            background: rgba(233, 85, 85, 0.1);
+            border-left: 4px solid #e95555;
+            color: #e95555;
+        }
+        .warning {
+            background: rgba(243, 156, 18, 0.1);
+            border-left: 4px solid #f39c12;
+            color: #f39c12;
+        }
+        .steps {
+            background: #0f3460;
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+        .step {
+            margin: 1rem 0;
+            padding: 0.75rem;
+            border-left: 3px solid #4fd1c5;
+            padding-left: 1rem;
+        }
+        .step strong {
+            color: #4fd1c5;
+        }
+        .info-box {
+            background: rgba(124, 143, 246, 0.1);
+            border: 1px solid #7c8ff6;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💾 Guardar API Key Permanentemente</h1>
+        
+        <div class="card">
+            <h2>📝 Paso 1: Ingresa tu API Key</h2>
+            <p>Copia tu API key de Google Gemini y pégala aquí:</p>
+            <input type="password" id="apiKey" placeholder="AIzaSy..." autocomplete="off">
+            <button onclick="togglePassword()">👁️ Mostrar</button>
+            <div id="status1"></div>
+        </div>
+        
+        <div class="card">
+            <h2>💾 Paso 2: Guardar y Proteger</h2>
+            <p>Esto guardará tu API key de forma segura en localStorage:</p>
+            <button onclick="saveApiKey()" style="width: 100%; padding: 1rem;">✅ Guardar Permanentemente</button>
+            <div id="status2"></div>
+        </div>
+        
+        <div class="card">
+            <h2>✅ Verificación</h2>
+            <button onclick="verifyStorage()">🔍 Verificar que está guardada</button>
+            <div id="status3"></div>
+        </div>
+        
+        <div class="card">
+            <h2>🚀 Finalizar</h2>
+            <button onclick="goToIndex()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #4fd1c5, #00d4aa);">
+                ✨ Ir a HolyVerse con API configurada
+            </button>
+        </div>
+        
+        <div class="info-box">
+            <strong>ℹ️ Información importante:</strong><br>
+            • Tu API key se guardará en localStorage de tu navegador<br>
+            • No será visible en el historial ni será enviado a ningún servidor<br>
+            • Una vez guardada, HolyVerse no te la pedirá más<br>
+            • Si quieres cambiarla, simplemente vuelve a este página y guarda una nueva
+        </div>
+    </div>
+
+    <script>
+        // 🛡️ PROTEGER localStorage de borrados accidentales
+        (function protectLocalStorage() {
+            const originalClear = localStorage.clear;
+            const protectedKeys = ['gemini_api_key', 'gemini_api_url'];
+            
+            localStorage.clear = function() {
+                console.warn('⚠️ localStorage.clear() interceptado - salvando claves protegidas');
+                const backup = {};
+                protectedKeys.forEach(key => {
+                    backup[key] = localStorage.getItem(key);
+                });
+                
+                originalClear.call(this);
+                
+                Object.entries(backup).forEach(([key, value]) => {
+                    if (value) {
+                        localStorage.setItem(key, value);
+                        console.log(`✅ Clave protegida restaurada: ${key}`);
+                    }
+                });
+            };
+            
+            console.log('🛡️ Protección de localStorage activada');
+        })();
+
+        function togglePassword() {
+            const input = document.getElementById('apiKey');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const status = document.getElementById('status2');
+            
+            if (!apiKey) {
+                status.className = 'status error';
+                status.innerHTML = '❌ Por favor ingresa una API key';
+                return;
+            }
+            
+            if (apiKey.length < 20) {
+                status.className = 'status error';
+                status.innerHTML = '❌ La API key parece muy corta (mínimo 20 caracteres)';
+                return;
+            }
+            
+            try {
+                // Guardar con protección
+                localStorage.setItem('gemini_api_key', apiKey);
+                localStorage.setItem('gemini_api_url', 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent');
+                localStorage.setItem('_api_protected', 'true');
+                localStorage.setItem('_api_saved_at', new Date().toISOString());
+                
+                status.className = 'status success';
+                status.innerHTML = `✅ API key guardada exitosamente!<br>
+                    Guardada el: ${new Date().toLocaleString()}<br>
+                    Longitud: ${apiKey.length} caracteres`;
+                
+                // Ocultar el input después de guardar
+                setTimeout(() => {
+                    document.getElementById('apiKey').value = '';
+                    document.getElementById('apiKey').type = 'password';
+                }, 500);
+                
+            } catch (err) {
+                status.className = 'status error';
+                status.innerHTML = `❌ Error: ${err.message}`;
+            }
+        }
+
+        function verifyStorage() {
+            const status = document.getElementById('status3');
+            const apiKey = localStorage.getItem('gemini_api_key');
+            const apiUrl = localStorage.getItem('gemini_api_url');
+            const protected_ = localStorage.getItem('_api_protected');
+            const savedAt = localStorage.getItem('_api_saved_at');
+            
+            let html = '';
+            
+            if (apiKey) {
+                html += `<div class="status success">`;
+                html += `✅ API key guardada<br>`;
+                html += `Primeros caracteres: ${apiKey.substring(0, 15)}...${apiKey.substring(apiKey.length - 5)}<br>`;
+                html += `Longitud: ${apiKey.length} caracteres<br>`;
+                html += `Guardada el: ${savedAt ? new Date(savedAt).toLocaleString() : 'desconocido'}<br>`;
+                html += `Protección: ${protected_ ? '✅ Activada' : '⚠️ No activada'}<br>`;
+                if (apiUrl) {
+                    html += `Modelo: ${apiUrl.split('/models/')[1]?.split(':')[0] || 'desconocido'}`;
+                }
+                html += `</div>`;
+            } else {
+                html += `<div class="status error">`;
+                html += `❌ No hay API key guardada en localStorage`;
+                html += `</div>`;
+            }
+            
+            status.innerHTML = html;
+        }
+
+        function goToIndex() {
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (!apiKey) {
+                alert('❌ Por favor guarda una API key primero');
+                return;
+            }
+            
+            alert('✅ Perfecto! Vamos a HolyVerse con tu API configurada');
+            window.location.href = 'index.html';
+        }
+
+        // Verificar al cargar la página
+        window.addEventListener('load', () => {
+            verifyStorage();
+            
+            // Si ya está guardada, mostrar mensaje
+            if (localStorage.getItem('gemini_api_key')) {
+                document.getElementById('status1').innerHTML = `
+                    <div class="status success">
+                        ✅ Ya tienes una API key guardada
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

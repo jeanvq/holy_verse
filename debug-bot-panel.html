@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Bot</title>
+    <style>
+        body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 2rem; }
+        .section { background: #16213e; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+        pre { background: #0f3460; padding: 1rem; overflow-x: auto; }
+        button { background: #4fd1c5; color: #1a1a2e; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Bot Panel</h1>
+    
+    <div class="section">
+        <h3>1. Ejecutar setupBotListeners() manualmente</h3>
+        <button onclick="testSetup()">Probar Setup</button>
+        <pre id="setupOutput"></pre>
+    </div>
+    
+    <div class="section">
+        <h3>2. Estado actual del DOM</h3>
+        <button onclick="checkDOM()">Verificar DOM</button>
+        <pre id="domOutput"></pre>
+    </div>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/ai-setup.js"></script>
+    
+    <script>
+        window.setupBotListeners = null; // Para detectar si existe
+        
+        function testSetup() {
+            const output = document.getElementById('setupOutput');
+            
+            if (typeof setupBotListeners === 'function') {
+                output.innerHTML = '✅ setupBotListeners existe\n\nIntentando ejecutar...\n';
+                try {
+                    setupBotListeners();
+                    output.innerHTML += '✅ setupBotListeners() ejecutado sin errores';
+                } catch (err) {
+                    output.innerHTML += `❌ Error: ${err.message}\n${err.stack}`;
+                }
+            } else {
+                output.innerHTML = '❌ setupBotListeners no es una función\n';
+                output.innerHTML += `Tipo: ${typeof setupBotListeners}\n`;
+                output.innerHTML += `Valor: ${setupBotListeners}`;
+            }
+        }
+        
+        function checkDOM() {
+            const output = document.getElementById('domOutput');
+            
+            const elements = {
+                'botToggle': document.getElementById('botToggle'),
+                'botPanel': document.getElementById('botPanel'),
+                'botClose': document.getElementById('botClose'),
+                'botInput': document.getElementById('botInput'),
+                'botSend': document.getElementById('botSend'),
+                'botContent': document.getElementById('botContent')
+            };
+            
+            let html = '';
+            Object.entries(elements).forEach(([name, el]) => {
+                if (el) {
+                    html += `✅ ${name}: ${el.tagName}#${el.id}\n`;
+                } else {
+                    html += `❌ ${name}: NO ENCONTRADO\n`;
+                }
+            });
+            
+            output.innerHTML = html;
+        }
+        
+        // Ejecutar diagnóstico inicial
+        window.addEventListener('load', () => {
+            console.log('Página cargada');
+            setTimeout(() => {
+                checkDOM();
+            }, 500);
+        });
+    </script>
+
+    <script src="js/bot.js"></script>
+</body>
+</html>

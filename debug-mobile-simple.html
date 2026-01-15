@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Simple - IA Mobile</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #4fd1c5;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .log { background: #0f3460; padding: 1rem; margin: 1rem 0; border-radius: 4px; border-left: 4px solid #4fd1c5; }
+        .error { border-left-color: #e95555; color: #e95555; }
+        .warning { border-left-color: #f39c12; color: #f39c12; }
+        .success { border-left-color: #4fd1c5; color: #4fd1c5; }
+        button { background: #4fd1c5; color: #1a1a2e; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin: 0.5rem; font-weight: bold; }
+        code { background: #16213e; padding: 0.2rem 0.4rem; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Simple - IA en Mobile</h1>
+    <div id="output"></div>
+    <div>
+        <button onclick="checkScripts()">Verificar Scripts</button>
+        <button onclick="checkDOM()">Verificar DOM</button>
+        <button onclick="testAISetup()">Test AISetup</button>
+        <button onclick="goToIndex()">Ir a index.html</button>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(msg, type = 'log') {
+            const className = type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'success';
+            output.innerHTML += `<div class="log ${className}">${new Date().toLocaleTimeString()}: ${msg}</div>`;
+            console.log(msg);
+        }
+        
+        function checkScripts() {
+            output.innerHTML = '';
+            log('🔍 Verificando carga de scripts...');
+            
+            const scripts = {
+                'i18n': window.i18n,
+                'API': window.API,
+                'AI': window.AI,
+                'AISetup': window.AISetup,
+                'BibleBot': window.BibleBot,
+                'BotAI': window.BotAI,
+            };
+            
+            Object.entries(scripts).forEach(([name, obj]) => {
+                const status = typeof obj !== 'undefined';
+                log(`${status ? '✅' : '❌'} ${name}: ${status ? 'Disponible' : 'No cargado'}`, status ? 'success' : 'error');
+            });
+            
+            // Verificar rutas de scripts
+            log('📋 Verificando rutas de scripts en el DOM...');
+            const scriptTags = document.querySelectorAll('script[src]');
+            scriptTags.forEach(script => {
+                const src = script.src;
+                const loaded = !script.error;
+                log(`${loaded ? '✅' : '❌'} ${src}`, loaded ? 'success' : 'error');
+            });
+        }
+        
+        function checkDOM() {
+            output.innerHTML = '';
+            log('🔍 Verificando elementos del DOM...');
+            
+            const elements = {
+                '#botToggle': document.getElementById('botToggle'),
+                '#botPanel': document.getElementById('botPanel'),
+                '#botAiSetup': document.getElementById('botAiSetup'),
+                '#aiSetupModal': document.getElementById('aiSetupModal'),
+            };
+            
+            Object.entries(elements).forEach(([selector, el]) => {
+                const exists = el !== null;
+                log(`${exists ? '✅' : '❌'} ${selector}: ${exists ? 'Encontrado' : 'No existe'}`, exists ? 'success' : 'error');
+                
+                if (exists) {
+                    const styles = window.getComputedStyle(el);
+                    const visible = styles.display !== 'none';
+                    log(`   └─ Visible: ${visible ? 'Sí' : 'No'} (display: ${styles.display})`);
+                }
+            });
+        }
+        
+        function testAISetup() {
+            output.innerHTML = '';
+            log('🧪 Test de AISetup...');
+            
+            if (typeof window.AISetup === 'undefined') {
+                log('❌ AISetup no está disponible', 'error');
+                log('Por favor: 1. Carga index.html primero 2. Usa el navegador para desarrolladores (F12)');
+                return;
+            }
+            
+            log('✅ AISetup está disponible');
+            
+            if (typeof window.AISetup.showSetupModal === 'function') {
+                log('✅ showSetupModal es una función');
+                log('Abriendo modal...');
+                
+                try {
+                    window.AISetup.showSetupModal();
+                    log('✅ Modal abierto exitosamente');
+                    
+                    setTimeout(() => {
+                        const modal = document.getElementById('aiSetupModal');
+                        if (modal && !modal.classList.contains('hidden')) {
+                            log('✅ Modal visible en DOM');
+                        } else {
+                            log('⚠️ Modal creado pero no visible', 'warning');
+                        }
+                    }, 100);
+                } catch (err) {
+                    log(`❌ Error al abrir modal: ${err.message}`, 'error');
+                }
+            } else {
+                log('❌ showSetupModal no es una función', 'error');
+            }
+        }
+        
+        function goToIndex() {
+            window.location.href = 'index.html';
+        }
+        
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            log('📄 Página cargada en ' + new Date().toLocaleTimeString());
+            log(`Viewport: ${window.innerWidth}x${window.innerHeight}`);
+            checkScripts();
+        });
+    </script>
+</body>
+</html>

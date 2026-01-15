@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Debug - localStorage</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #4fd1c5;
+            padding: 2rem;
+            line-height: 1.8;
+        }
+        button { background: #4fd1c5; color: #1a1a2e; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin: 0.5rem; }
+        input { padding: 0.5rem; margin: 0.5rem; width: 100%; max-width: 400px; }
+        .log { background: #16213e; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug localStorage</h1>
+    
+    <div class="log">
+        <h3>Paste your API key here:</h3>
+        <input type="password" id="apiKey" placeholder="Your Gemini API Key">
+        <br>
+        <button onclick="save()">Save API Key</button>
+        <button onclick="check()">Check Storage</button>
+        <button onclick="load()">Load & Show Key</button>
+        <button onclick="clear()">Clear All</button>
+    </div>
+    
+    <div class="log" id="output"></div>
+
+    <script>
+        const out = document.getElementById('output');
+        
+        function log(msg) {
+            out.innerHTML += msg + '<br>';
+            console.log(msg);
+        }
+        
+        function save() {
+            const key = document.getElementById('apiKey').value;
+            if (!key) {
+                log('❌ Please enter an API key');
+                return;
+            }
+            localStorage.setItem('gemini_api_key', key);
+            log('✅ Saved: ' + key.substring(0, 20) + '...');
+        }
+        
+        function check() {
+            out.innerHTML = '';
+            const key = localStorage.getItem('gemini_api_key');
+            const url = localStorage.getItem('gemini_api_url');
+            
+            log('📋 localStorage contents:');
+            log('  gemini_api_key: ' + (key ? '✅ exists' : '❌ not found'));
+            log('  gemini_api_url: ' + (url ? '✅ exists' : '❌ not found'));
+            log('  Total items: ' + localStorage.length);
+            
+            if (key) {
+                log('');
+                log('🔑 Key starts with: ' + key.substring(0, 20) + '...');
+                log('🔑 Key length: ' + key.length);
+            }
+        }
+        
+        function load() {
+            out.innerHTML = '';
+            const key = localStorage.getItem('gemini_api_key');
+            if (key) {
+                document.getElementById('apiKey').value = key;
+                log('✅ Loaded from storage');
+            } else {
+                log('❌ No API key in storage');
+            }
+            check();
+        }
+        
+        function clear() {
+            localStorage.clear();
+            document.getElementById('apiKey').value = '';
+            out.innerHTML = '';
+            log('🗑️ All storage cleared');
+        }
+        
+        // Auto check on load
+        window.addEventListener('load', () => {
+            log('Page loaded');
+            check();
+        });
+    </script>
+</body>
+</html>

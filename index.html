@@ -23,6 +23,52 @@
     <link rel="stylesheet" href="css/donations.css">
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- 🛡️ Protección de API Key - Ejecutar ANTES que todo lo demás -->
+    <script>
+        // CRÍTICO: Proteger localStorage INMEDIATAMENTE
+        (function protectStorageImmediately() {
+            const originalClear = localStorage.clear;
+            const originalRemoveItem = localStorage.removeItem;
+            const protectedKeys = ['gemini_api_key', 'gemini_api_url', '_api_protected', '_api_saved_at'];
+            
+            // Interceptar removeItem
+            localStorage.removeItem = function(key) {
+                if (protectedKeys.includes(key)) {
+                    console.warn(`🛡️ Intento de borrar ${key} fue bloqueado`);
+                    return;
+                }
+                return originalRemoveItem.call(this, key);
+            };
+            
+            // Interceptar clear
+            localStorage.clear = function() {
+                const backup = {};
+                protectedKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    if (value) backup[key] = value;
+                });
+                
+                originalClear.call(this);
+                
+                Object.entries(backup).forEach(([key, value]) => {
+                    localStorage.setItem(key, value);
+                });
+            };
+            
+            console.log('🛡️ Protección de localStorage ACTIVADA');
+        })();
+        
+        // Auto-cargar API key si existe
+        (function autoLoadApiKey() {
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (apiKey && apiKey.length > 20) {
+                console.log('✅ API key encontrada en localStorage - será auto-cargada');
+            } else {
+                console.log('ℹ️ No hay API key - se pedirá configuración');
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Navigation -->

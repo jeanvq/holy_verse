@@ -2,8 +2,22 @@
 const AISetup = {
     // Show setup modal
     showSetupModal() {
+        // PROTECCIÓN: Si ya hay API key configurada, no mostrar modal
+        const savedKey = localStorage.getItem('gemini_api_key');
+        if (savedKey && AI.isConfigured()) {
+            console.log('✅ AI ya está configurado, no mostrar modal');
+            return;
+        }
+        
         const modal = document.getElementById('aiSetupModal') || this.createSetupModal();
         modal.classList.remove('hidden');
+        
+        // Precargar API key si existe
+        const keyInput = document.getElementById('geminiApiKey');
+        if (keyInput && savedKey) {
+            keyInput.value = savedKey;
+            console.log('✅ API key precargada desde localStorage');
+        }
     },
     
     // Create setup modal
@@ -11,9 +25,16 @@ const AISetup = {
         const modal = document.createElement('div');
         modal.id = 'aiSetupModal';
         modal.className = 'modal hidden';
+        
+        // Detectar si es mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const contentStyle = isMobile 
+            ? 'max-width: 95vw; width: 95vw; left: 50%; top: 50%; transform: translate(-50%, -50%); position: fixed;'
+            : 'max-width: 500px;';
+        
         modal.innerHTML = `
             <div class="modal-overlay" onclick="AISetup.closeSetupModal()"></div>
-            <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-content" style="${contentStyle}">
                 <div class="modal-header" style="padding: 1.5rem; border-bottom: 1px solid var(--border);">
                     <h2 style="margin: 0; color: var(--highlight);">🤖 Configurar IA</h2>
                     <button onclick="AISetup.closeSetupModal()" style="position: absolute; right: 1rem; top: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
@@ -169,16 +190,24 @@ const AISetup = {
         
         // Save to localStorage
         localStorage.setItem('gemini_api_key', key);
+        console.log('💾 API key guardada en localStorage');
         
         // Initialize AI
         AI.init(key);
+        console.log('✅ AI inicializado con la API key');
         
         status.style.display = 'block';
         status.innerHTML = '✅ API key guardada correctamente. IA activada.';
         status.style.color = 'var(--success)';
         
+        // Disparar evento personalizado
+        document.dispatchEvent(new Event('aiSetupComplete'));
+        
         setTimeout(() => {
             this.closeSetupModal();
+            // Limpiar input
+            const input = document.getElementById('geminiApiKey');
+            if (input) input.value = '';
         }, 1500);
     },
     
@@ -192,17 +221,39 @@ const AISetup = {
     init() {
         const savedKey = localStorage.getItem('gemini_api_key');
         if (savedKey) {
-            AI.init(savedKey);
-            console.log('✅ IA inicializada con API key guardada');
+            const result = AI.init(savedKey);
+            if (result) {
+                console.log('✅ AISetup: IA inicializada con API key guardada');
+                console.log('   🔑 API Key: ' + savedKey.substring(0, 10) + '...');
+                
+                // Disparar evento para notificar a otros módulos
+                const event = new Event('aiConfigured');
+                document.dispatchEvent(event);
+                
+                // Notificar al BotAI que la IA está lista
+                if (typeof window.BotAI !== 'undefined' && window.BotAI.init) {
+                    console.log('✅ AISetup: Notificando a BotAI...');
+                    window.BotAI.init();
+                }
+            } else {
+                console.warn('⚠️ Error al inicializar AI con la API key guardada');
+                localStorage.removeItem('gemini_api_key');
+                localStorage.removeItem('gemini_api_url');
+            }
         } else {
-            console.log('⚠️ IA no configurada. Usuario puede configurarla desde el bot.');
+            console.log('⚠️ AISetup: IA no configurada. Usuario puede configurarla desde el bot.');
         }
     }
 };
 
-// Initialize when page loads
+// IMPORTANTE: Inicializar INMEDIATAMENTE (no esperar a DOMContentLoaded)
+console.log('🚀 ai-setup.js: Ejecutando AISetup.init() AHORA');
+AISetup.init();
+
+// También ejecutar cuando DOM esté listo (por si acaso)
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => AISetup.init());
-} else {
-    AISetup.init();
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🔄 ai-setup.js: DOMContentLoaded - re-verificando');
+        AISetup.init();
+    });
 }

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix: Guardar y Proteger API Key</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+        .section { background: #16213e; padding: 1.5rem; margin: 1rem 0; border-radius: 4px; border-left: 4px solid #4fd1c5; }
+        input { width: 100%; padding: 0.75rem; margin: 0.5rem 0; background: #0f3460; border: 1px solid #4fd1c5; color: #e0e0e0; border-radius: 4px; }
+        button { background: #4fd1c5; color: #1a1a2e; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 0.5rem; }
+        .ok { color: #4fd1c5; }
+        .error { color: #e95555; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Fix: Guardar y Proteger API Key</h1>
+    
+    <div class="section">
+        <h3>1. Pega tu API key aquí:</h3>
+        <input type="password" id="apiKey" placeholder="AIzaSy..." value="">
+        <button onclick="saveAndProtect()">✅ Guardar y Proteger</button>
+    </div>
+    
+    <div class="section">
+        <h3>2. Verificar guardado:</h3>
+        <button onclick="verify()">🔍 Verificar</button>
+        <div id="verify" style="margin-top: 1rem;"></div>
+    </div>
+    
+    <div class="section">
+        <h3>3. Ir a index.html:</h3>
+        <button onclick="goToIndex()">🚀 Abrir index.html</button>
+        <p style="color: #999; margin-top: 1rem;">
+            Después de guardar aquí, ve a index.html y no debería pedir API key
+        </p>
+    </div>
+
+    <script>
+        // IMPORTANTE: Proteger localStorage
+        const originalSetItem = localStorage.setItem;
+        const originalRemoveItem = localStorage.removeItem;
+        const originalClear = localStorage.clear;
+        
+        // Lista de claves que NO se deben borrar
+        const protectedKeys = ['gemini_api_key', 'gemini_api_url'];
+        
+        // Interceptar removeItem para proteger claves
+        localStorage.removeItem = function(key) {
+            if (protectedKeys.includes(key)) {
+                console.warn(`🛡️ PROTEGIDO: No se puede borrar ${key}`);
+                return;
+            }
+            return originalRemoveItem.call(this, key);
+        };
+        
+        // Interceptar clear para proteger claves
+        localStorage.clear = function() {
+            console.warn('🛡️ PROTEGIDO: Clear interceptado - salvando claves protegidas');
+            const protected = {};
+            protectedKeys.forEach(key => {
+                protected[key] = localStorage.getItem(key);
+            });
+            
+            originalClear.call(this);
+            
+            // Restaurar claves protegidas
+            Object.entries(protected).forEach(([key, value]) => {
+                if (value) {
+                    originalSetItem.call(this, key, value);
+                    console.log(`✅ Restaurada clave protegida: ${key}`);
+                }
+            });
+        };
+        
+        console.log('🛡️ Protección de localStorage activada');
+        
+        function saveAndProtect() {
+            const key = document.getElementById('apiKey').value.trim();
+            if (!key) {
+                alert('Por favor ingresa una API key');
+                return;
+            }
+            
+            // Guardar con protección
+            try {
+                localStorage.setItem('gemini_api_key', key);
+                localStorage.setItem('_api_key_protected', 'true');
+                
+                console.log('✅ API key guardada y protegida');
+                alert('✅ API key guardada correctamente\n\nAhora puedes ir a index.html');
+                
+                verify();
+            } catch (err) {
+                alert('❌ Error al guardar: ' + err.message);
+            }
+        }
+        
+        function verify() {
+            const verifyEl = document.getElementById('verify');
+            const key = localStorage.getItem('gemini_api_key');
+            const url = localStorage.getItem('gemini_api_url');
+            const protected = localStorage.getItem('_api_key_protected');
+            
+            let html = '';
+            
+            if (key) {
+                html += `<div class="ok">✅ gemini_api_key: ${key.substring(0, 20)}... (${key.length} chars)</div>`;
+            } else {
+                html += `<div class="error">❌ gemini_api_key: NO ENCONTRADA</div>`;
+            }
+            
+            html += `<div>${url ? '✅' : '⚠️'} gemini_api_url: ${url ? 'found' : 'not set yet'}</div>`;
+            html += `<div class="ok">🛡️ Protección: ${protected ? 'ACTIVADA' : 'no activada'}</div>`;
+            html += `<div style="color: #999; margin-top: 1rem; font-size: 0.9rem;">Total items en localStorage: ${localStorage.length}</div>`;
+            
+            verifyEl.innerHTML = html;
+        }
+        
+        function goToIndex() {
+            // Verificar antes de ir
+            const key = localStorage.getItem('gemini_api_key');
+            if (!key) {
+                alert('❌ Por favor guarda una API key primero');
+                return;
+            }
+            
+            window.location.href = 'index.html';
+        }
+        
+        // Verificar al cargar
+        window.addEventListener('load', () => {
+            verify();
+        });
+    </script>
+</body>
+</html>

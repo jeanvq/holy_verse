@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspector de IA Mobile - HolyVerse</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 1rem;
+            line-height: 1.6;
+        }
+        
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        h1 { color: #4fd1c5; margin-bottom: 1rem; font-size: 1.8rem; }
+        
+        .panel {
+            background: #16213e;
+            border: 1px solid #4fd1c5;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .panel h2 {
+            color: #f39c12;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #4fd1c5;
+            padding-bottom: 0.5rem;
+        }
+        
+        .item {
+            background: #0f3460;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            border-left: 4px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item.ok { border-left-color: #4fd1c5; }
+        .item.error { border-left-color: #e95555; }
+        .item.warning { border-left-color: #f39c12; }
+        
+        .status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status.ok { background: rgba(79, 209, 197, 0.2); color: #4fd1c5; }
+        .status.error { background: rgba(233, 85, 85, 0.2); color: #e95555; }
+        .status.warning { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+        
+        button {
+            background: #4fd1c5;
+            color: #1a1a2e;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+        
+        button:hover { background: #3ba39c; transform: scale(1.05); }
+        button:active { transform: scale(0.95); }
+        
+        .console-output {
+            background: #0f3460;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid #4fd1c5;
+        }
+        
+        .console-line {
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #16213e;
+        }
+        
+        .console-line:last-child { border-bottom: none; }
+        
+        .console-success { color: #4fd1c5; }
+        .console-error { color: #e95555; }
+        .console-warning { color: #f39c12; }
+        .console-info { color: #9b9b9b; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Inspector de IA Mobile - HolyVerse</h1>
+        <p style="color: #999; margin-bottom: 1.5rem;">Diagnóstico de la funcionalidad de IA en dispositivos móviles</p>
+        
+        <div class="grid">
+            <div class="panel">
+                <h2>📱 Dispositivo</h2>
+                <div id="devicePanel"></div>
+            </div>
+            
+            <div class="panel">
+                <h2>📦 Scripts</h2>
+                <div id="scriptsPanel"></div>
+            </div>
+            
+            <div class="panel">
+                <h2>🎯 Objetos Globales</h2>
+                <div id="objectsPanel"></div>
+            </div>
+            
+            <div class="panel">
+                <h2>🏠 Elementos DOM</h2>
+                <div id="elementsPanel"></div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>💾 Almacenamiento</h2>
+            <div id="storagePanel"></div>
+        </div>
+        
+        <div class="panel">
+            <h2>🎬 Acciones</h2>
+            <button onclick="testAllFeatures()">Ejecutar Todos los Tests</button>
+            <button onclick="openAISetup()">Abrir Setup de IA</button>
+            <button onclick="openBotPanel()">Abrir Panel del Bot</button>
+            <button onclick="clearConsole()">Limpiar Consola</button>
+            <button onclick="goToIndex()">Ir a Index.html</button>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 Console Output</h2>
+            <div class="console-output" id="console"></div>
+        </div>
+    </div>
+    
+    <script>
+        const consoleEl = document.getElementById('console');
+        
+        function log(msg, type = 'info') {
+            const className = `console-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = `console-line ${className}`;
+            line.textContent = `[${timestamp}] ${msg}`;
+            consoleEl.appendChild(line);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            console.log(`${type.toUpperCase()}: ${msg}`);
+        }
+        
+        function clearConsole() {
+            consoleEl.innerHTML = '';
+            log('Consola limpiada');
+        }
+        
+        function createItem(label, status, statusText) {
+            const item = document.createElement('div');
+            item.className = `item ${status}`;
+            item.innerHTML = `
+                <span>${label}</span>
+                <span class="status ${status}">${statusText}</span>
+            `;
+            return item;
+        }
+        
+        function testDevice() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            const panel = document.getElementById('devicePanel');
+            panel.innerHTML = '';
+            
+            const types = {
+                'Tipo': isMobile ? 'Mobile' : 'Desktop',
+                'Ancho': `${width}px`,
+                'Alto': `${height}px`,
+                'User Agent': navigator.userAgent.substring(0, 50) + '...',
+            };
+            
+            Object.entries(types).forEach(([label, value]) => {
+                const item = document.createElement('div');
+                item.className = 'item ok';
+                item.innerHTML = `<span>${label}</span><span style="font-size: 0.85rem; color: #999;">${value}</span>`;
+                panel.appendChild(item);
+            });
+            
+            log(`Dispositivo: ${isMobile ? 'Mobile' : 'Desktop'} (${width}x${height})`, 'info');
+        }
+        
+        function testScripts() {
+            const panel = document.getElementById('scriptsPanel');
+            panel.innerHTML = '';
+            
+            const scripts = Array.from(document.querySelectorAll('script[src]')).map(s => s.src);
+            
+            log(`${scripts.length} scripts encontrados`, 'info');
+            
+            scripts.forEach(src => {
+                const shortSrc = src.split('/').pop();
+                const item = createItem(shortSrc, 'ok', '✅ Cargado');
+                panel.appendChild(item);
+            });
+            
+            if (scripts.length === 0) {
+                panel.innerHTML = '<div class="item warning"><span>No se encontraron scripts</span></div>';
+            }
+        }
+        
+        function testObjects() {
+            const panel = document.getElementById('objectsPanel');
+            panel.innerHTML = '';
+            
+            const objects = [
+                { name: 'i18n', obj: window.i18n },
+                { name: 'API', obj: window.API },
+                { name: 'AI', obj: window.AI },
+                { name: 'AISetup', obj: window.AISetup },
+                { name: 'BibleBot', obj: window.BibleBot },
+                { name: 'BotAI', obj: window.BotAI },
+            ];
+            
+            objects.forEach(({ name, obj }) => {
+                const status = typeof obj !== 'undefined' ? 'ok' : 'error';
+                const statusText = typeof obj !== 'undefined' ? '✅ Ok' : '❌ No';
+                const item = createItem(name, status, statusText);
+                panel.appendChild(item);
+                
+                log(`${name}: ${status === 'ok' ? 'Disponible' : 'No disponible'}`, status);
+            });
+        }
+        
+        function testElements() {
+            const panel = document.getElementById('elementsPanel');
+            panel.innerHTML = '';
+            
+            const elements = [
+                { id: 'botToggle', label: 'Bot Toggle' },
+                { id: 'botPanel', label: 'Bot Panel' },
+                { id: 'botAiSetup', label: 'AI Setup Btn' },
+                { id: 'aiSetupModal', label: 'AI Setup Modal' },
+            ];
+            
+            elements.forEach(({ id, label }) => {
+                const el = document.getElementById(id);
+                const status = el ? 'ok' : 'error';
+                const statusText = el ? '✅ Existe' : '❌ No existe';
+                const item = createItem(`#${id}`, status, statusText);
+                panel.appendChild(item);
+                
+                log(`${label} (#${id}): ${statusText}`, status);
+            });
+        }
+        
+        function testStorage() {
+            const panel = document.getElementById('storagePanel');
+            panel.innerHTML = '';
+            
+            const apiKey = localStorage.getItem('gemini_api_key');
+            const apiUrl = localStorage.getItem('gemini_api_url');
+            
+            const item1 = createItem(
+                'API Key',
+                apiKey ? 'ok' : 'warning',
+                apiKey ? '✅ Guardada' : '⚠️ No guardada'
+            );
+            panel.appendChild(item1);
+            
+            const item2 = createItem(
+                'API URL',
+                apiUrl ? 'ok' : 'warning',
+                apiUrl ? '✅ Guardada' : '⚠️ No guardada'
+            );
+            panel.appendChild(item2);
+            
+            const item3 = createItem(
+                'Total items',
+                'ok',
+                Object.keys(localStorage).length
+            );
+            panel.appendChild(item3);
+            
+            log(`Storage: ${Object.keys(localStorage).length} items`, 'info');
+        }
+        
+        function testAllFeatures() {
+            log('========================================', 'info');
+            log('Ejecutando todos los tests...', 'warning');
+            log('========================================', 'info');
+            
+            testDevice();
+            testScripts();
+            testObjects();
+            testElements();
+            testStorage();
+            
+            log('Tests completados', 'success');
+        }
+        
+        function openAISetup() {
+            if (typeof window.AISetup !== 'undefined' && window.AISetup.showSetupModal) {
+                log('Abriendo AISetup...', 'warning');
+                window.AISetup.showSetupModal();
+            } else {
+                log('Error: AISetup no está disponible', 'error');
+            }
+        }
+        
+        function openBotPanel() {
+            const botToggle = document.getElementById('botToggle');
+            if (botToggle) {
+                log('Abriendo Bot Panel...', 'warning');
+                botToggle.click();
+            } else {
+                log('Error: Bot Toggle no encontrado', 'error');
+            }
+        }
+        
+        function goToIndex() {
+            window.location.href = 'index.html';
+        }
+        
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            log('Página cargada', 'success');
+            setTimeout(() => testAllFeatures(), 500);
+        });
+    </script>
+</body>
+</html>

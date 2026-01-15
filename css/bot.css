@@ -198,11 +198,13 @@
         right: 1rem;
         left: 1rem;
         border-radius: 12px;
+        -webkit-overflow-scrolling: touch;
     }
 
     .bot-content {
         max-height: calc(75vh - 140px);
         padding: 1rem;
+        -webkit-overflow-scrolling: touch;
     }
 
     .bot-header {
@@ -219,6 +221,14 @@
 
     .bot-input input {
         font-size: 16px;
+    }
+    
+    /* Mejorar visibilidad del botón de IA en mobile */
+    #botAiSetup {
+        padding: 0.5rem !important;
+        min-width: 40px;
+        min-height: 40px;
+        font-size: 1.3rem !important;
     }
 }
 

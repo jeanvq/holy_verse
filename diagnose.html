@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico: ¿Por qué pide API?</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 1rem;
+            line-height: 1.6;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { color: #4fd1c5; }
+        .section { background: #16213e; padding: 1rem; margin: 1rem 0; border-radius: 4px; border-left: 4px solid #4fd1c5; }
+        .line { padding: 0.3rem 0; }
+        .ok { color: #4fd1c5; }
+        .error { color: #e95555; }
+        .warning { color: #f39c12; }
+        button { background: #4fd1c5; color: #1a1a2e; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin: 0.5rem 0.5rem 0.5rem 0; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico: ¿Por qué pide API?</h1>
+        
+        <div class="section">
+            <h3>1. localStorage check</h3>
+            <div id="storage"></div>
+        </div>
+        
+        <div class="section">
+            <h3>2. Script loading order</h3>
+            <div id="scripts"></div>
+        </div>
+        
+        <div class="section">
+            <h3>3. AI object check</h3>
+            <div id="aiCheck"></div>
+        </div>
+        
+        <div class="section">
+            <h3>4. AISetup check</h3>
+            <div id="setupCheck"></div>
+        </div>
+        
+        <div class="section">
+            <button onclick="location.href='index.html'">Go to index.html</button>
+            <button onclick="location.reload()">Reload this page</button>
+        </div>
+    </div>
+
+    <!-- Load scripts like in index.html -->
+    <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/ai-setup.js"></script>
+    <script src="js/bot.js"></script>
+    <script src="js/bot-ai.js"></script>
+
+    <script>
+        function log(element, msg, type = 'ok') {
+            const div = document.createElement('div');
+            div.className = `line ${type}`;
+            div.textContent = msg;
+            element.appendChild(div);
+        }
+
+        // Wait for scripts to load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                check();
+            }, 1000);
+        });
+
+        function check() {
+            // 1. Storage
+            const storageEl = document.getElementById('storage');
+            const key = localStorage.getItem('gemini_api_key');
+            const url = localStorage.getItem('gemini_api_url');
+            
+            if (key) {
+                log(storageEl, `✅ gemini_api_key: ${key.substring(0, 20)}...`, 'ok');
+            } else {
+                log(storageEl, `❌ gemini_api_key: NOT FOUND`, 'error');
+            }
+            
+            log(storageEl, `${url ? '✅' : '❌'} gemini_api_url: ${url ? 'found' : 'not found'}`, url ? 'ok' : 'warning');
+            log(storageEl, `Total items in localStorage: ${localStorage.length}`, 'ok');
+
+            // 2. Scripts
+            const scriptsEl = document.getElementById('scripts');
+            const allScripts = Array.from(document.querySelectorAll('script[src]'));
+            log(scriptsEl, `Total scripts loaded: ${allScripts.length}`, 'ok');
+            
+            const important = [
+                { name: 'ai.js', src: 'ai.js' },
+                { name: 'ai-setup.js', src: 'ai-setup.js' },
+                { name: 'bot-ai.js', src: 'bot-ai.js' }
+            ];
+            
+            important.forEach(imp => {
+                const found = allScripts.some(s => s.src.includes(imp.src));
+                log(scriptsEl, `${found ? '✅' : '❌'} ${imp.name}`, found ? 'ok' : 'error');
+            });
+
+            // 3. AI Object
+            const aiEl = document.getElementById('aiCheck');
+            
+            if (typeof window.AI === 'undefined') {
+                log(aiEl, `❌ window.AI is undefined`, 'error');
+            } else {
+                log(aiEl, `✅ window.AI exists`, 'ok');
+                
+                if (AI.isConfigured()) {
+                    log(aiEl, `✅ AI.isConfigured() = true`, 'ok');
+                    log(aiEl, `   API_KEY length: ${AI.API_KEY.length}`, 'ok');
+                } else {
+                    log(aiEl, `❌ AI.isConfigured() = false`, 'error');
+                    log(aiEl, `   API_KEY: "${AI.API_KEY}"`, 'error');
+                }
+                
+                log(aiEl, `API_URL: ${AI.API_URL}`, 'ok');
+            }
+
+            // 4. AISetup
+            const setupEl = document.getElementById('setupCheck');
+            
+            if (typeof window.AISetup === 'undefined') {
+                log(setupEl, `❌ window.AISetup is undefined`, 'error');
+            } else {
+                log(setupEl, `✅ window.AISetup exists`, 'ok');
+                
+                if (typeof AISetup.init === 'function') {
+                    log(setupEl, `✅ AISetup.init is a function`, 'ok');
+                } else {
+                    log(setupEl, `❌ AISetup.init is NOT a function`, 'error');
+                }
+                
+                if (typeof AISetup.showSetupModal === 'function') {
+                    log(setupEl, `✅ AISetup.showSetupModal is a function`, 'ok');
+                } else {
+                    log(setupEl, `❌ AISetup.showSetupModal is NOT a function`, 'error');
+                }
+            }
+
+            // Summary
+            console.log('=== DIAGNÓSTICO ===');
+            console.log('localStorage key exists:', !!key);
+            console.log('AI.isConfigured():', AI.isConfigured ? AI.isConfigured() : 'N/A');
+            console.log('AISetup exists:', typeof window.AISetup !== 'undefined');
+        }
+    </script>
+</body>
+</html>

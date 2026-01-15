@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>🔧 Diagnóstico API Key</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+        .section { background: #16213e; padding: 1.5rem; margin: 1rem 0; border-radius: 4px; border-left: 4px solid #4fd1c5; }
+        input { width: 100%; padding: 0.75rem; margin: 0.5rem 0; background: #0f3460; border: 1px solid #4fd1c5; color: #e0e0e0; border-radius: 4px; }
+        button { background: #4fd1c5; color: #1a1a2e; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        pre { background: #0f3460; padding: 1rem; border-radius: 4px; overflow-x: auto; max-height: 500px; white-space: pre-wrap; word-wrap: break-word; }
+        .ok { color: #4fd1c5; }
+        .error { color: #e95555; }
+        .info { color: #7c8ff6; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Diagnóstico Completo de API Key</h1>
+    
+    <div class="section">
+        <h3>1. Tu API Key:</h3>
+        <input type="password" id="apiKey" placeholder="AIzaSy..." autocomplete="off">
+        <button onclick="runDiagnostics()">🔍 Ejecutar diagnóstico completo</button>
+    </div>
+    
+    <div class="section">
+        <h3>2. Resultados:</h3>
+        <pre id="results">Ingresa tu API key y haz click en el botón...</pre>
+    </div>
+
+    <script>
+        async function runDiagnostics() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const results = document.getElementById('results');
+            
+            if (!apiKey) {
+                results.innerHTML = '❌ Por favor ingresa una API key';
+                return;
+            }
+            
+            results.innerHTML = '';
+            log(results, '🔍 Iniciando diagnóstico...\n');
+            
+            // Test 1: Validar formato
+            log(results, '\n📝 TEST 1: Formato de API Key');
+            log(results, `Longitud: ${apiKey.length} caracteres`);
+            if (apiKey.startsWith('AIzaSy')) {
+                log(results, '✅ Formato correcto (empieza con AIzaSy)', 'ok');
+            } else {
+                log(results, '❌ Formato incorrecto (no empieza con AIzaSy)', 'error');
+            }
+            
+            // Test 2: Listar modelos disponibles
+            log(results, '\n📝 TEST 2: ListModels (obtener modelos disponibles)');
+            await testListModels(apiKey, results);
+            
+            // Test 3: Probar GenerateContent con gemini-pro
+            log(results, '\n📝 TEST 3: GenerateContent - Prueba simple');
+            await testGenerateContent(apiKey, results);
+            
+            log(results, '\n✅ Diagnóstico completado\n');
+        }
+        
+        function log(element, text, type = 'info') {
+            const color = type === 'ok' ? '✅ ' : type === 'error' ? '❌ ' : 'ℹ️  ';
+            element.innerHTML += color + text + '\n';
+            element.parentElement.scrollTop = element.parentElement.scrollHeight;
+        }
+        
+        async function testListModels(apiKey, resultsElement) {
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`
+                );
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    log(resultsElement, `❌ Error: ${error.error?.message || 'Error desconocido'}`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                log(resultsElement, `✅ ListModels exitoso`, 'ok');
+                log(resultsElement, `Total de modelos: ${data.models?.length || 0}`);
+                
+                if (data.models && data.models.length > 0) {
+                    log(resultsElement, '\nModelos disponibles:', 'ok');
+                    data.models.forEach(model => {
+                        const modelName = model.name.split('/').pop();
+                        const methods = model.supportedGenerationMethods || [];
+                        const supportsContent = methods.includes('generateContent');
+                        const icon = supportsContent ? '✅' : '⚠️';
+                        log(resultsElement, `  ${icon} ${modelName} - Methods: ${methods.join(', ')}`);
+                    });
+                }
+            } catch (err) {
+                log(resultsElement, `❌ Error de red: ${err.message}`, 'error');
+            }
+        }
+        
+        async function testGenerateContent(apiKey, resultsElement) {
+            const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+            
+            try {
+                const response = await fetch(testUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: 'Hola' }]
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(resultsElement, `✅ gemini-pro (v1beta) funciona correctamente`, 'ok');
+                    log(resultsElement, `Respuesta: ${data.candidates?.[0]?.content?.parts?.[0]?.text?.substring(0, 100)}...`);
+                } else {
+                    const errorCode = data.error?.code;
+                    const errorMsg = data.error?.message;
+                    
+                    if (errorCode === 404) {
+                        log(resultsElement, `⚠️  Modelo no encontrado: ${errorMsg}`, 'error');
+                        log(resultsElement, 'Probando con v1 API...');
+                        
+                        // Intentar con v1
+                        await testWithVersion(apiKey, 'gemini-pro', 'v1', resultsElement);
+                    } else if (errorCode === 403) {
+                        log(resultsElement, `❌ Permiso denegado (403): ${errorMsg}`, 'error');
+                        log(resultsElement, 'Tu API key podría no tener acceso a los modelos de IA');
+                    } else {
+                        log(resultsElement, `❌ Error ${errorCode}: ${errorMsg}`, 'error');
+                    }
+                }
+            } catch (err) {
+                log(resultsElement, `❌ Error de red: ${err.message}`, 'error');
+            }
+        }
+        
+        async function testWithVersion(apiKey, model, version, resultsElement) {
+            const testUrl = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`;
+            
+            try {
+                const response = await fetch(testUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: 'test' }]
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(resultsElement, `✅ ${model} (${version}) funciona`, 'ok');
+                } else {
+                    log(resultsElement, `❌ Error con ${model} (${version}): ${data.error?.message}`, 'error');
+                }
+            } catch (err) {
+                log(resultsElement, `❌ Error: ${err.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

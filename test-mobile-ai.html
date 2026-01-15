@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Test - IA en Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #4fd1c5;
+            margin-bottom: 1rem;
+        }
+        
+        .test-section {
+            background: #16213e;
+            border: 1px solid #4fd1c5;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .test-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #0f3460;
+            border-radius: 6px;
+        }
+        
+        .test-item.success {
+            border-left: 4px solid #4fd1c5;
+        }
+        
+        .test-item.error {
+            border-left: 4px solid #e95555;
+        }
+        
+        .test-item.warning {
+            border-left: 4px solid #f39c12;
+        }
+        
+        button {
+            background: #4fd1c5;
+            color: #1a1a2e;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        button:hover {
+            background: #3ba39c;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+        
+        .badge-success { background: rgba(79, 209, 197, 0.2); color: #4fd1c5; }
+        .badge-error { background: rgba(233, 85, 85, 0.2); color: #e95555; }
+        .badge-warning { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+        
+        code {
+            background: #1a1a2e;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        
+        .device-info {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test - IA en Dispositivos Móviles</h1>
+        
+        <div class="device-info" id="deviceInfo"></div>
+        
+        <div class="test-section">
+            <h2>1️⃣ Detección de Dispositivo</h2>
+            <div id="deviceTest"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2️⃣ Configuración de IA</h2>
+            <div id="aiConfigTest"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3️⃣ Sistema de Almacenamiento</h2>
+            <div id="storageTest"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>4️⃣ Scripts Cargados</h2>
+            <div id="scriptsTest"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>5️⃣ Renderizado del Modal</h2>
+            <div id="modalTest"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>6️⃣ Interfaz de Usuario</h2>
+            <div id="uiTest"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎬 Acciones</h2>
+            <button onclick="testAISetup()">Probar Setup de IA</button>
+            <button onclick="testCreateModal()">Crear Modal Manualmente</button>
+            <button onclick="openConsole()">📊 Abrir Consola</button>
+            <button onclick="location.reload()">🔄 Recargar Página</button>
+        </div>
+    </div>
+    
+    <!-- Cargar scripts de HolyVerse -->
+    <div id="scriptsStatus" style="background: #0f3460; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; border-left: 4px solid #f39c12;">
+        <h3 style="margin-bottom: 0.5rem; color: #f39c12;">📦 Estado de Carga de Scripts</h3>
+        <div id="scriptsLog"></div>
+    </div>
+    
+    <script>
+        // Monitorear carga de scripts
+        window.scriptsLoaded = {};
+        
+        function logScript(name, status) {
+            window.scriptsLoaded[name] = status;
+            const log = document.getElementById('scriptsLog');
+            const icon = status ? '✅' : '❌';
+            log.innerHTML += `<div style="font-size: 0.9rem; margin: 0.2rem 0;">${icon} ${name}</div>`;
+            console.log(`${icon} ${name}`);
+        }
+    </script>
+    
+    <script src="js/i18n.js" onload="logScript('i18n.js', true)" onerror="logScript('i18n.js', false)"></script>
+    <script src="js/api.js" onload="logScript('api.js', true)" onerror="logScript('api.js', false)"></script>
+    <script src="js/ai.js" onload="logScript('ai.js', true)" onerror="logScript('ai.js', false)"></script>
+    <script src="js/ai-setup.js" onload="logScript('ai-setup.js', true)" onerror="logScript('ai-setup.js', false)"></script>
+    <script src="js/bot.js" onload="logScript('bot.js', true)" onerror="logScript('bot.js', false)"></script>
+    <script src="js/bot-ai.js" onload="logScript('bot-ai.js', true)" onerror="logScript('bot-ai.js', false)"></script>
+    <script src="js/mobile-enhancements.js" onload="logScript('mobile-enhancements.js', true)" onerror="logScript('mobile-enhancements.js', false)"></script>
+    <script src="js/auth.js" onload="logScript('auth.js', true)" onerror="logScript('auth.js', false)"></script>
+    <script src="js/main.js" onload="logScript('main.js', true)" onerror="logScript('main.js', false)"></script>
+    
+    <script>
+        // Device Detection
+        function testDevice() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const userAgent = navigator.userAgent;
+            
+            document.getElementById('deviceInfo').innerHTML = `
+                📱 ${width}x${height} | ${isMobile ? 'MOBILE' : 'DESKTOP'} | ${navigator.language}
+            `;
+            
+            let html = '';
+            html += `<div class="test-item ${isMobile ? 'success' : 'warning'}">
+                User Agent: <code>${userAgent.substring(0, 80)}...</code>
+                <span class="status-badge ${isMobile ? 'badge-success' : 'badge-warning'}">
+                    ${isMobile ? '✅ Mobile Detectado' : '⚠️ Desktop'}
+                </span>
+            </div>`;
+            
+            html += `<div class="test-item success">
+                Dimensiones: <code>${width}x${height}</code>
+                <span class="status-badge badge-success">✅ ${width <= 768 ? 'Mobile Layout' : 'Desktop Layout'}</span>
+            </div>`;
+            
+            document.getElementById('deviceTest').innerHTML = html;
+        }
+        
+        // AI Configuration
+        function testAIConfig() {
+            const savedKey = localStorage.getItem('gemini_api_key');
+            const savedUrl = localStorage.getItem('gemini_api_url');
+            
+            let html = '';
+            
+            if (savedKey) {
+                const masked = savedKey.substring(0, 10) + '...' + savedKey.substring(savedKey.length - 4);
+                html += `<div class="test-item success">
+                    API Key Guardada: <code>${masked}</code>
+                    <span class="status-badge badge-success">✅ Configurada</span>
+                </div>`;
+            } else {
+                html += `<div class="test-item warning">
+                    API Key: No configurada
+                    <span class="status-badge badge-warning">⚠️ No Guardada</span>
+                </div>`;
+            }
+            
+            if (savedUrl) {
+                const modelName = savedUrl.split('/models/')[1]?.split(':')[0] || 'unknown';
+                html += `<div class="test-item success">
+                    Modelo: <code>${modelName}</code>
+                    <span class="status-badge badge-success">✅ Guardado</span>
+                </div>`;
+            } else {
+                html += `<div class="test-item warning">
+                    Modelo: No guardado
+                    <span class="status-badge badge-warning">⚠️ Usará default</span>
+                </div>`;
+            }
+            
+            document.getElementById('aiConfigTest').innerHTML = html;
+        }
+        
+        // Storage Test
+        function testStorage() {
+            let html = '';
+            
+            try {
+                localStorage.setItem('test', 'ok');
+                localStorage.removeItem('test');
+                html += `<div class="test-item success">
+                    localStorage: Disponible
+                    <span class="status-badge badge-success">✅ Funciona</span>
+                </div>`;
+            } catch (e) {
+                html += `<div class="test-item error">
+                    localStorage: ${e.message}
+                    <span class="status-badge badge-error">❌ Error</span>
+                </div>`;
+            }
+            
+            try {
+                sessionStorage.setItem('test', 'ok');
+                sessionStorage.removeItem('test');
+                html += `<div class="test-item success">
+                    sessionStorage: Disponible
+                    <span class="status-badge badge-success">✅ Funciona</span>
+                </div>`;
+            } catch (e) {
+                html += `<div class="test-item error">
+                    sessionStorage: ${e.message}
+                    <span class="status-badge badge-error">❌ Error</span>
+                </div>`;
+            }
+            
+            const used = Object.keys(localStorage).length;
+            html += `<div class="test-item success">
+                localStorage Items: <code>${used}</code>
+                <span class="status-badge badge-success">ℹ️ Total</span>
+            </div>`;
+            
+            document.getElementById('storageTest').innerHTML = html;
+        }
+        
+        // Scripts Test
+        function testScripts() {
+            let html = '';
+            
+            const scripts = [
+                { name: 'i18n', obj: window.i18n },
+                { name: 'API', obj: window.API },
+                { name: 'AI', obj: window.AI },
+                { name: 'AISetup', obj: window.AISetup },
+                { name: 'BibleBot', obj: window.BibleBot },
+                { name: 'BotAI', obj: window.BotAI },
+            ];
+            
+            scripts.forEach(script => {
+                const status = typeof script.obj !== 'undefined';
+                const itemClass = status ? 'success' : 'warning';
+                const icon = status ? '✅' : '❌';
+                html += `<div class="test-item ${itemClass}">
+                    ${script.name}: ${status ? 'Cargado' : 'Pendiente'}
+                    <span class="status-badge ${status ? 'badge-success' : 'badge-warning'}">${icon}</span>
+                </div>`;
+            });
+            
+            document.getElementById('scriptsTest').innerHTML = html;
+        }
+        
+        // Modal Test
+        function testModal() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            let html = '';
+            
+            if (typeof window.AISetup !== 'undefined') {
+                html += `<div class="test-item success">
+                    AISetup Object: Definido
+                    <span class="status-badge badge-success">✅ Cargado</span>
+                </div>`;
+            } else {
+                html += `<div class="test-item error">
+                    AISetup Object: No definido
+                    <span class="status-badge badge-error">❌ Falta cargar ai-setup.js</span>
+                </div>`;
+            }
+            
+            const modal = document.getElementById('aiSetupModal');
+            if (modal) {
+                html += `<div class="test-item success">
+                    Modal Element: Existe en DOM
+                    <span class="status-badge badge-success">✅ Presente</span>
+                </div>`;
+            } else {
+                html += `<div class="test-item warning">
+                    Modal Element: No encontrado
+                    <span class="status-badge badge-warning">ℹ️ Se creará dinámicamente cuando AISetup.showSetupModal() se ejecute</span>
+                </div>`;
+            }
+            
+            const isMobileStyle = isMobile ? 'responsive (95vw)' : 'fixed (500px)';
+            html += `<div class="test-item success">
+                Viewport: ${window.innerWidth}x${window.innerHeight}
+                <span class="status-badge badge-success">✅ ${isMobile ? 'Mobile' : 'Desktop'}</span>
+            </div>`;
+            
+            document.getElementById('modalTest').innerHTML = html;
+        }
+        
+        // UI Test
+        function testUI() {
+            const setupBtn = document.getElementById('botAiSetup');
+            const botToggle = document.getElementById('botToggle');
+            const botPanel = document.getElementById('botPanel');
+            
+            let html = '';
+            
+            if (setupBtn) {
+                const styles = window.getComputedStyle(setupBtn);
+                const isVisible = styles.display !== 'none';
+                html += `<div class="test-item ${isVisible ? 'success' : 'error'}">
+                    Botón Setup IA (#botAiSetup): ${isVisible ? 'Visible' : 'Oculto'}
+                    <span class="status-badge ${isVisible ? 'badge-success' : 'badge-error'}">
+                        ${isVisible ? '✅' : '❌'}
+                    </span>
+                </div>`;
+            } else {
+                html += `<div class="test-item warning">
+                    Botón Setup IA (#botAiSetup): No encontrado en DOM
+                    <span class="status-badge badge-warning">ℹ️ Está dentro de #botPanel</span>
+                </div>`;
+            }
+            
+            if (botPanel) {
+                const styles = window.getComputedStyle(botPanel);
+                const isHidden = botPanel.classList.contains('hidden');
+                html += `<div class="test-item ${!isHidden ? 'success' : 'warning'}">
+                    Bot Panel: ${isHidden ? 'Oculto (hidden)' : 'Visible'}
+                    <span class="status-badge ${!isHidden ? 'badge-success' : 'badge-warning'}">
+                        ${!isHidden ? '✅ Mostrado' : 'ℹ️ Se abre con botón'}
+                    </span>
+                </div>`;
+            } else {
+                html += `<div class="test-item error">
+                    Bot Panel (#botPanel): No encontrado
+                    <span class="status-badge badge-error">❌ Falta en HTML</span>
+                </div>`;
+            }
+            
+            if (botToggle) {
+                const styles = window.getComputedStyle(botToggle);
+                const isVisible = styles.display !== 'none';
+                html += `<div class="test-item ${isVisible ? 'success' : 'error'}">
+                    Botón Bot Toggle (#botToggle): ${isVisible ? 'Visible' : 'Oculto'}
+                    <span class="status-badge ${isVisible ? 'badge-success' : 'badge-error'}">
+                        ${isVisible ? '✅' : '❌'}
+                    </span>
+                </div>`;
+            } else {
+                html += `<div class="test-item warning">
+                    Botón Bot Toggle (#botToggle): No encontrado
+                    <span class="status-badge badge-warning">⚠️ Puede que esté cargándose</span>
+                </div>`;
+            }
+            
+            // Verificar BotAI
+            if (typeof window.BotAI !== 'undefined') {
+                html += `<div class="test-item success">
+                    BotAI Object: Definido
+                    <span class="status-badge badge-success">✅ Cargado</span>
+                </div>`;
+            } else {
+                html += `<div class="test-item warning">
+                    BotAI Object: No definido aún
+                    <span class="status-badge badge-warning">ℹ️ Se cargará con bot-ai.js</span>
+                </div>`;
+            }
+            
+            document.getElementById('uiTest').innerHTML = html;
+        }
+        
+        // Test AI Setup
+        function testAISetup() {
+            console.log('🚀 TEST: Intentando abrir AISetup.showSetupModal()');
+            
+            if (typeof window.AISetup !== 'undefined' && window.AISetup.showSetupModal) {
+                console.log('✅ AISetup encontrado, abriendo modal...');
+                AISetup.showSetupModal();
+                
+                // Verificar después de 500ms
+                setTimeout(() => {
+                    const modal = document.getElementById('aiSetupModal');
+                    if (modal && !modal.classList.contains('hidden')) {
+                        console.log('✅ Modal abierto exitosamente');
+                    } else {
+                        console.log('⚠️ Modal no se ve o está oculto');
+                    }
+                }, 500);
+            } else {
+                console.error('❌ AISetup no está disponible');
+                alert('❌ AISetup no está cargado.\n\nPor favor:\n1. Asegúrate de que ai-setup.js esté cargado\n2. Verifica la consola (F12) para más detalles\n3. Recarga la página (Ctrl+R)');
+            }
+        }
+        
+        // Test crear modal manualmente
+        function testCreateModal() {
+            console.log('🧪 TEST: Creando modal manualmente...');
+            
+            if (typeof window.AISetup !== 'undefined' && window.AISetup.createSetupModal) {
+                const modal = AISetup.createSetupModal();
+                console.log('✅ Modal creado:', modal.id);
+                
+                setTimeout(() => {
+                    AISetup.showSetupModal();
+                }, 100);
+            } else {
+                console.error('❌ AISetup.createSetupModal no disponible');
+            }
+        }
+        
+        // Run all tests
+        function runAllTests() {
+            testDevice();
+            testAIConfig();
+            testStorage();
+            testScripts();
+            testModal();
+            testUI();
+        }
+        
+        // Abrir consola
+        function openConsole() {
+            console.log('%c=== DIAGNÓSTICO DE IA EN MOBILE ===', 'color: #4fd1c5; font-size: 14px; font-weight: bold;');
+            console.log('%cDispositivo:', 'color: #f39c12; font-weight: bold;');
+            console.log('  Ancho: ' + window.innerWidth);
+            console.log('  Alto: ' + window.innerHeight);
+            console.log('  User Agent: ' + navigator.userAgent);
+            
+            console.log('%cObjetos Globales:', 'color: #f39c12; font-weight: bold;');
+            console.log('  AISetup:', typeof window.AISetup !== 'undefined' ? '✅' : '❌');
+            console.log('  BotAI:', typeof window.BotAI !== 'undefined' ? '✅' : '❌');
+            console.log('  BibleBot:', typeof window.BibleBot !== 'undefined' ? '✅' : '❌');
+            console.log('  AI:', typeof window.AI !== 'undefined' ? '✅' : '❌');
+            console.log('  i18n:', typeof window.i18n !== 'undefined' ? '✅' : '❌');
+            
+            console.log('%cElementos DOM:', 'color: #f39c12; font-weight: bold;');
+            console.log('  #botToggle:', document.getElementById('botToggle') ? '✅' : '❌');
+            console.log('  #botPanel:', document.getElementById('botPanel') ? '✅' : '❌');
+            console.log('  #botAiSetup:', document.getElementById('botAiSetup') ? '✅' : '❌');
+            console.log('  #aiSetupModal:', document.getElementById('aiSetupModal') ? '✅' : '❌');
+            
+            console.log('%cLocalStorage:', 'color: #f39c12; font-weight: bold;');
+            console.log('  gemini_api_key:', localStorage.getItem('gemini_api_key') ? '✅ Guardada' : '❌ No configurada');
+            console.log('  gemini_api_url:', localStorage.getItem('gemini_api_url') ? '✅ Guardada' : '❌ No guardada');
+            console.log('  Total items:', Object.keys(localStorage).length);
+            
+            alert('📊 Consola abierta. Presiona F12 para verla.');
+        }
+        
+        // Run on load
+        window.addEventListener('load', () => {
+            console.log('📄 Página cargada');
+            setTimeout(runAllTests, 500); // Esperar a que se carguen todos los scripts
+        });
+        
+        // Re-run tests cuando la visibilidad cambia
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('📱 Página visible, actualizando tests...');
+                setTimeout(runAllTests, 200);
+            }
+        });
+        
+        // Monitorear carga de scripts
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ DOM cargado');
+            console.log('📦 Esperando scripts...');
+            
+            // Verificar AISetup
+            const checkAISetup = setInterval(() => {
+                if (typeof window.AISetup !== 'undefined') {
+                    console.log('✅ AISetup cargado');
+                    testScripts();
+                    clearInterval(checkAISetup);
+                }
+            }, 100);
+            
+            // Detener después de 5 segundos
+            setTimeout(() => {
+                clearInterval(checkAISetup);
+                console.log('⏱️ Timeout de carga de scripts');
+                testScripts();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

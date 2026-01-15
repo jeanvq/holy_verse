@@ -6,7 +6,7 @@ console.log('🚀 AI.js cargado - versión mejorada con logging completo');
 const AI = {
     // Gemini API Configuration
     API_KEY: '', // El usuario debe proporcionar su clave
-    API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+    API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
     
     // Initialize AI
     init(apiKey) {

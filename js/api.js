@@ -176,6 +176,25 @@ const API = {
         const q = term.trim();
         if (!q) return { results: [], total: 0, hasMore: false };
 
+        // Check if searching for a full chapter (e.g., "Hechos 1:10" or "Hechos 1")
+        const chapterMatch = q.match(/^(\w+\s*\d+):?\d*$/i);
+        if (chapterMatch) {
+            const parts = chapterMatch[1].match(/^(\w+)\s*(\d+)$/i);
+            if (parts) {
+                const bookName = parts[1];
+                const chapterNum = parseInt(parts[2]);
+                const chapterResult = await this.getChapter(bookName, chapterNum, lang);
+                if (chapterResult.verses.length > 0) {
+                    return {
+                        results: chapterResult.verses,
+                        total: chapterResult.verses.length,
+                        hasMore: false,
+                        isChapter: true
+                    };
+                }
+            }
+        }
+
         const {
             limit = 20,
             offset = 0,
@@ -273,8 +292,71 @@ const API = {
         }
     },
 
-    // Get random verse
-    async getRandomVerse() {
+    // Get all verses from a specific chapter
+    async getChapter(bookName, chapterNum, lang = 'es') {
+        const bibleId = lang === 'en' ? this.EN_BIBLE_ID : this.ES_BIBLE_ID;
+        try {
+            // First, search for the book to get its ID
+            const searchRes = await fetch(`${this.BIBLE_API_URL}/${bibleId}/search?query=${encodeURIComponent(bookName)}&limit=1`, {
+                headers: { 'api-key': this.BIBLE_API_KEY }
+            });
+            
+            if (!searchRes.ok) throw new Error('Book not found');
+            
+            const searchData = await searchRes.json();
+            const bookId = searchData?.data?.verses?.[0]?.bookId;
+            
+            if (!bookId) throw new Error('Could not find book ID');
+            
+            // Now get the chapter
+            const chapterUrl = `${this.BIBLE_API_URL}/${bibleId}/chapters/${bookId}.${chapterNum}?content-type=text&include-notes=false`;
+            const chapterRes = await fetch(chapterUrl, {
+                headers: { 'api-key': this.BIBLE_API_KEY }
+            });
+            
+            if (!chapterRes.ok) throw new Error(`Chapter not found: ${bookName} ${chapterNum}`);
+            
+            const chapterData = await chapterRes.json();
+            const verses = chapterData?.data?.content ? this.parseChapterContent(chapterData.data.content, bookName, chapterNum) : [];
+            
+            return {
+                book: bookName,
+                chapter: chapterNum,
+                verses: verses,
+                total: verses.length
+            };
+        } catch (err) {
+            console.error('Error fetching chapter:', err);
+            return {
+                book: bookName,
+                chapter: chapterNum,
+                verses: [],
+                total: 0,
+                error: err.message
+            };
+        }
+    },
+    
+    // Parse chapter content into individual verses
+    parseChapterContent(content, bookName, chapterNum) {
+        const verses = [];
+        // This is a simplified parser - the API returns formatted text
+        // Split by verse numbers and extract content
+        const versePattern = /\n(\d+)\s+(.*?)(?=\n\d+\s+|\n*$)/gs;
+        let match;
+        
+        while ((match = versePattern.exec(content)) !== null) {
+            verses.push({
+                verse: parseInt(match[1]),
+                text: stripTags(match[2]).trim(),
+                reference: `${bookName} ${chapterNum}:${match[1]}`
+            });
+        }
+        
+        return verses;
+    },
+
+    // Get verses by mood
         try {
             const randomIndex = Math.floor(Math.random() * this.fallbackVerses.length);
             const verse = this.fallbackVerses[randomIndex];

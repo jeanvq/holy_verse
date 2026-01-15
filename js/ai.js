@@ -1,6 +1,8 @@
 // AI Integration with Google Gemini
 // Para usar esto, necesitas una API key de Google Gemini en https://makersuite.google.com/app/apikey
 
+console.log('🚀 AI.js cargado - versión mejorada con logging completo');
+
 const AI = {
     // Gemini API Configuration
     API_KEY: '', // El usuario debe proporcionar su clave

@@ -59,6 +59,15 @@ const i18n = {
             'footer.copyright': '© 2026 HolyVerse. Todos los derechos reservados.',
             
             'pwa.install': 'Instalar App',
+            
+            'auth.login': 'Iniciar Sesión',
+            'auth.signup': 'Crear Cuenta',
+            'auth.email': 'Email',
+            'auth.password': 'Contraseña',
+            'auth.name': 'Nombre',
+            'auth.logout': 'Salir',
+            'auth.submit_login': 'Iniciar Sesión',
+            'auth.submit_signup': 'Crear Cuenta',
         },
         en: {
             'hero.title': 'Interactive Biblical Universe',
@@ -116,6 +125,15 @@ const i18n = {
             'footer.copyright': '© 2026 HolyVerse. All rights reserved.',
             
             'pwa.install': 'Install App',
+            
+            'auth.login': 'Sign In',
+            'auth.signup': 'Sign Up',
+            'auth.email': 'Email',
+            'auth.password': 'Password',
+            'auth.name': 'Name',
+            'auth.logout': 'Logout',
+            'auth.submit_login': 'Sign In',
+            'auth.submit_signup': 'Create Account',
         }
     },
     

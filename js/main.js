@@ -1185,10 +1185,28 @@ function renderFavorites() {
 }
 
 function getFavorites() {
+    // If user is logged in, get from auth system
+    if (typeof AuthSystem !== 'undefined' && AuthSystem.getCurrentUser()) {
+        return AuthSystem.getFavorites();
+    }
+    // Otherwise, use local storage
     return JSON.parse(localStorage.getItem('holyverse-favorites') || '[]');
 }
 
 function toggleFavorite(verse) {
+    // If user is logged in, save to auth system
+    if (typeof AuthSystem !== 'undefined' && AuthSystem.getCurrentUser()) {
+        const favorites = AuthSystem.getFavorites();
+        const exists = favorites.some(v => v.reference === verse.reference);
+        if (exists) {
+            AuthSystem.removeFavorite(verse.reference);
+        } else {
+            AuthSystem.saveFavorite(verse);
+        }
+        return !exists;
+    }
+    
+    // Otherwise, use local storage
     const favorites = getFavorites();
     const exists = favorites.some(v => v.reference === verse.reference);
     const updated = exists
@@ -1199,6 +1217,13 @@ function toggleFavorite(verse) {
 }
 
 function removeFavorite(reference) {
+    // If user is logged in, remove from auth system
+    if (typeof AuthSystem !== 'undefined' && AuthSystem.getCurrentUser()) {
+        AuthSystem.removeFavorite(reference);
+        return;
+    }
+    
+    // Otherwise, use local storage
     const updated = getFavorites().filter(v => v.reference !== reference);
     localStorage.setItem('holyverse-favorites', JSON.stringify(updated));
 }

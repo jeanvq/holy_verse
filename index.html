@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/grid.css">
     <link rel="stylesheet" href="css/bot.css">
+    <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
@@ -35,6 +36,19 @@
                 <div class="lang-selector">
                     <button id="langES" class="lang-btn active" data-lang="es">ES</button>
                     <button id="langEN" class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <!-- Auth Container -->
+                <div id="authContainer" style="display: flex; gap: 0.5rem;">
+                    <button id="loginBtn" class="primary-btn" style="display: none;">Iniciar Sesión</button>
+                </div>
+                <!-- User Menu -->
+                <div id="userMenu" style="display: none; gap: 1rem; align-items: center;">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Usuario</span>
+                        <span class="user-status">En línea</span>
+                    </div>
+                    <button id="logoutBtn" style="display: none;">Salir</button>
                 </div>
             </div>
         </div>
@@ -317,7 +331,52 @@
                     <p data-i18n="footer.desc">Explora el universo bíblico de forma interactiva</p>
                 </div>
                 <div class="footer-section">
-                    <h4 data-i18n="footer.links.title">Enlaces</h4>
+         Auth Modal -->
+    <div id="authModal" class="hidden">
+        <div class="auth-modal-content">
+            <div class="auth-modal-header">
+                <h2>HolyVerse</h2>
+                <button id="closeAuthModal">&times;</button>
+            </div>
+            
+            <div class="auth-tabs">
+                <button id="loginTab" class="auth-tab active">Iniciar Sesión</button>
+                <button id="signupTab" class="auth-tab">Crear Cuenta</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="••••••" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Iniciar Sesión</button>
+            </form>
+            
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label for="signupName">Nombre</label>
+                    <input type="text" id="signupName" placeholder="Tu nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Contraseña</label>
+                    <input type="password" id="signupPassword" placeholder="Al menos 6 caracteres" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Crear Cuenta</button>
+            </form>
+        </div>
+    </div>
+
+    <!--            <h4 data-i18n="footer.links.title">Enlaces</h4>
                     <ul>
                         <li><a href="#" onclick="scrollToTop()" data-i18n="footer.links.top">Arriba</a></li>
                         <li><a href="#" onclick="document.getElementById('searchInput').focus()" data-i18n="footer.links.search">Buscar</a></li>
@@ -336,13 +395,14 @@
         <span data-i18n="pwa.install">Instalar App</span>
     </button>
 
-    <!-- Scripts -->obile-enhancements.js"></script>
-    <script src="js/m
+    <!-- Scripts -->
     <script src="js/i18n.js"></script>
     <script src="js/api.js"></script>
     <script src="js/bot.js"></script>
     <script src="js/bot-enhancements.js"></script>
+    <script src="js/auth.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/mobile-enhancements.js"></script>
     <script src="js/main.js"></script>
     
     <!-- PWA Service Worker Registration -->

@@ -81,34 +81,59 @@ const AISetup = {
             return;
         }
         
-        status.innerHTML = '⏳ Probando API key...';
+        status.innerHTML = '⏳ Probando API key y buscando modelo compatible...';
         status.style.color = 'var(--text-secondary)';
         
+        // Lista de modelos a probar
+        const modelsToTry = [
+            { url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent', name: 'gemini-1.5-flash-latest (v1beta)' },
+            { url: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent', name: 'gemini-1.5-flash-latest (v1)' },
+            { url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent', name: 'gemini-1.5-flash (v1beta)' },
+            { url: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent', name: 'gemini-1.5-flash (v1)' },
+            { url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', name: 'gemini-pro (v1beta)' },
+            { url: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent', name: 'gemini-pro (v1)' }
+        ];
+        
         try {
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: 'Prueba' }]
-                        }]
-                    })
+            for (const model of modelsToTry) {
+                console.log(`🧪 Probando modelo: ${model.name}`);
+                
+                const response = await fetch(
+                    `${model.url}?key=${key}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{ text: 'Test' }]
+                            }]
+                        })
+                    }
+                );
+                
+                if (response.ok) {
+                    console.log(`✅ Modelo funcional encontrado: ${model.name}`);
+                    // Guardar el URL que funciona
+                    localStorage.setItem('gemini_api_url', model.url);
+                    status.innerHTML = `✅ ¡API key válida! Modelo: ${model.name}`;
+                    status.style.color = 'var(--success)';
+                    return;
+                } else if (response.status === 401 || response.status === 403) {
+                    console.error(`❌ API key inválida (${response.status})`);
+                    status.innerHTML = '❌ API key inválida o sin permisos';
+                    status.style.color = 'var(--error)';
+                    return;
                 }
-            );
-            
-            if (response.ok) {
-                status.innerHTML = '✅ ¡API key válida! Haz clic en Guardar.';
-                status.style.color = 'var(--success)';
-            } else if (response.status === 401) {
-                status.innerHTML = '❌ API key inválida o expirada';
-                status.style.color = 'var(--error)';
-            } else {
-                status.innerHTML = '❌ Error al probar API key';
-                status.style.color = 'var(--error)';
+                // Si es 404, continuar con el siguiente modelo
+                console.log(`⏭️ Modelo ${model.name} no disponible (404), probando siguiente...`);
             }
+            
+            // Si ninguno funcionó
+            console.error('❌ Ningún modelo compatible encontrado');
+            status.innerHTML = '❌ No se encontró modelo compatible. Verifica tu API key en aistudio.google.com';
+            status.style.color = 'var(--error)';
         } catch (err) {
+            console.error('❌ Error probando API:', err);
             status.innerHTML = '❌ Error de conexión';
             status.style.color = 'var(--error)';
         }

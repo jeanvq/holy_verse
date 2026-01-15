@@ -6,7 +6,7 @@ console.log('🚀 AI.js cargado - versión mejorada con logging completo');
 const AI = {
     // Gemini API Configuration
     API_KEY: '', // El usuario debe proporcionar su clave
-    API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+    API_URL: '', // Se cargará dinámicamente de localStorage
     
     // Initialize AI
     init(apiKey) {
@@ -15,6 +15,18 @@ const AI = {
             return false;
         }
         this.API_KEY = apiKey;
+        
+        // Cargar URL del modelo que funcionó en la prueba
+        const savedUrl = localStorage.getItem('gemini_api_url');
+        if (savedUrl) {
+            this.API_URL = savedUrl;
+            console.log('✅ AI inicializado - Usando modelo guardado:', savedUrl.split('/models/')[1]?.split(':')[0]);
+        } else {
+            // Fallback al modelo por defecto
+            this.API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+            console.log('⚠️ No se encontró modelo guardado, usando gemini-1.5-flash');
+        }
+        
         console.log('✅ AI inicializado con Gemini API');
         return true;
     },

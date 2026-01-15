@@ -168,10 +168,15 @@ const AuthSystem = {
         if (!user.searchHistory) user.searchHistory = [];
         
         // Remove duplicate if exists
-        user.searchHistory = user.searchHistory.filter(h => h !== term);
+        user.searchHistory = user.searchHistory.filter(h => 
+            (typeof h === 'string' ? h : h.query) !== term
+        );
         
-        // Add to beginning
-        user.searchHistory.unshift(term);
+        // Add to beginning with timestamp
+        user.searchHistory.unshift({
+            query: term,
+            timestamp: new Date().toISOString()
+        });
         
         // Keep only last 20
         user.searchHistory = user.searchHistory.slice(0, 20);

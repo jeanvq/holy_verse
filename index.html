@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="css/bot.css">
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/donations.css">
+    <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
@@ -44,6 +45,7 @@
                 </div>
                 <!-- User Menu -->
                 <div id="userMenu" style="display: none; gap: 1rem; align-items: center;">
+                    <button id="profileBtn" style="background: transparent; border: none; cursor: pointer; font-size: 1.3rem; padding: 0.5rem;" title="Mi Perfil">⚙️</button>
                     <div class="user-avatar" id="userAvatar">👤</div>
                     <div class="user-info">
                         <span class="user-name" id="userName">Usuario</span>
@@ -429,6 +431,94 @@
         <span>Apoyar</span>
     </button>
 
+    <!-- User Profile Modal -->
+    <div id="profileModal" class="hidden">
+        <div class="profile-modal-content">
+            <div class="profile-header">
+                <button class="profile-close">&times;</button>
+                <div class="profile-avatar">👤</div>
+                <div class="profile-name">Usuario</div>
+                <div class="profile-email">usuario@example.com</div>
+            </div>
+            
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="favorites-stat">0</div>
+                    <div class="stat-label">Favoritos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="history-stat">0</div>
+                    <div class="stat-label">Búsquedas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="joined-stat">0</div>
+                    <div class="stat-label">Días</div>
+                </div>
+            </div>
+            
+            <div class="profile-tabs">
+                <button class="profile-tab-btn active" data-tab="account">⚙️ Cuenta</button>
+                <button class="profile-tab-btn" data-tab="favorites">❤️ Favoritos</button>
+                <button class="profile-tab-btn" data-tab="history">📜 Historial</button>
+                <button class="profile-tab-btn" data-tab="preferences">🎨 Preferencias</button>
+            </div>
+            
+            <div class="profile-content">
+                <!-- Account Tab -->
+                <div class="profile-tab-pane active" id="account-pane">
+                    <div class="setting-group">
+                        <label class="setting-label">Nombre Completo</label>
+                        <input type="text" id="displayNameInput" class="setting-input" placeholder="Tu nombre">
+                        <div class="setting-description">Este es el nombre que verán otros usuarios</div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Correo Electrónico</label>
+                        <input type="email" id="emailInput" class="setting-input" placeholder="tu@email.com">
+                        <div class="setting-description">Tu correo es tu identificador único</div>
+                    </div>
+                    
+                    <button id="saveSettingsBtn" class="profile-btn primary" style="width: 100%; margin-bottom: 1rem;">
+                        💾 Guardar Cambios
+                    </button>
+                </div>
+                
+                <!-- Favorites Tab -->
+                <div class="profile-tab-pane" id="favorites-pane">
+                    <div id="favoritesList" class="favorites-list"></div>
+                </div>
+                
+                <!-- History Tab -->
+                <div class="profile-tab-pane" id="history-pane">
+                    <div id="historyList" class="history-list"></div>
+                    <button id="clearHistoryBtn" class="profile-btn danger" style="width: 100%; margin-top: 1rem;">
+                        🗑️ Limpiar Historial
+                    </button>
+                </div>
+                
+                <!-- Preferences Tab -->
+                <div class="profile-tab-pane" id="preferences-pane">
+                    <div class="preference-item">
+                        <div class="preference-label">Notificaciones</div>
+                        <label class="preference-toggle">
+                            <input type="checkbox" id="notificationToggle" class="toggle-checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <button id="exportDataBtn" class="profile-btn" style="width: 100%; margin-top: 1rem;">
+                        📥 Exportar Datos
+                    </button>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <button class="profile-btn">📱 Compartir Perfil</button>
+                <button class="profile-btn danger" onclick="AuthSystem.logout()">🚪 Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
@@ -467,6 +557,7 @@
     <script src="js/bot-enhancements.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/donations.js"></script>
+    <script src="js/profile.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/mobile-enhancements.js"></script>
     <script src="js/main.js"></script>

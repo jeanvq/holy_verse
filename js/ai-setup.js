@@ -81,66 +81,76 @@ const AISetup = {
             return;
         }
         
-        status.innerHTML = '⏳ Probando API key y buscando modelo compatible...';
+        status.innerHTML = '⏳ Consultando modelos disponibles...';
         status.style.color = 'var(--text-secondary)';
         
-        // Lista de modelos a probar
-        const modelsToTry = [
-            { url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent', name: 'gemini-1.5-flash-latest (v1beta)' },
-            { url: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent', name: 'gemini-1.5-flash-latest (v1)' },
-            { url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent', name: 'gemini-1.5-flash (v1beta)' },
-            { url: 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent', name: 'gemini-1.5-flash (v1)' },
-            { url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', name: 'gemini-pro (v1beta)' },
-            { url: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent', name: 'gemini-pro (v1)' }
-        ];
-        
         try {
-            for (const model of modelsToTry) {
-                console.log(`🧪 Probando modelo: ${model.name}`);
-                
-                const response = await fetch(
-                    `${model.url}?key=${key}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [{ text: 'Test' }]
-                            }]
-                        })
-                    }
-                );
-                
-                const responseData = await response.json().catch(() => ({}));
-                
-                if (response.ok) {
-                    console.log(`✅ Modelo funcional encontrado: ${model.name}`);
-                    // Guardar el URL que funciona
-                    localStorage.setItem('gemini_api_url', model.url);
-                    status.innerHTML = `✅ ¡API key válida! Modelo: ${model.name}`;
-                    status.style.color = 'var(--success)';
-                    return;
-                } else if (response.status === 401 || response.status === 403) {
-                    console.error(`❌ API key inválida (${response.status})`, responseData);
+            // Paso 1: Obtener lista de modelos disponibles
+            console.log('📋 Consultando ListModels API...');
+            const listResponse = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`
+            );
+            
+            if (!listResponse.ok) {
+                if (listResponse.status === 401 || listResponse.status === 403) {
                     status.innerHTML = `❌ API key inválida o sin permisos<br><small>Verifica en: <a href="https://aistudio.google.com/apikey" target="_blank">AI Studio</a></small>`;
                     status.style.color = 'var(--error)';
                     return;
-                } else {
-                    // Mostrar error específico
-                    console.log(`⏭️ Modelo ${model.name}: ${response.status} - ${responseData.error?.message || 'Error'}`, responseData);
                 }
+                throw new Error(`ListModels falló: ${listResponse.status}`);
             }
             
-            // Si ninguno funcionó
-            console.error('❌ Ningún modelo compatible encontrado');
-            status.innerHTML = `❌ Ningún modelo disponible. Posibles causas:<br>
-                <small>• La API no está habilitada en <a href="https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com" target="_blank">Google Cloud</a><br>
-                • Tu región no tiene acceso a Gemini<br>
-                • Revisa restricciones de tu API key</small>`;
-            status.style.color = 'var(--error)';
+            const listData = await listResponse.json();
+            console.log('📋 Modelos disponibles:', listData);
+            
+            // Filtrar modelos que soporten generateContent
+            const availableModels = (listData.models || [])
+                .filter(model => model.supportedGenerationMethods?.includes('generateContent'))
+                .map(model => model.name);
+            
+            console.log(`✅ Modelos compatibles encontrados: ${availableModels.length}`, availableModels);
+            
+            if (availableModels.length === 0) {
+                status.innerHTML = '❌ No hay modelos disponibles para esta API key';
+                status.style.color = 'var(--error)';
+                return;
+            }
+            
+            // Paso 2: Probar el primer modelo disponible
+            status.innerHTML = `⏳ Probando modelo: ${availableModels[0]}...`;
+            
+            const modelUrl = `https://generativelanguage.googleapis.com/v1beta/${availableModels[0]}:generateContent`;
+            console.log(`🧪 Probando: ${modelUrl}`);
+            
+            const testResponse = await fetch(
+                `${modelUrl}?key=${key}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: 'Hola' }]
+                        }]
+                    })
+                }
+            );
+            
+            if (testResponse.ok) {
+                console.log(`✅ Modelo funcional: ${availableModels[0]}`);
+                localStorage.setItem('gemini_api_url', modelUrl);
+                const modelName = availableModels[0].split('/').pop();
+                status.innerHTML = `✅ ¡API key válida! Usando: ${modelName}`;
+                status.style.color = 'var(--success)';
+            } else {
+                const errorData = await testResponse.json().catch(() => ({}));
+                console.error(`❌ Error probando modelo:`, errorData);
+                status.innerHTML = `❌ Error al probar modelo: ${errorData.error?.message || 'Unknown'}`;
+                status.style.color = 'var(--error)';
+            }
+            
         } catch (err) {
-            console.error('❌ Error probando API:', err);
-            status.innerHTML = '❌ Error de conexión';
+            console.error('❌ Error en testApiKey:', err);
+            status.innerHTML = `❌ Error: ${err.message}`;
             status.style.color = 'var(--error)';
         }
     },

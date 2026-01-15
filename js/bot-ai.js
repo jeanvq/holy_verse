@@ -30,12 +30,24 @@ const BotAI = {
         console.log('  - modeDevotional:', modeDevotional);
         
         if (setupBtn) {
+            // Click simple: toggle modos o abrir setup si no configurado
             setupBtn.addEventListener('click', () => {
                 if (!this.isAiEnabled) {
                     AISetup.showSetupModal();
                 } else {
                     this.toggleAiModes();
                 }
+            });
+            
+            // Click derecho o mantener presionado: siempre abrir setup para reconfigurar
+            setupBtn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                AISetup.showSetupModal();
+            });
+            
+            // Double click: reconfigurar API key
+            setupBtn.addEventListener('dblclick', () => {
+                AISetup.showSetupModal();
             });
         }
         
@@ -138,7 +150,9 @@ const BotAI = {
     updateAiStatus() {
         const setupBtn = document.getElementById('botAiSetup');
         if (setupBtn) {
-            setupBtn.title = this.isAiEnabled ? 'IA Activa' : 'Configurar IA';
+            setupBtn.title = this.isAiEnabled 
+                ? 'IA Activa - Doble clic o clic derecho para reconfigurar' 
+                : 'Configurar IA';
             setupBtn.style.color = this.isAiEnabled ? 'var(--success)' : 'var(--text-secondary)';
         }
     },

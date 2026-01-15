@@ -51,15 +51,26 @@ const BotAI = {
         
         // Override bot send button to use AI
         if (botSend) {
+            console.log('🔌 Removiendo event listener antiguo de botSend');
             botSend.removeEventListener('click', window.sendBotMessage);
-            botSend.addEventListener('click', () => this.handleBotMessage());
+            botSend.addEventListener('click', () => {
+                console.log('🔌 Evento CLICK en botSend disparado');
+                this.handleBotMessage();
+            });
+            console.log('🔌 Nuevo event listener agregado a botSend');
         }
         
         if (botInput) {
+            console.log('🔌 Removiendo event listener antiguo de botInput');
             botInput.removeEventListener('keypress', window.handleBotKeyPress);
             botInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.handleBotMessage();
+                console.log('🔌 Evento KEYPRESS en botInput:', e.key);
+                if (e.key === 'Enter') {
+                    console.log('🔌 Enter detectado en botInput');
+                    this.handleBotMessage();
+                }
             });
+            console.log('🔌 Nuevo event listener agregado a botInput');
         }
         
         // Listen for AI setup completion
@@ -131,14 +142,19 @@ const BotAI = {
         const botContent = document.getElementById('botContent');
         
         console.log('🤖 botInput element:', botInput);
-        console.log('🤖 botInput.value (RAW):', JSON.stringify(botInput?.value));
+        console.log('🤖 botInput.value (ANTES trim):', JSON.stringify(botInput?.value));
+        console.log('🤖 botInput.value length:', botInput?.value?.length);
+        console.log('🤖 typeof botInput.value:', typeof botInput?.value);
         
-        const message = botInput?.value?.trim() || '';
+        const rawValue = botInput?.value || '';
+        console.log('🤖 Raw value después OR:', JSON.stringify(rawValue));
+        
+        const message = rawValue.trim();
         
         console.log('🤖 Mensaje capturado (después trim):', JSON.stringify(message));
         console.log('🤖 Modo actual:', this.currentMode);
         
-        if (!message) {
+        if (!message || message.length === 0) {
             console.log('🤖 Mensaje vacío, abortando');
             return;
         }

@@ -2,7 +2,7 @@
 
 // Configuration - CAMBIAR ESTO CON TU USUARIO DE KO-FI
 const DONATIONS_CONFIG = {
-    KO_FI_USERNAME: 'jeancarlodev', // Reemplaza con tu usuario de Ko-fi
+    KO_FI_USERNAME: 'jeancarlovq', // Reemplaza con tu usuario de Ko-fi
     KO_FI_URL: 'https://ko-fi.com/',
     CURRENCY: 'USD',
     PRESET_AMOUNTS: [1, 5, 10, 25],

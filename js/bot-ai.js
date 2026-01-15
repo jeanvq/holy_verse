@@ -49,28 +49,37 @@ const BotAI = {
             modeDevotional.addEventListener('click', () => this.switchMode('devotional'));
         }
         
-        // Override bot send button to use AI
         if (botSend) {
-            console.log('🔌 Removiendo event listener antiguo de botSend');
-            botSend.removeEventListener('click', window.sendBotMessage);
-            botSend.addEventListener('click', () => {
+            console.log('🔌 Removiendo ALL event listeners de botSend');
+            // Clone and replace to remove ALL listeners
+            const newBotSend = botSend.cloneNode(true);
+            botSend.parentNode.replaceChild(newBotSend, botSend);
+            
+            // Get the new reference
+            const botSendNew = document.getElementById('botSend');
+            botSendNew.addEventListener('click', () => {
                 console.log('🔌 Evento CLICK en botSend disparado');
                 this.handleBotMessage();
             });
-            console.log('🔌 Nuevo event listener agregado a botSend');
+            console.log('🔌 Nuevo event listener agregado a botSend (clonado)');
         }
         
         if (botInput) {
-            console.log('🔌 Removiendo event listener antiguo de botInput');
-            botInput.removeEventListener('keypress', window.handleBotKeyPress);
-            botInput.addEventListener('keypress', (e) => {
+            console.log('🔌 Removiendo ALL event listeners de botInput');
+            // Clone and replace to remove ALL listeners
+            const newBotInput = botInput.cloneNode(true);
+            botInput.parentNode.replaceChild(newBotInput, botInput);
+            
+            // Get the new reference
+            const botInputNew = document.getElementById('botInput');
+            botInputNew.addEventListener('keypress', (e) => {
                 console.log('🔌 Evento KEYPRESS en botInput:', e.key);
                 if (e.key === 'Enter') {
                     console.log('🔌 Enter detectado en botInput');
                     this.handleBotMessage();
                 }
             });
-            console.log('🔌 Nuevo event listener agregado a botInput');
+            console.log('🔌 Nuevo event listener agregado a botInput (clonado)');
         }
         
         // Listen for AI setup completion

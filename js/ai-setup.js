@@ -111,6 +111,8 @@ const AISetup = {
                     }
                 );
                 
+                const responseData = await response.json().catch(() => ({}));
+                
                 if (response.ok) {
                     console.log(`✅ Modelo funcional encontrado: ${model.name}`);
                     // Guardar el URL que funciona
@@ -119,18 +121,22 @@ const AISetup = {
                     status.style.color = 'var(--success)';
                     return;
                 } else if (response.status === 401 || response.status === 403) {
-                    console.error(`❌ API key inválida (${response.status})`);
-                    status.innerHTML = '❌ API key inválida o sin permisos';
+                    console.error(`❌ API key inválida (${response.status})`, responseData);
+                    status.innerHTML = `❌ API key inválida o sin permisos<br><small>Verifica en: <a href="https://aistudio.google.com/apikey" target="_blank">AI Studio</a></small>`;
                     status.style.color = 'var(--error)';
                     return;
+                } else {
+                    // Mostrar error específico
+                    console.log(`⏭️ Modelo ${model.name}: ${response.status} - ${responseData.error?.message || 'Error'}`, responseData);
                 }
-                // Si es 404, continuar con el siguiente modelo
-                console.log(`⏭️ Modelo ${model.name} no disponible (404), probando siguiente...`);
             }
             
             // Si ninguno funcionó
             console.error('❌ Ningún modelo compatible encontrado');
-            status.innerHTML = '❌ No se encontró modelo compatible. Verifica tu API key en aistudio.google.com';
+            status.innerHTML = `❌ Ningún modelo disponible. Posibles causas:<br>
+                <small>• La API no está habilitada en <a href="https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com" target="_blank">Google Cloud</a><br>
+                • Tu región no tiene acceso a Gemini<br>
+                • Revisa restricciones de tu API key</small>`;
             status.style.color = 'var(--error)';
         } catch (err) {
             console.error('❌ Error probando API:', err);

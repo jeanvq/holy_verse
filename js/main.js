@@ -35,7 +35,6 @@ async function initializeApp() {
     setupExplorationCards();
     setupSearch();
     setupFavoritesUI();
-    setupMap();
     
     // Check available bibles
     checkAvailableBibles();
@@ -637,6 +636,10 @@ function setupExplorationCards() {
         card.addEventListener('click', () => {
             const section = card.dataset.section;
             showExplorationSection(section);
+            // Initialize map when maps section is shown
+            if (section === 'maps') {
+                setTimeout(() => setupMap(), 100);
+            }
         });
     });
 }

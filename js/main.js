@@ -1333,16 +1333,33 @@ function setupMap() {
 
     // Expanded biblical locations with more context
     const locations = [
+        // Important sites
         { name: 'Jerusalén', desc: 'Templo, crucifixión y resurrección', coords: [31.7784, 35.2066], type: 'important' },
         { name: 'Belén', desc: 'Nacimiento de Jesús', coords: [31.7054, 35.2024], type: 'important' },
         { name: 'Nazaret', desc: 'Infancia y juventud de Jesús', coords: [32.6996, 35.3035], type: 'important' },
-        { name: 'Damasco', desc: 'Conversión de Pablo', coords: [33.5138, 36.2765], type: 'events' },
+        { name: 'Getsemaní', desc: 'Oración de Jesús antes de su pasión', coords: [31.7859, 35.2368], type: 'important' },
+        { name: 'Hebrón', desc: 'Abraham y sepultura de patriarcas', coords: [31.5333, 35.2], type: 'important' },
+        { name: 'Bet-el', desc: 'Visión de Jacob - la escalera', coords: [31.9453, 35.2281], type: 'important' },
+        
+        // Events & Ministry
+        { name: 'Damasco', desc: 'Conversión de Pablo (Saulo)', coords: [33.5138, 36.2765], type: 'events' },
+        { name: 'Antioquía', desc: 'Primera iglesia gentil importante', coords: [36.2021, 36.1567], type: 'events' },
+        { name: 'Capernaúm', desc: 'Ministerio de Jesús en Galilea', coords: [32.8821, 35.5733], type: 'ministry' },
+        { name: 'Mar de Galilea', desc: 'Milagros y enseñanzas de Jesús', coords: [32.8, 35.5], type: 'ministry' },
+        { name: 'Cesárea Marítima', desc: 'Centro administrativo romano', coords: [32.9045, 34.8878], type: 'events' },
+        { name: 'Éfeso', desc: 'Ministerio y cartas de Pablo', coords: [37.9495, 27.3408], type: 'events' },
+        
+        // Biblical Sites
         { name: 'Jericó', desc: 'Primera ciudad conquistada', coords: [31.8673, 35.4443], type: 'sites' },
         { name: 'Mar Muerto', desc: 'Punto más bajo de la tierra', coords: [31.5, 35.5], type: 'sites' },
         { name: 'Monte Sinaí', desc: 'Donde Moisés recibió los diez mandamientos', coords: [28.3386, 33.9737], type: 'sites' },
-        { name: 'Capernaúm', desc: 'Ministerio de Jesús en Galilea', coords: [32.8821, 35.5733], type: 'ministry' },
-        { name: 'Getsemaní', desc: 'Oración de Jesús antes de su pasión', coords: [31.7859, 35.2368], type: 'important' },
-        { name: 'Antioquía', desc: 'Primera iglesia gentil importante', coords: [36.2021, 36.1567], type: 'events' }
+        { name: 'Monte Carmelo', desc: 'Elías y los profetas de Baal', coords: [32.9234, 35.0641], type: 'sites' },
+        { name: 'Monte Tabor', desc: 'Transfiguración de Jesús', coords: [32.7733, 35.3968], type: 'sites' },
+        { name: 'Monte Hermón', desc: 'Límite norte de la Tierra Prometida', coords: [33.4115, 35.8671], type: 'sites' },
+        { name: 'Cades-barnea', desc: 'Centro del desierto de Sinaí', coords: [30.7333, 34.4667], type: 'sites' },
+        { name: 'Tiro', desc: 'Puerto antiguo importante', coords: [33.2667, 35.2], type: 'sites' },
+        { name: 'Sidón', desc: 'Puerto fenicio importante', coords: [33.6166, 35.3833], type: 'sites' },
+        { name: 'Corinto', desc: 'Iglesia de Pablo en Grecia', coords: [37.9264, 23.0808], type: 'events' },
     ];
 
     if (typeof L === 'undefined') {
@@ -1360,7 +1377,7 @@ function setupMap() {
         touchZoom: true,
         scrollWheelZoom: true,
         doubleClickZoom: true
-    }).setView([31.8, 35.2], 7);
+    }).setView([31.8, 35.2], 6);
 
     // CartoDB Positron (fast and clean)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {

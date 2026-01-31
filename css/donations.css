@@ -1,32 +1,6 @@
 /* Donations Styles */
 
-/* Donation Button (Footer) */
-#donationBtn {
-    background: linear-gradient(135deg, #ff6b6b, #ff8787);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    width: 100%;
-    justify-content: center;
-}
-
-#donationBtn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
-}
-
-#donationBtn:active {
-    transform: scale(0.98);
-}
+/* Donation Button styles are now in footer-cta.css */
 
 /* Donation Modal */
 #donationModal {

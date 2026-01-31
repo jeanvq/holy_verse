@@ -1328,11 +1328,18 @@ function setupMap() {
     const placeholder = document.getElementById('mapPlaceholder');
     if (!mapEl) return;
 
+    // Expanded biblical locations with more context
     const locations = [
-        { name: 'Jerusalén', desc: 'Templo y vida de Jesús', coords: [31.7784, 35.2066] },
-        { name: 'Belén', desc: 'Lugar de nacimiento de Jesús', coords: [31.7054, 35.2024] },
-        { name: 'Nazaret', desc: 'Infancia de Jesús', coords: [32.6996, 35.3035] },
-        { name: 'Damasco', desc: 'Conversión de Pablo', coords: [33.5138, 36.2765] }
+        { name: 'Jerusalén', desc: 'Templo, crucifixión y resurrección', coords: [31.7784, 35.2066], type: 'important' },
+        { name: 'Belén', desc: 'Nacimiento de Jesús', coords: [31.7054, 35.2024], type: 'important' },
+        { name: 'Nazaret', desc: 'Infancia y juventud de Jesús', coords: [32.6996, 35.3035], type: 'important' },
+        { name: 'Damasco', desc: 'Conversión de Pablo', coords: [33.5138, 36.2765], type: 'events' },
+        { name: 'Jericó', desc: 'Primera ciudad conquistada', coords: [31.8673, 35.4443], type: 'sites' },
+        { name: 'Mar Muerto', desc: 'Punto más bajo de la tierra', coords: [31.5, 35.5], type: 'sites' },
+        { name: 'Monte Sinaí', desc: 'Donde Moisés recibió los diez mandamientos', coords: [28.3386, 33.9737], type: 'sites' },
+        { name: 'Capernaúm', desc: 'Ministerio de Jesús en Galilea', coords: [32.8821, 35.5733], type: 'ministry' },
+        { name: 'Getsemaní', desc: 'Oración de Jesús antes de su pasión', coords: [31.7859, 35.2368], type: 'important' },
+        { name: 'Antioquía', desc: 'Primera iglesia gentil importante', coords: [36.2021, 36.1567], type: 'events' }
     ];
 
     if (typeof L === 'undefined') {
@@ -1342,23 +1349,92 @@ function setupMap() {
 
     if (placeholder) placeholder.classList.add('hidden');
 
-    const map = L.map(mapEl).setView([31.8, 35.2], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Use CartoDB tiles - much faster than OpenStreetMap
+    const map = L.map(mapEl, {
+        attributionControl: false,
+        zoomControl: true,
+        dragging: true,
+        touchZoom: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true
+    }).setView([31.8, 35.2], 7);
+
+    // CartoDB Positron (fast and clean)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 18,
-        attribution: '© OpenStreetMap'
+        minZoom: 5,
+        attribution: '&copy; OpenStreetMap, &copy; CartoDB',
+        fadeAnimation: false,
+        zIndex: 1
     }).addTo(map);
 
-    locations.forEach(loc => {
+    // Create a feature group for markers
+    const markersGroup = L.featureGroup().addTo(map);
+
+    // Add markers by type with different colors
+    const typeColors = {
+        'important': '#e94560',
+        'events': '#667eea',
+        'sites': '#48dbfb',
+        'ministry': '#1dd1a1'
+    };
+
+    locations.forEach((loc, index) => {
+        const color = typeColors[loc.type] || '#e94560';
+        
         const marker = L.circleMarker(loc.coords, {
             radius: 8,
-            fillColor: '#e94560',
-            color: '#e94560',
+            fillColor: color,
+            color: color,
             weight: 2,
-            opacity: 0.9,
-            fillOpacity: 0.7
-        }).addTo(map);
-        marker.bindPopup(`<strong>${loc.name}</strong><br>${loc.desc}`);
+            opacity: 0.95,
+            fillOpacity: 0.8,
+            zIndex: 100 + index,
+            className: 'map-marker'
+        });
+
+        // Create popup content
+        const popupContent = `
+            <div class="map-popup">
+                <strong style="color: ${color};">${loc.name}</strong><br>
+                <small>${loc.desc}</small><br>
+                <small style="color: #999;">${loc.coords[0].toFixed(3)}, ${loc.coords[1].toFixed(3)}</small>
+            </div>
+        `;
+
+        marker.bindPopup(popupContent, {
+            closeButton: false,
+            autoClose: true,
+            className: 'map-popup-container'
+        });
+
+        marker.on('click', function() {
+            this.openPopup();
+        });
+
+        marker.on('mouseover', function() {
+            this.setRadius(12);
+            this.setOpacity(1);
+        });
+
+        marker.on('mouseout', function() {
+            this.setRadius(8);
+            this.setOpacity(0.95);
+        });
+
+        markersGroup.addLayer(marker);
     });
+
+    // Fit all markers in view
+    map.fitBounds(markersGroup.getBounds().pad(0.1), {
+        animate: false,
+        padding: [50, 50]
+    });
+
+    // Add attribution
+    L.control.attribution({ position: 'bottomright' }).addTo(map);
+
+    console.log('✅ Mapa cargado exitosamente con', locations.length, 'ubicaciones bíblicas');
 }
 
 function renderMapFallback(target, locations) {
@@ -1367,14 +1443,35 @@ function renderMapFallback(target, locations) {
     if (!target) return;
     target.classList.remove('hidden');
     target.innerHTML = '';
+
+    const typeLabels = {
+        'important': '⭐ Importante',
+        'events': '📖 Eventos',
+        'sites': '🏛️ Sitios',
+        'ministry': '✨ Ministerio'
+    };
+
+    const typeColors = {
+        'important': '#e94560',
+        'events': '#667eea',
+        'sites': '#48dbfb',
+        'ministry': '#1dd1a1'
+    };
+
     locations.forEach(loc => {
         const card = document.createElement('div');
         card.className = 'map-card';
+        const color = typeColors[loc.type] || '#e94560';
         card.innerHTML = `
-            <div class="map-card__title">${loc.name}</div>
+            <div class="map-card__header" style="border-left: 4px solid ${color};">
+                <div class="map-card__title">${loc.name}</div>
+                <div class="map-card__type">${typeLabels[loc.type] || loc.type}</div>
+            </div>
             <div class="map-card__desc">${loc.desc}</div>
-            <div class="map-card__coords">${loc.coords[0].toFixed(2)}, ${loc.coords[1].toFixed(2)}</div>
-            <a class="map-card__link" href="https://www.openstreetmap.org/?mlat=${loc.coords[0]}&mlon=${loc.coords[1]}#map=12/${loc.coords[0]}/${loc.coords[1]}" target="_blank" rel="noopener">${i18n.currentLang === 'es' ? 'Ver en mapa' : 'Open map'}</a>
+            <div class="map-card__coords">📍 ${loc.coords[0].toFixed(3)}, ${loc.coords[1].toFixed(3)}</div>
+            <a class="map-card__link" href="https://www.google.com/maps?q=${loc.coords[0]},${loc.coords[1]}" target="_blank" rel="noopener">
+                ${i18n && i18n.currentLang === 'es' ? 'Ver en Google Maps' : 'Open on Google Maps'} →
+            </a>
         `;
         target.appendChild(card);
     });

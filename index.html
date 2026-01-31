@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/donations.css">
     <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/mobile-performance.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <!-- 🛡️ Protección de API Key - Ejecutar ANTES que todo lo demás -->
@@ -75,7 +76,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <img src="assets/images/logo.png" alt="HolyVerse" class="logo-img">
+                <img src="assets/images/logo.png" alt="HolyVerse" class="logo-img" loading="lazy" decoding="async">
                 <h1>HolyVerse</h1>
             </div>
             <div class="nav-controls">
@@ -166,7 +167,6 @@
             <!-- Search Bar -->
             <div class="search-bar">
                 <input id="searchInput" type="text" placeholder="Juan 3:16 o 'amor'" data-i18n-placeholder="search.placeholder">
-                <button id="voiceSearchBtn" class="voice-btn" title="Búsqueda por voz">🎤</button>
                 <button id="searchBtn" class="primary-btn search-btn" data-i18n="search.action">Buscar</button>
                 <button id="advancedToggle" class="ghost-btn" title="Filtros avanzados">⚙️</button>
                 <span id="searchStatus" class="status-pill"></span>
@@ -480,12 +480,6 @@
         </div>
     </div>
 
-    <!-- Donation Button (Floating) -->
-    <button id="donationBtn" title="Apoya HolyVerse">
-        <span>☕</span>
-        <span>Apoyar</span>
-    </button>
-
     <!-- User Profile Modal -->
     <div id="profileModal" class="hidden">
         <div class="profile-modal-content">
@@ -580,7 +574,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <img src="assets/images/logo.png" alt="HolyVerse" class="footer-logo-img">
+                        <img src="assets/images/logo.png" alt="HolyVerse" class="footer-logo-img" loading="lazy" decoding="async">
                         <h4>HolyVerse</h4>
                     </div>
                     <p data-i18n="footer.desc">Explora el universo bíblico de forma interactiva</p>
@@ -591,6 +585,12 @@
                         <li><a href="#" onclick="scrollToTop()" data-i18n="footer.links.top">Arriba</a></li>
                         <li><a href="#" onclick="document.getElementById('searchInput').focus()" data-i18n="footer.links.search">Buscar</a></li>
                     </ul>
+                </div>
+                <div class="footer-section">
+                    <button id="donationBtn" class="footer-donation-btn" title="Apoya HolyVerse">
+                        <span>☕</span>
+                        <span>Apoyar HolyVerse</span>
+                    </button>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -607,6 +607,7 @@
 
     <!-- Scripts -->
     <script src="js/i18n.js"></script>
+    <script src="js/performance-mobile.js"></script>
     <script src="js/api.js"></script>
     <script src="js/ai.js"></script>
     <script src="js/ai-setup.js"></script>

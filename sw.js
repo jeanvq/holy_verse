@@ -1,7 +1,8 @@
-// Service Worker for HolyVerse PWA
+// Service Worker for HolyVerse PWA - Optimized for Performance
 const CACHE_NAME = 'holyverse-v1';
 const STATIC_CACHE = 'holyverse-static-v1';
 const DYNAMIC_CACHE = 'holyverse-dynamic-v1';
+const IMAGE_CACHE = 'holyverse-images-v1';
 
 const STATIC_ASSETS = [
   '/holy_verse/',
@@ -9,12 +10,14 @@ const STATIC_ASSETS = [
   '/holy_verse/css/styles.css',
   '/holy_verse/css/grid.css',
   '/holy_verse/css/bot.css',
+  '/holy_verse/css/mobile-performance.css',
   '/holy_verse/js/main.js',
   '/holy_verse/js/api.js',
   '/holy_verse/js/bot.js',
   '/holy_verse/js/i18n.js',
   '/holy_verse/js/utils.js',
   '/holy_verse/js/bot-enhancements.js',
+  '/holy_verse/js/performance-mobile.js',
   '/holy_verse/assets/images/logo.png'
 ];
 
@@ -22,12 +25,16 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then((cache) => {
+    Promise.all([
+      caches.open(STATIC_CACHE).then((cache) => {
         console.log('Service Worker: Caching static assets');
         return cache.addAll(STATIC_ASSETS);
+      }),
+      caches.open(IMAGE_CACHE).then((cache) => {
+        console.log('Service Worker: Image cache ready');
+        return Promise.resolve();
       })
-      .then(() => self.skipWaiting())
+    ]).then(() => self.skipWaiting())
   );
 });
 
@@ -38,7 +45,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== STATIC_CACHE && cache !== DYNAMIC_CACHE) {
+          if (![STATIC_CACHE, DYNAMIC_CACHE, IMAGE_CACHE].includes(cache)) {
             console.log('Service Worker: Clearing old cache', cache);
             return caches.delete(cache);
           }
@@ -48,39 +55,67 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - optimized with smart caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip cross-origin requests
+  // Skip cross-origin requests (mostly)
   if (url.origin !== location.origin) {
-    // For API requests, use network first
-    if (url.hostname.includes('api.scripture.api.bible')) {
+    // For API requests, use network first with timeout
+    if (url.hostname.includes('api.scripture.api.bible') || url.hostname.includes('rest.api.bible')) {
       event.respondWith(
-        fetch(request)
-          .then((response) => {
+        Promise.race([
+          fetch(request).then(response => {
             // Cache successful API responses
-            const clonedResponse = response.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, clonedResponse);
-            });
+            if (response && response.status === 200) {
+              const clonedResponse = response.clone();
+              caches.open(DYNAMIC_CACHE).then((cache) => {
+                cache.put(request, clonedResponse);
+              });
+            }
             return response;
-          })
-          .catch(() => {
-            // Fallback to cache if offline
-            return caches.match(request);
-          })
+          }),
+          new Promise(resolve => setTimeout(() => resolve(null), 8000)) // 8s timeout
+        ]).catch(() => {
+          // Fallback to cache if offline or timeout
+          return caches.match(request);
+        })
       );
       return;
     }
     
     // For other external resources, just fetch
-    event.respondWith(fetch(request));
+    event.respondWith(fetch(request).catch(() => new Response('', { status: 503 })));
     return;
   }
 
-  // For same-origin requests, use cache first strategy
+  // For images, use cache first with network update
+  if (request.destination === 'image') {
+    event.respondWith(
+      caches.match(request)
+        .then((cachedResponse) => {
+          const fetchPromise = fetch(request).then((response) => {
+            if (response && response.status === 200) {
+              const responseToCache = response.clone();
+              caches.open(IMAGE_CACHE).then((cache) => {
+                cache.put(request, responseToCache);
+              });
+            }
+            return response;
+          });
+
+          return cachedResponse || fetchPromise;
+        })
+        .catch(() => {
+          // Fallback placeholder if no cache
+          return new Response('', { status: 503 });
+        })
+    );
+    return;
+  }
+
+  // For HTML/CSS/JS, use cache first, fallback to network
   event.respondWith(
     caches.match(request)
       .then((cachedResponse) => {

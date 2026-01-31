@@ -98,12 +98,37 @@ const API = {
     ],
 
     moodVerses: {
-        hopeful: [0, 1, 2],
-        anxious: [3, 4],
-        grieving: [2, 3],
-        joyful: [0, 1],
-        confused: [2, 4],
-        peaceful: [3, 4]
+        // Esperanzado/a - versículos de promesa y fe
+        hopeful: [
+            { es: 'Porque yo sé los planes que tengo para vosotros, dice Jehová, planes de paz, y no de mal, para daros el fin que esperáis.', reference: 'Jeremías 29:11', book: 'Jeremías', chapter: 29, verse: 11, en: 'For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope.' },
+            { es: 'Aunque ande en valle de sombra de muerte, no temeré mal alguno, porque tú estarás conmigo.', reference: 'Salmo 23:4', book: 'Salmos', chapter: 23, verse: 4, en: 'Even though I walk through the darkest valley, I will fear no evil, for you are with me.' },
+            { es: 'Todo lo puedo en Cristo que me fortalece.', reference: 'Filipenses 4:13', book: 'Filipenses', chapter: 4, verse: 13, en: 'I can do all this through him who gives me strength.' }
+        ],
+        // Ansioso/a - versículos de paz y calma
+        anxious: [
+            { es: 'Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con acción de gracias.', reference: 'Filipenses 4:6', book: 'Filipenses', chapter: 4, verse: 6, en: 'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.' },
+            { es: 'La paz os dejo, mi paz os doy; no os la doy como el mundo la da. No se turbe vuestro corazón, ni tenga miedo.', reference: 'Juan 14:27', book: 'Juan', chapter: 14, verse: 27, en: 'Peace I leave with you; my peace I give you. I do not give to you as the world gives.' }
+        ],
+        // Dolido/a - versículos de consuelo
+        grieving: [
+            { es: 'Bendito sea el Dios y Padre de nuestro Señor Jesucristo, Padre de misericordias y Dios de toda consolación.', reference: '2 Corintios 1:3', book: '2 Corintios', chapter: 1, verse: 3, en: 'Praise be to the God and Father of our Lord Jesus Christ, the Father of compassion and the God of all comfort.' },
+            { es: 'Cercano está Jehová a los quebrantados de corazón.', reference: 'Salmo 34:18', book: 'Salmos', chapter: 34, verse: 18, en: 'The Lord is close to the brokenhearted.' }
+        ],
+        // Alegre - versículos de gozo
+        joyful: [
+            { es: 'Regocijaos en el Señor siempre. Otra vez os digo: ¡Regocijaos!', reference: 'Filipenses 4:4', book: 'Filipenses', chapter: 4, verse: 4, en: 'Rejoice in the Lord always. I will say it again: Rejoice!' },
+            { es: 'Por la noche durará el lloro, y a la mañana vendrá la alegría.', reference: 'Salmo 30:5', book: 'Salmos', chapter: 30, verse: 5, en: 'Weeping may stay for the night, but rejoicing comes in the morning.' }
+        ],
+        // Confundido/a - versículos de sabiduría
+        confused: [
+            { es: 'Si alguno de vosotros tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente y sin reproche, y le será dada.', reference: 'Santiago 1:5', book: 'Santiago', chapter: 1, verse: 5, en: 'If any of you lacks wisdom, you should ask God, who gives generously to all without finding fault, and it will be given to you.' },
+            { es: 'Encomienda tu camino al Señor, confía en él, y él actuará.', reference: 'Salmo 37:5', book: 'Salmos', chapter: 37, verse: 5, en: 'Commit to the Lord whatever you do, and your plans will succeed.' }
+        ],
+        // Tranquilo/a - versículos de paz
+        peaceful: [
+            { es: 'La paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús.', reference: 'Filipenses 4:7', book: 'Filipenses', chapter: 4, verse: 7, en: 'And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.' },
+            { es: 'Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.', reference: 'Mateo 11:28', book: 'Mateo', chapter: 11, verse: 28, en: 'Come to me, all you who are weary and burdened, and I will give you rest.' }
+        ]
     },
 
     // Get available bibles
@@ -394,10 +419,33 @@ const API = {
     // Get verses by mood
     async getVersesByMood(mood) {
         try {
-            const indices = this.moodVerses[mood] || [0, 1, 2];
-            const randomIndex = indices[Math.floor(Math.random() * indices.length)];
+            const moodVersesArray = this.moodVerses[mood] || [];
+            if (moodVersesArray.length === 0) {
+                return this.fallbackVerses[0]['es'];
+            }
+            
+            const randomVerse = moodVersesArray[Math.floor(Math.random() * moodVersesArray.length)];
             const lang = (typeof i18n !== 'undefined') ? i18n.currentLang : 'es';
-            return this.fallbackVerses[randomIndex][lang];
+            
+            // Si el versículo tiene propiedades es/en, usarlas; si no, usar propiedades directas
+            if (randomVerse.es && randomVerse.en) {
+                return lang === 'en' ? {
+                    text: randomVerse.en,
+                    reference: randomVerse.reference,
+                    book: randomVerse.book,
+                    chapter: randomVerse.chapter,
+                    verse: randomVerse.verse
+                } : {
+                    text: randomVerse.es,
+                    reference: randomVerse.reference,
+                    book: randomVerse.book,
+                    chapter: randomVerse.chapter,
+                    verse: randomVerse.verse
+                };
+            }
+            
+            // Fallback a formato antiguo
+            return randomVerse;
         } catch (error) {
             console.error('Error fetching mood verse:', error);
             return this.fallbackVerses[0]['es'];

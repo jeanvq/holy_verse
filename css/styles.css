@@ -96,8 +96,7 @@ body > * {
     background: var(--secondary);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 100;
     box-shadow: var(--shadow);
 }
@@ -296,10 +295,13 @@ body > * {
     padding: 2.5rem;
     backdrop-filter: blur(10px);
     box-shadow: var(--shadow);
-    transition: all 0.3s ease;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     animation: slideInUp 0.5s ease;
     position: relative;
     overflow: hidden;
+    will-change: transform;
 }
 
 .verse-card::before {
@@ -406,7 +408,11 @@ body > * {
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .action-btn:hover {
@@ -461,7 +467,12 @@ body > * {
     flex-direction: column;
     align-items: center;
     gap: 0.7rem;
-    transition: all 0.3s ease;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .mood-emoji {
@@ -515,9 +526,13 @@ body > * {
     padding: 2rem;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(10px);
     animation: slideInUp 0.5s ease;
+    will-change: transform;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .explore-card:hover {
@@ -562,7 +577,10 @@ body > * {
     cursor: pointer;
     font-weight: 700;
     box-shadow: 0 8px 24px rgba(79, 209, 197, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .primary-btn:hover {
@@ -1572,6 +1590,17 @@ body > * {
 
 /* Responsive */
 @media (max-width: 768px) {
+    /* Reduce backdrop-filter for better mobile performance */
+    .verse-card,
+    .mood-container,
+    .exploration-detail,
+    .search-section,
+    .modal-content,
+    .footer,
+    .explore-card {
+        backdrop-filter: blur(4px) !important;
+    }
+
     .footer-content {
         grid-template-columns: 1fr;
         gap: 1.5rem;
@@ -2152,38 +2181,7 @@ body > * {
     to { transform: rotate(360deg); }
 }
 
-/* Voice Search Button */
-#voiceSearchBtn {
-    background: var(--highlight);
-    border: none;
-    color: var(--primary);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(79, 209, 197, 0.3);
-}
-
-#voiceSearchBtn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(79, 209, 197, 0.4);
-}
-
-#voiceSearchBtn.listening {
-    animation: pulse 1.5s ease-in-out infinite;
-    background: var(--gold);
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
+/* Voice Search Button - REMOVIDO (Búsqueda por voz eliminada) */
 /* Install PWA Button */
 #installPWA {
     position: fixed;

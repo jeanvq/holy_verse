@@ -1,0 +1,300 @@
+/* Mobile Performance Optimizations */
+/* GPU Acceleration y transiciones fluidas */
+
+/* Enable GPU acceleration for frequently animated elements */
+.verse-card,
+.explore-card,
+.mood-btn,
+.character-card,
+.book-item,
+.search-card,
+.favorite-row,
+.modal-content {
+    will-change: transform, opacity;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Smooth transitions optimized for mobile */
+.verse-card,
+.explore-card,
+.mood-btn,
+.character-card,
+.book-item,
+.search-card,
+.favorite-row,
+.action-btn,
+.primary-btn,
+.ghost-btn,
+.share-option,
+.history-item {
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Remove will-change after animations to save memory */
+.verse-card:not(:hover),
+.explore-card:not(:hover),
+.mood-btn:not(:hover),
+.character-card:not(:hover),
+.book-item:not(:hover),
+.search-card:not(:hover) {
+    will-change: auto;
+}
+
+/* Reduce backdrop-filter on mobile - use simpler solution */
+@supports (backdrop-filter: blur(10px)) {
+    @media (max-width: 768px) {
+        .verse-card,
+        .mood-container,
+        .exploration-detail,
+        .search-section,
+        .modal-content,
+        .footer {
+            backdrop-filter: blur(4px);
+        }
+    }
+}
+
+/* Button touch feedback */
+button,
+a,
+[role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+/* Contain layout for better performance */
+.verse-card,
+.exploration-grid,
+.books-list,
+.characters-grid,
+.search-results,
+.favorites-list,
+.mood-grid {
+    contain: layout style;
+}
+
+/* Reduce animations in reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Optimize scrolling performance */
+.modal-content,
+.exploration-detail,
+.search-results {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Performance-optimized animations */
+@keyframes slideUpMobile {
+    from {
+        transform: translateY(8px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInFast {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Reduce image rendering overhead */
+img {
+    backface-visibility: hidden;
+}
+
+/* Network efficient loading states */
+.skeleton {
+    animation: shimmerMove 1.3s infinite;
+    will-change: background-position;
+}
+
+@keyframes shimmerMove {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Touch-friendly sizing */
+@media (max-width: 768px) {
+    button,
+    a,
+    input,
+    select,
+    textarea {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .action-btn,
+    .primary-btn,
+    .ghost-btn,
+    .mood-btn,
+    .share-option {
+        min-height: 48px;
+        padding: 0.75rem;
+    }
+
+    /* Increase tap target size */
+    .verse-actions {
+        gap: 0.5rem;
+    }
+
+    .verse-actions button {
+        padding: 1rem;
+        min-height: 48px;
+    }
+}
+
+/* Optimize form performance */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--highlight);
+    box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.1);
+}
+
+/* Smooth scrolling without jank */
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Prevent layout shift during load */
+html {
+    scroll-padding-top: 60px;
+}
+
+/* Optimize modal animations */
+.modal.hidden,
+.modal-overlay {
+    pointer-events: none;
+}
+
+/* Faster button feedback */
+button:active {
+    transform: scale3d(0.95, 0.95, 1);
+}
+
+/* Optimize dropdown performance */
+select,
+.filter-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Efficient hover states on touch devices */
+@media (hover: none) {
+    .verse-card:hover,
+    .explore-card:hover,
+    .mood-btn:hover,
+    .character-card:hover,
+    .book-item:hover,
+    .search-card:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: var(--border);
+    }
+
+    .verse-card:active,
+    .explore-card:active,
+    .mood-btn:active,
+    .character-card:active,
+    .book-item:active,
+    .search-card:active {
+        transform: scale3d(0.98, 0.98, 1);
+        opacity: 0.9;
+    }
+}
+
+/* Optimize large list rendering */
+.books-list,
+.favorites-list,
+.search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Prevent cumulative layout shift */
+.navbar,
+.verse-card,
+.modal-content {
+    contain: content;
+}
+
+/* Memory-efficient animations */
+@media (max-width: 480px) {
+    .explore-card::before,
+    .verse-card::before,
+    .verse-card::after {
+        content: none;
+    }
+}
+
+/* Optimize scrollbar behavior */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--highlight);
+}
+
+/* Fast focus states */
+:focus-visible {
+    outline: 2px solid var(--highlight);
+    outline-offset: 2px;
+}
+
+/* Optimize hero animations */
+.hero {
+    animation: fadeInFast 0.3s ease-out;
+}
+
+/* Reduce paint operations */
+@media (max-width: 768px) {
+    .mood-grid,
+    .exploration-grid,
+    .books-container,
+    .characters-grid {
+        gap: 0.75rem;
+    }
+}

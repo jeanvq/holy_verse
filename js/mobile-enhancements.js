@@ -41,62 +41,7 @@ function fallbackShare(shareData) {
     }
 }
 
-// Voice Search
-function setupVoiceSearch() {
-    const voiceBtn = document.getElementById('voiceSearchBtn');
-    if (!voiceBtn) return;
-    
-    // Check for browser support
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        voiceBtn.style.display = 'none';
-        return;
-    }
-    
-    const recognition = new SpeechRecognition();
-    recognition.lang = i18n?.currentLang === 'en' ? 'en-US' : 'es-ES';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    
-    let isListening = false;
-    
-    voiceBtn.addEventListener('click', () => {
-        if (isListening) {
-            recognition.stop();
-            return;
-        }
-        
-        voiceBtn.classList.add('listening');
-        recognition.start();
-        isListening = true;
-    });
-    
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.value = transcript;
-            document.getElementById('searchBtn')?.click();
-        }
-    };
-    
-    recognition.onend = () => {
-        voiceBtn.classList.remove('listening');
-        isListening = false;
-    };
-    
-    recognition.onerror = (event) => {
-        console.error('Voice recognition error', event.error);
-        voiceBtn.classList.remove('listening');
-        isListening = false;
-        
-        if (event.error === 'not-allowed') {
-            showNotification(i18n?.currentLang === 'es' 
-                ? 'Permiso de micrófono denegado' 
-                : 'Microphone permission denied');
-        }
-    };
-}
+// Voice Search - REMOVIDA (Búsqueda por voz eliminada)
 
 // Swipe to close modals
 function setupSwipeGestures() {
@@ -288,7 +233,6 @@ function initMobileEnhancements() {
         setupMobileAIEnhancements();
     }
     
-    setupVoiceSearch();
     setupAutoDarkMode();
     setupPWAInstallPrompt();
 }
@@ -347,9 +291,79 @@ function setupMobileAIEnhancements() {
     console.log('✅ Mobile AI enhancements aplicados');
 }
 
+// Performance: Disable hover states on touch devices
+function optimizeForTouchDevices() {
+    // Detect touch capability
+    const isTouchDevice = () => {
+        return (
+            navigator.maxTouchPoints > 0 ||
+            navigator.msMaxTouchPoints > 0 ||
+            window.ontouchstart !== undefined
+        );
+    };
+
+    if (isTouchDevice()) {
+        // Add touch-optimized class
+        document.documentElement.classList.add('touch-device');
+
+        // Optimize button feedback
+        const buttons = document.querySelectorAll('button, a, [role="button"]');
+        buttons.forEach(btn => {
+            btn.addEventListener('touchstart', function() {
+                this.classList.add('touch-active');
+            }, { passive: true });
+
+            btn.addEventListener('touchend', function() {
+                this.classList.remove('touch-active');
+            }, { passive: true });
+        });
+    }
+}
+
+// CSS for touch-active state
+function injectTouchStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .touch-device .verse-card,
+        .touch-device .explore-card,
+        .touch-device .mood-btn,
+        .touch-device button {
+            transition: opacity 0.1s ease !important;
+        }
+
+        button.touch-active,
+        a.touch-active,
+        [role="button"].touch-active {
+            opacity: 0.7;
+            transform: scale3d(0.98, 0.98, 1);
+        }
+
+        .touch-device .verse-card:hover,
+        .touch-device .explore-card:hover,
+        .touch-device .mood-btn:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .touch-device .verse-card:active,
+        .touch-device .explore-card:active,
+        .touch-device .mood-btn:active {
+            transform: scale3d(0.98, 0.98, 1);
+            opacity: 0.9;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Run when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobileEnhancements);
+    document.addEventListener('DOMContentLoaded', () => {
+        initMobileEnhancements();
+        optimizeForTouchDevices();
+        injectTouchStyles();
+    });
 } else {
     initMobileEnhancements();
+    optimizeForTouchDevices();
+    injectTouchStyles();
 }

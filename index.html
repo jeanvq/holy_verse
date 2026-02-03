@@ -397,6 +397,21 @@
                 <h2>HolyVerse</h2>
                 <button id="closeAuthModal">&times;</button>
             </div>
+
+            <div class="auth-intro">
+                <p>Guarda tus favoritos y accede desde cualquier dispositivo.</p>
+            </div>
+
+            <div class="auth-social">
+                <button type="button" id="loginGoogleBtn" class="auth-provider-btn google">
+                    <span class="provider-icon">G</span>
+                    <span>Continuar con Google</span>
+                </button>
+            </div>
+
+            <div class="auth-divider">
+                <span>o continúa con email</span>
+            </div>
             
             <div class="auth-tabs">
                 <button id="loginTab" class="auth-tab active">Iniciar Sesión</button>
@@ -407,7 +422,7 @@
             <form id="loginForm" class="auth-form active">
                 <div class="form-group">
                     <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" placeholder="tu@email.com" required>
+                    <input type="email" id="loginEmail" placeholder="Tu correo" required>
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Contraseña</label>
@@ -424,7 +439,7 @@
                 </div>
                 <div class="form-group">
                     <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" placeholder="tu@email.com" required>
+                    <input type="email" id="signupEmail" placeholder="Tu correo" required>
                 </div>
                 <div class="form-group">
                     <label for="signupPassword">Contraseña</label>
@@ -432,6 +447,11 @@
                 </div>
                 <button type="submit" class="auth-submit-btn">Crear Cuenta</button>
             </form>
+
+            <div class="auth-guest">
+                <button type="button" id="continueGuestBtn" class="auth-guest-btn">Continuar sin cuenta</button>
+                <p class="auth-guest-note">Podrás crear una cuenta más tarde para guardar tus datos.</p>
+            </div>
         </div>
     </div>
 
@@ -613,6 +633,7 @@
     <script src="js/bot.js"></script>
     <script src="js/bot-ai.js"></script>
     <script src="js/bot-enhancements.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/donations.js"></script>
     <script src="js/profile.js"></script>
@@ -624,7 +645,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/holy_verse/sw.js')
+                navigator.serviceWorker.register('/sw.js')
                     .then(reg => console.log('Service Worker registered'))
                     .catch(err => console.log('Service Worker registration failed', err));
             });

@@ -5,20 +5,20 @@ const DYNAMIC_CACHE = 'holyverse-dynamic-v1';
 const IMAGE_CACHE = 'holyverse-images-v1';
 
 const STATIC_ASSETS = [
-  '/holy_verse/',
-  '/holy_verse/index.html',
-  '/holy_verse/css/styles.css',
-  '/holy_verse/css/grid.css',
-  '/holy_verse/css/bot.css',
-  '/holy_verse/css/mobile-performance.css',
-  '/holy_verse/js/main.js',
-  '/holy_verse/js/api.js',
-  '/holy_verse/js/bot.js',
-  '/holy_verse/js/i18n.js',
-  '/holy_verse/js/utils.js',
-  '/holy_verse/js/bot-enhancements.js',
-  '/holy_verse/js/performance-mobile.js',
-  '/holy_verse/assets/images/logo.png'
+  '/',
+  '/index.html',
+  '/css/styles.css',
+  '/css/grid.css',
+  '/css/bot.css',
+  '/css/mobile-performance.css',
+  '/js/main.js',
+  '/js/api.js',
+  '/js/bot.js',
+  '/js/i18n.js',
+  '/js/utils.js',
+  '/js/bot-enhancements.js',
+  '/js/performance-mobile.js',
+  '/assets/images/logo.png'
 ];
 
 // Install event - cache static assets
@@ -140,7 +140,7 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         // Offline fallback
         if (request.destination === 'document') {
-          return caches.match('/holy_verse/index.html');
+          return caches.match('/index.html');
         }
       })
   );

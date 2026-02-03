@@ -94,6 +94,15 @@
     display: none;
 }
 
+body.auth-locked {
+    overflow: hidden;
+}
+
+body.auth-locked .main-container,
+body.auth-locked .footer {
+    display: none;
+}
+
 .auth-modal-content {
     background: var(--secondary);
     border: 1px solid var(--border);
@@ -111,7 +120,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
 }
 
 .auth-modal-header h2 {
@@ -133,6 +142,110 @@
 
 #closeAuthModal:hover {
     color: var(--text-primary);
+}
+
+.auth-intro {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.auth-social {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.auth-provider-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--accent);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.auth-provider-btn:hover {
+    border-color: var(--highlight);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.auth-provider-btn.apple {
+    background: #111827;
+    border-color: #111827;
+    color: white;
+}
+
+.auth-provider-btn.google {
+    background: #ffffff;
+    color: #111827;
+}
+
+.provider-icon {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.auth-guest {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.auth-guest-btn {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.auth-guest-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--highlight);
+}
+
+.auth-guest-note {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
 }
 
 /* Auth Tabs */

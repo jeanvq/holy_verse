@@ -130,8 +130,8 @@ const UserProfile = {
         if (emailEl) emailEl.textContent = this.currentUser.email;
         
         // Update stats
-        const favorites = this.currentUser.favorites || [];
-        const history = this.currentUser.searchHistory || [];
+        const favorites = AuthSystem.getFavorites();
+        const history = AuthSystem.getSearchHistory();
         
         const statsElements = {
             'favorites-stat': favorites.length,
@@ -154,7 +154,7 @@ const UserProfile = {
     
     // Load user's favorite verses
     loadFavorites() {
-        const favorites = this.currentUser?.favorites || [];
+        const favorites = AuthSystem.getFavorites();
         const container = document.getElementById('favoritesList');
         
         if (!container) return;
@@ -188,7 +188,7 @@ const UserProfile = {
     
     // Load search history
     loadHistory() {
-        const history = this.currentUser?.searchHistory || [];
+        const history = AuthSystem.getSearchHistory();
         const container = document.getElementById('historyList');
         
         if (!container) return;
@@ -223,7 +223,7 @@ const UserProfile = {
     
     // Load user preferences
     loadPreferences() {
-        const prefs = this.currentUser?.preferences || {};
+        const prefs = AuthSystem.getPreferences();
         
         const notificationToggle = document.getElementById('notificationToggle');
         if (notificationToggle) {
@@ -232,7 +232,7 @@ const UserProfile = {
     },
     
     // Save profile settings
-    saveSettings() {
+    async saveSettings() {
         const displayNameInput = document.getElementById('displayNameInput');
         const emailInput = document.getElementById('emailInput');
         
@@ -246,36 +246,35 @@ const UserProfile = {
             return;
         }
         
-        // Update user object
-        this.currentUser.displayName = newDisplayName;
-        this.currentUser.email = newEmail;
-        
-        // Save to localStorage
-        AuthSystem.setCurrentUser(this.currentUser);
-        localStorage.setItem('holyverse-session', JSON.stringify(this.currentUser));
-        
-        // Update UI
-        AuthSystem.updateUI();
-        this.loadProfile();
-        
-        this.showNotification('Perfil actualizado correctamente', 'success');
+        try {
+            await AuthSystem.updateProfile({
+                displayName: newDisplayName,
+                email: newEmail
+            });
+            AuthSystem.updateUI();
+            this.loadProfile();
+            this.showNotification('Perfil actualizado correctamente', 'success');
+        } catch (error) {
+            this.showNotification(error.message || 'No se pudo actualizar el perfil', 'error');
+        }
     },
     
     // Remove a favorite
     removeFavorite(index) {
-        if (this.currentUser.favorites) {
-            this.currentUser.favorites.splice(index, 1);
-            AuthSystem.setCurrentUser(this.currentUser);
-            localStorage.setItem('holyverse-session', JSON.stringify(this.currentUser));
-            this.loadFavorites();
-            this.loadProfile();
-            this.showNotification('Versículo eliminado de favoritos', 'success');
-        }
+        const favorites = AuthSystem.getFavorites();
+        const fav = favorites[index];
+        if (!fav) return;
+
+        AuthSystem.removeFavorite(fav.reference);
+        this.loadFavorites();
+        this.loadProfile();
+        this.showNotification('Versículo eliminado de favoritos', 'success');
     },
     
     // Share a favorite verse
     shareFavorite(index) {
-        const fav = this.currentUser.favorites[index];
+        const favorites = AuthSystem.getFavorites();
+        const fav = favorites[index];
         if (!fav) return;
         
         const shareText = `${fav.text}\n\n— ${fav.reference}\n\n🙏 Compartido desde HolyVerse`;
@@ -295,21 +294,15 @@ const UserProfile = {
     
     // Delete history item
     deleteHistoryItem(index) {
-        if (this.currentUser.searchHistory) {
-            this.currentUser.searchHistory.splice(index, 1);
-            AuthSystem.setCurrentUser(this.currentUser);
-            localStorage.setItem('holyverse-session', JSON.stringify(this.currentUser));
-            this.loadHistory();
-            this.loadProfile();
-        }
+        AuthSystem.removeHistoryItem(index);
+        this.loadHistory();
+        this.loadProfile();
     },
     
     // Clear all history
     clearHistory() {
         if (confirm('¿Estás seguro de que deseas limpiar todo el historial?')) {
-            this.currentUser.searchHistory = [];
-            AuthSystem.setCurrentUser(this.currentUser);
-            localStorage.setItem('holyverse-session', JSON.stringify(this.currentUser));
+            AuthSystem.clearHistory();
             this.loadHistory();
             this.loadProfile();
             this.showNotification('Historial eliminado', 'success');
@@ -318,13 +311,9 @@ const UserProfile = {
     
     // Toggle notifications
     toggleNotifications(enabled) {
-        if (!this.currentUser.preferences) {
-            this.currentUser.preferences = {};
-        }
-        
-        this.currentUser.preferences.notificationsEnabled = enabled;
-        AuthSystem.setCurrentUser(this.currentUser);
-        localStorage.setItem('holyverse-session', JSON.stringify(this.currentUser));
+        AuthSystem.updatePreferences({
+            notificationsEnabled: enabled
+        });
         
         const msg = enabled ? 'Notificaciones activadas' : 'Notificaciones desactivadas';
         this.showNotification(msg, 'success');
@@ -332,15 +321,18 @@ const UserProfile = {
     
     // Export user data as JSON
     exportUserData() {
+        const favorites = AuthSystem.getFavorites();
+        const history = AuthSystem.getSearchHistory();
+        const preferences = AuthSystem.getPreferences();
         const dataToExport = {
             user: {
-                email: this.currentUser.email,
-                displayName: this.currentUser.displayName,
-                createdAt: this.currentUser.createdAt
+                email: this.currentUser?.email,
+                displayName: this.currentUser?.displayName,
+                createdAt: this.currentUser?.createdAt
             },
-            favorites: this.currentUser.favorites || [],
-            searchHistory: this.currentUser.searchHistory || [],
-            preferences: this.currentUser.preferences || {},
+            favorites,
+            searchHistory: history,
+            preferences,
             exportDate: new Date().toISOString()
         };
         

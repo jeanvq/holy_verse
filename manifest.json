@@ -2,12 +2,12 @@
   "name": "HolyVerse - Universo Bíblico Interactivo",
   "short_name": "HolyVerse",
   "description": "Explora historias, contextos y conexiones sagradas de la Biblia",
-  "start_url": "/holy_verse/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0f1a",
   "theme_color": "#4fd1c5",
   "orientation": "portrait-primary",
-  "scope": "/holy_verse/",
+  "scope": "/",
   "icons": [
     {
       "src": "assets/icons/icon.svg",

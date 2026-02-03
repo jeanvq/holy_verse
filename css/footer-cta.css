@@ -137,6 +137,7 @@
         padding: 1rem;
         margin-bottom: 1rem;
         flex-direction: column;
+        overflow: hidden;
     }
 
     .footer-cta-btn {
@@ -144,6 +145,12 @@
         padding: 1rem 1.2rem;
         justify-content: center;
         font-size: 0.95rem;
+    }
+
+    .footer-cta-btn.install-btn,
+    .footer-cta-btn.donate-btn {
+        animation: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .cta-icon {

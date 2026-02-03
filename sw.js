@@ -1,8 +1,8 @@
 // Service Worker for HolyVerse PWA - Optimized for Performance
-const CACHE_NAME = 'holyverse-v1';
-const STATIC_CACHE = 'holyverse-static-v1';
-const DYNAMIC_CACHE = 'holyverse-dynamic-v1';
-const IMAGE_CACHE = 'holyverse-images-v1';
+const CACHE_NAME = 'holyverse-v2';
+const STATIC_CACHE = 'holyverse-static-v2';
+const DYNAMIC_CACHE = 'holyverse-dynamic-v2';
+const IMAGE_CACHE = 'holyverse-images-v2';
 
 const STATIC_ASSETS = [
   '/',
@@ -10,10 +10,12 @@ const STATIC_ASSETS = [
   '/css/styles.css',
   '/css/grid.css',
   '/css/bot.css',
+  '/css/auth.css',
   '/css/mobile-performance.css',
   '/js/main.js',
   '/js/api.js',
   '/js/bot.js',
+  '/js/auth.js',
   '/js/i18n.js',
   '/js/utils.js',
   '/js/bot-enhancements.js',
@@ -115,7 +117,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For HTML/CSS/JS, use cache first, fallback to network
+  // For HTML/CSS/JS, use network first to avoid stale auth/UI
+  if (['document', 'script', 'style'].includes(request.destination)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          if (request.destination === 'document') {
+            return caches.match('/index.html');
+          }
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // For other requests, use cache first, fallback to network
   event.respondWith(
     caches.match(request)
       .then((cachedResponse) => {

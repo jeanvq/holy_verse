@@ -1,26 +1,26 @@
 // Service Worker for HolyVerse PWA - Optimized for Performance
-const CACHE_NAME = 'holyverse-v2';
-const STATIC_CACHE = 'holyverse-static-v2';
-const DYNAMIC_CACHE = 'holyverse-dynamic-v2';
-const IMAGE_CACHE = 'holyverse-images-v2';
+const CACHE_NAME = 'holyverse-v3';
+const STATIC_CACHE = 'holyverse-static-v3';
+const DYNAMIC_CACHE = 'holyverse-dynamic-v3';
+const IMAGE_CACHE = 'holyverse-images-v3';
 
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/css/grid.css',
-  '/css/bot.css',
-  '/css/auth.css',
-  '/css/mobile-performance.css',
-  '/js/main.js',
-  '/js/api.js',
-  '/js/bot.js',
-  '/js/auth.js',
-  '/js/i18n.js',
-  '/js/utils.js',
-  '/js/bot-enhancements.js',
-  '/js/performance-mobile.js',
-  '/assets/images/logo.png'
+  '',
+  'index.html',
+  'css/styles.css',
+  'css/grid.css',
+  'css/bot.css',
+  'css/auth.css',
+  'css/mobile-performance.css',
+  'js/main.js',
+  'js/api.js',
+  'js/bot.js',
+  'js/auth.js',
+  'js/i18n.js',
+  'js/utils.js',
+  'js/bot-enhancements.js',
+  'js/performance-mobile.js',
+  'assets/images/logo.png'
 ];
 
 // Install event - cache static assets
@@ -30,7 +30,8 @@ self.addEventListener('install', (event) => {
     Promise.all([
       caches.open(STATIC_CACHE).then((cache) => {
         console.log('Service Worker: Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
+        const scopedAssets = STATIC_ASSETS.map((asset) => new URL(asset, self.registration.scope).toString());
+        return cache.addAll(scopedAssets);
       }),
       caches.open(IMAGE_CACHE).then((cache) => {
         console.log('Service Worker: Image cache ready');
@@ -132,7 +133,7 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           if (request.destination === 'document') {
-            return caches.match('/index.html');
+            return caches.match(new URL('index.html', self.registration.scope));
           }
           return caches.match(request);
         })
@@ -165,7 +166,7 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         // Offline fallback
         if (request.destination === 'document') {
-          return caches.match('/index.html');
+          return caches.match(new URL('index.html', self.registration.scope));
         }
       })
   );

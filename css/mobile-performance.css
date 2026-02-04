@@ -298,3 +298,50 @@ select,
         gap: 0.75rem;
     }
 }
+
+/* Reduce flicker on mobile by disabling heavy effects */
+@media (max-width: 768px) {
+    .hero,
+    .footer-cta-btn,
+    .cta-icon,
+    .skeleton,
+    .bot-panel,
+    .modal-content,
+    .donation-modal-content,
+    .auth-modal-content,
+    .profile-modal-content,
+    .verse-card,
+    .explore-card,
+    .mood-btn,
+    .search-card,
+    .favorite-row {
+        animation: none !important;
+    }
+
+    .verse-card,
+    .mood-container,
+    .exploration-detail,
+    .search-section,
+    .modal-content,
+    .footer,
+    .bot-panel,
+    .donation-modal-content,
+    .auth-modal-content,
+    .profile-modal-content {
+        backdrop-filter: none !important;
+    }
+
+    .verse-card,
+    .explore-card,
+    .mood-btn,
+    .character-card,
+    .book-item,
+    .search-card,
+    .favorite-row,
+    .modal-content {
+        will-change: auto !important;
+        transform: none !important;
+        backface-visibility: visible !important;
+        perspective: none !important;
+    }
+}

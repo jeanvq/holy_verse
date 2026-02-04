@@ -211,8 +211,10 @@
 /* Responsive */
 @media (max-width: 768px) {
     #donationBtn {
-        bottom: 20px;
-        right: 15px;
+        position: static;
+        bottom: auto;
+        right: auto;
+        left: auto;
         padding: 0.8rem 1.2rem;
         font-size: 0.9rem;
     }
@@ -232,10 +234,11 @@
 
 @media (max-width: 480px) {
     #donationBtn {
-        bottom: 15px;
-        right: 10px;
-        left: 10px;
-        width: calc(100% - 20px);
+        position: static;
+        bottom: auto;
+        right: auto;
+        left: auto;
+        width: 100%;
         padding: 0.7rem 1rem;
         font-size: 0.85rem;
         justify-content: center;

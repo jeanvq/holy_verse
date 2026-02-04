@@ -102,6 +102,24 @@ function setupPullToRefresh() {
     let startY = 0;
     let isPulling = false;
     const threshold = 80;
+    const modalSelector = '.modal-content, .auth-modal-content, .donation-modal-content, .profile-modal-content, .bot-panel, #authModal';
+
+    const shouldIgnorePull = (eventTarget) => {
+        if (document.body.classList.contains('modal-open') ||
+            document.documentElement.classList.contains('modal-open') ||
+            document.body.classList.contains('auth-locked')) {
+            return true;
+        }
+
+        if (eventTarget && eventTarget.closest && eventTarget.closest(modalSelector)) {
+            return true;
+        }
+
+        const openModal = document.querySelector('.modal:not(.hidden)');
+        if (openModal) return true;
+
+        return false;
+    };
     
     const refreshIndicator = document.createElement('div');
     refreshIndicator.className = 'pull-refresh-indicator';
@@ -109,6 +127,8 @@ function setupPullToRefresh() {
     document.body.insertBefore(refreshIndicator, document.body.firstChild);
     
     document.addEventListener('touchstart', (e) => {
+        if (shouldIgnorePull(e.target)) return;
+
         if (window.scrollY === 0) {
             startY = e.touches[0].clientY;
             isPulling = true;
@@ -116,6 +136,7 @@ function setupPullToRefresh() {
     }, { passive: true });
     
     document.addEventListener('touchmove', (e) => {
+        if (shouldIgnorePull(e.target)) return;
         if (!isPulling || window.scrollY > 0) return;
         
         const currentY = e.touches[0].clientY;
@@ -133,7 +154,8 @@ function setupPullToRefresh() {
         }
     }, { passive: true });
     
-    document.addEventListener('touchend', () => {
+    document.addEventListener('touchend', (e) => {
+        if (shouldIgnorePull(e.target)) return;
         if (!isPulling) return;
         
         const diff = parseInt(refreshIndicator.style.transform.replace(/[^0-9]/g, '') || '0');

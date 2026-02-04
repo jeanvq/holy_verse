@@ -1609,11 +1609,19 @@ body > * {
     .nav-container {
         flex-direction: column;
         gap: 1rem;
+        align-items: center;
+        text-align: center;
     }
 
     .nav-controls {
         width: 100%;
-        justify-content: space-between;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .logo {
+        justify-content: center;
     }
 
     .hero-content h2 {

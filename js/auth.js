@@ -77,6 +77,10 @@ const AuthSystem = {
             } catch (e) {
                 this.logout();
             }
+        } else {
+            this.setCurrentUser(null);
+            this.userData = null;
+            this.updateUI();
         }
         this.applyAuthGate();
     },

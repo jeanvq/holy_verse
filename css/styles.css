@@ -101,6 +101,10 @@ body > * {
     box-shadow: var(--shadow);
 }
 
+body.surprise-open .navbar {
+    display: none;
+}
+
 .nav-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -1592,6 +1596,14 @@ body > * {
 
 /* Responsive */
 @media (max-width: 768px) {
+    body {
+        background-attachment: scroll;
+    }
+
+    body::before {
+        position: absolute;
+    }
+
     /* Reduce backdrop-filter for better mobile performance */
     .verse-card,
     .mood-container,

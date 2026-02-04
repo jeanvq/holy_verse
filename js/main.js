@@ -149,7 +149,7 @@ function openSurpriseVerseModal() {
     
     // Prevent scroll on mobile when modal opens
     document.documentElement.classList.add('modal-open');
-    document.body.classList.add('modal-open');
+    document.body.classList.add('modal-open', 'surprise-open');
     
     // Get a random verse
     const randomIndex = Math.floor(Math.random() * API.fallbackVerses.length);
@@ -170,7 +170,7 @@ function openSurpriseVerseModal() {
     const closeModal = () => {
         modal.classList.add('hidden');
         document.documentElement.classList.remove('modal-open');
-        document.body.classList.remove('modal-open');
+        document.body.classList.remove('modal-open', 'surprise-open');
     };
     
     closeBtn.addEventListener('click', closeModal);

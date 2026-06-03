@@ -1,655 +1,382 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>HolyVerse - Universo Bíblico Interactivo</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="description" content="Explora historias, contextos y conexiones sagradas de la Biblia">
-    <meta name="theme-color" content="#4fd1c5">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HolyVerse">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="apple-touch-icon" href="favicon.svg">
-    
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/grid.css">
-    <link rel="stylesheet" href="css/bot.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/donations.css">
-    <link rel="stylesheet" href="css/footer-cta.css">
-    <link rel="stylesheet" href="css/profile.css">
-    <link rel="stylesheet" href="css/mobile-performance.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <!-- 🛡️ Protección de API Key - Ejecutar ANTES que todo lo demás -->
-    <script>
-        // CRÍTICO: Proteger localStorage INMEDIATAMENTE
-        (function protectStorageImmediately() {
-            const originalClear = localStorage.clear;
-            const originalRemoveItem = localStorage.removeItem;
-            const protectedKeys = ['gemini_api_key', 'gemini_api_url', '_api_protected', '_api_saved_at'];
-            
-            // Interceptar removeItem
-            localStorage.removeItem = function(key) {
-                if (protectedKeys.includes(key)) {
-                    console.warn(`🛡️ Intento de borrar ${key} fue bloqueado`);
-                    return;
-                }
-                return originalRemoveItem.call(this, key);
-            };
-            
-            // Interceptar clear
-            localStorage.clear = function() {
-                const backup = {};
-                protectedKeys.forEach(key => {
-                    const value = localStorage.getItem(key);
-                    if (value) backup[key] = value;
-                });
-                
-                originalClear.call(this);
-                
-                Object.entries(backup).forEach(([key, value]) => {
-                    localStorage.setItem(key, value);
-                });
-            };
-            
-            console.log('🛡️ Protección de localStorage ACTIVADA');
-        })();
-        
-        // Auto-cargar API key si existe
-        (function autoLoadApiKey() {
-            const apiKey = localStorage.getItem('gemini_api_key');
-            if (apiKey && apiKey.length > 20) {
-                console.log('✅ API key encontrada en localStorage - será auto-cargada');
-            } else {
-                console.log('ℹ️ No hay API key - se pedirá configuración');
-            }
-        })();
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HolyVerse — Universo Bíblico</title>
+<meta name="description" content="Explora historias, contextos y conexiones sagradas de la Biblia">
+<meta name="theme-color" content="#0e0e12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HolyVerse">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <img src="assets/images/logo3.png" alt="HolyVerse" class="logo-img" loading="lazy" decoding="async">
-                <h1>HolyVerse</h1>
-            </div>
-            <div class="nav-controls">
-                <button id="themeToggle" class="theme-btn" title="Cambiar tema">🌙</button>
-                <button id="botToggle" class="bot-btn" title="Abre el Bible Bot">
-                    <span class="bot-icon">⚡</span>
-                </button>
-                <div class="lang-selector">
-                    <button id="langES" class="lang-btn active" data-lang="es">ES</button>
-                    <button id="langEN" class="lang-btn" data-lang="en">EN</button>
-                </div>
-                <!-- Auth Container -->
-                <div id="authContainer" style="display: flex; gap: 0.5rem;">
-                    <button id="loginBtn" class="primary-btn" style="display: none;">Iniciar Sesión</button>
-                </div>
-                <!-- User Menu -->
-                <div id="userMenu" style="display: none; gap: 1rem; align-items: center;">
-                    <button id="profileBtn" style="background: transparent; border: none; cursor: pointer; font-size: 1.3rem; padding: 0.5rem;" title="Mi Perfil">⚙️</button>
-                    <div class="user-avatar" id="userAvatar">👤</div>
-                    <div class="user-info">
-                        <span class="user-name" id="userName">Usuario</span>
-                        <span class="user-status">En línea</span>
-                    </div>
-                    <button id="logoutBtn" style="display: none;">Salir</button>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Container -->
-    <main class="main-container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <h2 data-i18n="hero.title">Universo Bíblico Interactivo</h2>
-                <p data-i18n="hero.subtitle">Explora historias, contextos y conexiones sagradas</p>
-                <div class="hero-cta">
-                    <button id="heroExplore" class="primary-btn" data-i18n="hero.cta.explore">Explorar hoy</button>
-                    <button id="heroSurprise" class="ghost-btn" data-i18n="hero.cta.surprise">Verso sorpresa</button>
-                </div>
-                <div id="heroStats" class="hero-stats"></div>
-            </div>
-        </section>
+<div class="app">
 
-        <!-- Surprise Verse Modal -->
-        <div id="surpriseVerseModal" class="modal hidden">
-            <button class="modal-close" id="closeModal">&times;</button>
-            <div class="modal-overlay" id="modalOverlay"></div>
-            <div class="modal-content surprise-verse-modal">
-                <div class="surprise-verse-container">
-                    <h2>✨ Verso para Ti</h2>
-                    <div class="surprise-verse-body">
-                        <p id="surpriseVerseText" class="surprise-verse-text"></p>
-                        <p id="surpriseVerseReference" class="surprise-verse-reference"></p>
-                    </div>
-                    <div class="surprise-verse-actions">
-                        <button id="surpriseFavorite" class="action-btn favorite-btn" title="Guardar versículo">
-                            <span class="icon">♡</span>
-                            <span class="label">Guardar</span>
-                        </button>
-                        <button id="surpriseShare" class="action-btn share-btn" title="Compartir versículo">
-                            <span class="icon">↗</span>
-                            <span class="label">Compartir</span>
-                        </button>
-                    </div>
-                    <div id="surpriseShareMenu" class="share-menu hidden">
-                        <button id="surpriseShareTwitter" class="share-option" title="Compartir en Twitter">𝕏</button>
-                        <button id="surpriseShareWhatsApp" class="share-option" title="Compartir en WhatsApp">💬</button>
-                        <button id="surpriseShareFacebook" class="share-option" title="Compartir en Facebook">f</button>
-                        <button id="surpriseShareCopy" class="share-option" title="Copiar al portapapeles">📋</button>
-                    </div>
-                    <button id="newSurpriseVerse" class="primary-btn" style="width: 100%; margin-top: 20px;">
-                        <span>↻ Otro verso</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Global Search -->
-        <section class="search-section">
-            <div class="search-header">
-                <h3 data-i18n="search.title">Busca cualquier versículo</h3>
-                <div class="search-meta">
-                    <p data-i18n="search.subtitle">API o fallback local en ES/EN</p>
-                </div>
-            </div>
-            
-            <!-- Search Bar -->
-            <div class="search-bar">
-                <input id="searchInput" type="text" placeholder="Juan 3:16 o 'amor'" data-i18n-placeholder="search.placeholder">
-                <button id="searchBtn" class="primary-btn search-btn" data-i18n="search.action">Buscar</button>
-                <button id="advancedToggle" class="ghost-btn" title="Filtros avanzados">⚙️</button>
-                <span id="searchStatus" class="status-pill"></span>
-            </div>
-            
-            <!-- Advanced Filters -->
-            <div id="advancedFilters" class="advanced-filters hidden">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label for="testamentFilter">Testamento:</label>
-                        <select id="testamentFilter" class="filter-select">
-                            <option value="all">Todos</option>
-                            <option value="old">Antiguo</option>
-                            <option value="new">Nuevo</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="bookFilter">Libro:</label>
-                        <select id="bookFilter" class="filter-select">
-                            <option value="all">Todos los libros</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="limitFilter">Resultados:</label>
-                        <select id="limitFilter" class="filter-select">
-                            <option value="10">10</option>
-                            <option value="20" selected>20</option>
-                            <option value="50">50</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>
-                            <input type="checkbox" id="compareTranslations">
-                            Comparar traducciones
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Search History -->
-            <div id="searchHistory" class="search-history hidden">
-                <p class="history-label" data-i18n="search.history.title">Búsquedas recientes:</p>
-                <div id="historyList" class="history-list"></div>
-            </div>
-            
-            <!-- Search Results -->
-            <div id="searchResults" class="search-results"></div>
-            
-            <!-- Pagination -->
-            <div id="searchPagination" class="search-pagination hidden">
-                <button id="prevPage" class="ghost-btn" disabled>← Anterior</button>
-                <span id="pageInfo" class="page-info">Página 1</span>
-                <button id="nextPage" class="ghost-btn">Siguiente →</button>
-            </div>
-        </section>
-
-        <!-- Daily Verse Card -->
-        <section class="daily-verse-section">
-            <div class="verse-card">
-                <div class="verse-header">
-                    <h3 data-i18n="daily.title">Versículo del Día</h3>
-                    <button id="refreshVerse" class="refresh-btn" title="Nuevo versículo">↻</button>
-                </div>
-                <div class="verse-content">
-                    <p id="verseText" class="verse-text"></p>
-                    <p id="verseReference" class="verse-reference"></p>
-                </div>
-                <div class="verse-actions">
-                    <button id="shareVerse" class="action-btn" data-i18n="daily.share">Compartir</button>
-                    <button id="favoriteVerse" class="action-btn" data-i18n="daily.favorite">Guardar</button>
-                </div>
-                <div id="shareMenu" class="share-menu hidden">
-                    <button id="shareTwitter" class="share-option" title="Compartir en Twitter">𝕏</button>
-                    <button id="shareWhatsApp" class="share-option" title="Compartir en WhatsApp">💬</button>
-                    <button id="shareFacebook" class="share-option" title="Compartir en Facebook">f</button>
-                    <button id="shareCopy" class="share-option" title="Copiar al portapapeles">📋</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Favorites -->
-        <section class="favorites-section">
-            <div class="favorites-header">
-                <h3 data-i18n="favorites.title">Tus guardados</h3>
-                <button id="favoritesToggle" class="ghost-btn" data-i18n="favorites.toggle">Ver guardados</button>
-            </div>
-            <div id="favoritesList" class="favorites-list hidden"></div>
-        </section>
-
-        <!-- Mood Bot Section -->
-        <section class="mood-section">
-            <div class="mood-container">
-                <h3 data-i18n="mood.title">¿Cómo te sientes hoy?</h3>
-                <div class="mood-grid">
-                    <button class="mood-btn" data-mood="hopeful" title="Esperanzado">
-                        <span class="mood-emoji">🌅</span>
-                        <span data-i18n="moods.hopeful">Esperanzado</span>
-                    </button>
-                    <button class="mood-btn" data-mood="anxious" title="Ansioso">
-                        <span class="mood-emoji">🌪️</span>
-                        <span data-i18n="moods.anxious">Ansioso</span>
-                    </button>
-                    <button class="mood-btn" data-mood="grieving" title="Dolido">
-                        <span class="mood-emoji">🌧️</span>
-                        <span data-i18n="moods.grieving">Dolido</span>
-                    </button>
-                    <button class="mood-btn" data-mood="joyful" title="Alegre">
-                        <span class="mood-emoji">✨</span>
-                        <span data-i18n="moods.joyful">Alegre</span>
-                    </button>
-                    <button class="mood-btn" data-mood="confused" title="Confundido">
-                        <span class="mood-emoji">🌀</span>
-                        <span data-i18n="moods.confused">Confundido</span>
-                    </button>
-                    <button class="mood-btn" data-mood="peaceful" title="Tranquilo">
-                        <span class="mood-emoji">🌿</span>
-                        <span data-i18n="moods.peaceful">Tranquilo</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Exploration Grid -->
-        <section class="exploration-section">
-            <h3 data-i18n="explore.title">Explora el Universo</h3>
-            <div class="exploration-grid">
-                <div class="explore-card" data-section="books">
-                    <div class="card-icon">📖</div>
-                    <h4 data-i18n="explore.books">Libros</h4>
-                    <p data-i18n="explore.books.desc">Navega por los 66 libros</p>
-                </div>
-                <div class="explore-card" data-section="characters">
-                    <div class="card-icon">👥</div>
-                    <h4 data-i18n="explore.characters">Personajes</h4>
-                    <p data-i18n="explore.characters.desc">Descubre historias épicas</p>
-                </div>
-                <div class="explore-card" data-section="maps">
-                    <div class="card-icon">🗺️</div>
-                    <h4 data-i18n="explore.maps">Mapas</h4>
-                    <p data-i18n="explore.maps.desc">Contexto geográfico</p>
-                </div>
-                <div class="explore-card" data-section="timeline">
-                    <div class="card-icon">⏳</div>
-                    <h4 data-i18n="explore.timeline">Línea de Tiempo</h4>
-                    <p data-i18n="explore.timeline.desc">Conecta los eventos</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Exploration Sections (Hidden by default) -->
-        <section id="booksSection" class="exploration-detail hidden">
-            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
-            <h3 data-i18n="explore.books">Libros de la Biblia</h3>
-            <div class="books-container">
-                <div class="books-group">
-                    <h4 id="otTitle">Antiguo Testamento (39 libros)</h4>
-                    <div class="books-list" id="otBooks"></div>
-                </div>
-                <div class="books-group">
-                    <h4 id="ntTitle">Nuevo Testamento (27 libros)</h4>
-                    <div class="books-list" id="ntBooks"></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="charactersSection" class="exploration-detail hidden">
-            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
-            <h3 data-i18n="explore.characters">Personajes Bíblicos</h3>
-            <div id="charactersList" class="characters-grid"></div>
-        </section>
-
-        <section id="mapsSection" class="exploration-detail hidden">
-            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
-            <h3 data-i18n="explore.maps">Mapa de Tierra Santa</h3>
-            <div id="mapContainer" class="map-wrapper">
-                <div id="map" class="map-canvas"></div>
-                <div id="mapFallback" class="map-fallback hidden"></div>
-                <p id="mapPlaceholder" class="map-note">Próximamente: Mapa interactivo de Tierra Santa 🗺️</p>
-            </div>
-        </section>
-
-        <section id="timelineSection" class="exploration-detail hidden">
-            <button class="back-btn" onclick="closeExploration()">← <span class="back-label">Atrás</span></button>
-            <h3 data-i18n="explore.timeline">Línea de Tiempo</h3>
-            <div id="timelineContainer" class="timeline"></div>
-        </section>
-    </main>
-
-    <!-- Bible Bot Panel -->
-    <div id="botPanel" class="bot-panel hidden">
-        <div class="bot-header">
-            <h3>⚡ Bible Bot</h3>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <button id="botAiSetup" class="close-btn" title="Configurar IA" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem;">🤖</button>
-                <button id="botClose" class="close-btn">✕</button>
-            </div>
-        </div>
-        
-        <!-- AI Mode Selector -->
-        <div id="botAiModes" style="display: none; padding: 1rem; border-bottom: 1px solid var(--border); background: var(--accent);">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
-                <button id="botModeChat" class="bot-mode-btn active" style="padding: 0.5rem; background: var(--highlight); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    💬 Chat
-                </button>
-                <button id="botModeSearch" class="bot-mode-btn" style="padding: 0.5rem; background: var(--border); color: var(--text-primary); border: none; border-radius: 4px; cursor: pointer;">
-                    🔍 Buscar
-                </button>
-                <button id="botModeDevotional" class="bot-mode-btn" style="padding: 0.5rem; background: var(--border); color: var(--text-primary); border: none; border-radius: 4px; cursor: pointer;">
-                    📚 Plan
-                </button>
-            </div>
-        </div>
-        
-        <div id="botContent" class="bot-content">
-            <p class="bot-greeting" data-i18n="bot.greeting">Hola, soy tu guía del universo bíblico. ¿En qué puedo ayudarte?</p>
-        </div>
-        
-        <div class="bot-input">
-            <input type="text" id="botInput" placeholder="Pregunta algo..." data-i18n-placeholder="bot.placeholder">
-            <button id="botSend" class="send-btn">→</button>
-        </div>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-logo">HolyVerse</div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btnLang" title="Idioma">ES</button>
+      <button class="icon-btn" id="btnTheme" title="Tema">🌙</button>
+      <button class="avatar-btn" id="btnProfile" title="Perfil">J</button>
     </div>
-    <!-- Auth Modal -->
-    <div id="authModal" class="hidden">
-        <div class="auth-modal-content">
-            <div class="auth-modal-header">
-                <h2>HolyVerse</h2>
-                <button id="closeAuthModal">&times;</button>
-            </div>
+  </header>
 
-            <div class="auth-intro">
-                <p>Guarda tus favoritos y accede desde cualquier dispositivo.</p>
-            </div>
+  <!-- SCREENS -->
+  <div class="page-content">
 
-            <div class="auth-social">
-                <button type="button" id="loginGoogleBtn" class="auth-provider-btn google">
-                    <span class="provider-icon">G</span>
-                    <span>Continuar con Google</span>
-                </button>
-            </div>
+    <!-- ══ HOME ══ -->
+    <div id="screen-home" class="screen active">
 
-            <div class="auth-divider">
-                <span>o continúa con email</span>
-            </div>
-            
-            <div class="auth-tabs">
-                <button id="loginTab" class="auth-tab active">Iniciar Sesión</button>
-                <button id="signupTab" class="auth-tab">Crear Cuenta</button>
-            </div>
-            
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form active">
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" placeholder="Tu correo" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Contraseña</label>
-                    <input type="password" id="loginPassword" placeholder="••••••" required>
-                </div>
-                <button type="submit" class="auth-submit-btn">Iniciar Sesión</button>
-            </form>
-            
-            <!-- Signup Form -->
-            <form id="signupForm" class="auth-form">
-                <div class="form-group">
-                    <label for="signupName">Nombre</label>
-                    <input type="text" id="signupName" placeholder="Tu nombre" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" placeholder="Tu correo" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">Contraseña</label>
-                    <input type="password" id="signupPassword" placeholder="Al menos 6 caracteres" required>
-                </div>
-                <button type="submit" class="auth-submit-btn">Crear Cuenta</button>
-            </form>
-
-            <div class="auth-guest">
-                <button type="button" id="continueGuestBtn" class="auth-guest-btn">Continuar sin cuenta</button>
-                <p class="auth-guest-note">Podrás crear una cuenta más tarde para guardar tus datos.</p>
-            </div>
+      <!-- Versículo del día -->
+      <div class="verse-hero">
+        <div class="verse-tag">Versículo del día</div>
+        <div class="verse-text-main" id="dailyVerseText">Cargando...</div>
+        <div class="verse-ref" id="dailyVerseRef"></div>
+        <div class="verse-actions">
+          <button class="v-btn" id="btnSaveDaily">♡ Guardar</button>
+          <button class="v-btn" id="btnShareDaily">↗ Compartir</button>
+          <button class="v-btn primary" id="btnReadDaily">📖 Leer</button>
         </div>
+      </div>
+
+      <!-- Mood -->
+      <div class="section-label">¿Cómo te sientes hoy?</div>
+      <div class="mood-row">
+        <div class="mood-chip active" data-mood="hopeful">🌅 Esperanzado</div>
+        <div class="mood-chip" data-mood="anxious">🌪️ Ansioso</div>
+        <div class="mood-chip" data-mood="grieving">🌧️ Dolido</div>
+        <div class="mood-chip" data-mood="joyful">✨ Alegre</div>
+        <div class="mood-chip" data-mood="confused">🌀 Confundido</div>
+        <div class="mood-chip" data-mood="peaceful">🌿 Tranquilo</div>
+      </div>
+
+      <!-- Explorar -->
+      <div class="section-label">Explorar</div>
+      <div class="quick-grid">
+        <div class="quick-card" onclick="showScreen('bible')">
+          <div class="qc-icon">📖</div>
+          <div class="qc-label">Biblia</div>
+          <div class="qc-sub">66 libros</div>
+        </div>
+        <div class="quick-card" onclick="openStrongsInfo()">
+          <div class="qc-badge">Nuevo</div>
+          <div class="qc-icon">🔤</div>
+          <div class="qc-label">Strong's</div>
+          <div class="qc-sub">Griego · Hebreo</div>
+        </div>
+        <div class="quick-card">
+          <div class="qc-icon">👥</div>
+          <div class="qc-label">Personajes</div>
+          <div class="qc-sub">Próximamente</div>
+        </div>
+        <div class="quick-card">
+          <div class="qc-icon">🗺️</div>
+          <div class="qc-label">Mapas</div>
+          <div class="qc-sub">Próximamente</div>
+        </div>
+      </div>
+
+      <!-- Plan de lectura -->
+      <div class="section-label">Tu plan de lectura</div>
+      <div class="plan-strip">
+        <div class="plan-icon">📅</div>
+        <div class="plan-info">
+          <div class="plan-title">Nuevo Testamento en 90 días</div>
+          <div class="plan-bar">
+            <div class="plan-progress" id="planProgress" style="width:34%"></div>
+          </div>
+          <div class="plan-meta" id="planMeta">Día 31 de 90 · Juan 3</div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
     </div>
 
-    <!-- Donation Modal -->
-    <div id="donationModal" class="hidden">
-        <div class="donation-modal-overlay"></div>
-        <div class="donation-modal-content">
-            <div class="donation-modal-header">
-                <h2>☕ Apoyar HolyVerse</h2>
-                <button id="closeDonationModal">&times;</button>
-            </div>
-            
-            <div class="donation-message">
-                <p>Tu apoyo nos ayuda a mantener y mejorar HolyVerse. <strong>¡Gracias por tu generosidad! 🙏</strong></p>
-            </div>
-            
-            <div class="donation-options">
-                <div class="donation-option" data-amount="1">
-                    <span class="donation-amount">$1</span>
-                    <span class="donation-label">Café</span>
-                </div>
-                <div class="donation-option" data-amount="5">
-                    <span class="donation-amount">$5</span>
-                    <span class="donation-label">Almuerzo</span>
-                </div>
-                <div class="donation-option" data-amount="10">
-                    <span class="donation-amount">$10</span>
-                    <span class="donation-label">Cena</span>
-                </div>
-                <div class="donation-option" data-amount="25">
-                    <span class="donation-amount">$25</span>
-                    <span class="donation-label">Generoso</span>
-                </div>
-            </div>
-            
-            <div class="custom-amount-section">
-                <label for="customAmount">O ingresa tu monto:</label>
-                <input type="number" id="customAmount" placeholder="Monto personalizado" min="0.5" step="0.5">
-            </div>
-            
-            <button class="donation-submit-btn" disabled>Selecciona un monto</button>
-            
-            <div class="donation-footer">
-                <p>Las donaciones se procesan a través de <a href="https://ko-fi.com" target="_blank">Ko-fi</a></p>
-                <p>Tu información de pago es segura y protegida.</p>
-            </div>
+    <!-- ══ BIBLE ══ -->
+    <div id="screen-bible" class="screen">
+
+      <div class="bible-header">
+        <div class="bible-picker" id="biblePicker" onclick="openBookPicker()">
+          <div>
+            <div class="bp-book" id="currentBook">Juan 3</div>
+            <div class="bp-ch" id="currentTranslation">RVR 1960</div>
+          </div>
+          <div class="bp-arrow">▼</div>
         </div>
+        <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
+          <div class="toggle-dot"></div>
+          Strong's
+        </div>
+      </div>
+
+      <!-- Strong's panel -->
+      <div class="strongs-panel" id="strongsPanel">
+        <div class="strongs-placeholder" id="strongsPlaceholder">
+          🔤 Toca una palabra <span style="color:var(--greek)">azul</span> o <span style="color:var(--hebrew)">verde</span> para ver su definición
+        </div>
+        <div class="strongs-content hidden" id="strongsContent">
+          <div class="strongs-top">
+            <span class="s-badge greek" id="sBadge">GRIEGO</span>
+            <span class="s-num" id="sNum">G25</span>
+          </div>
+          <div class="s-word greek" id="sWord">ἠγάπησεν</div>
+          <div class="s-trans" id="sTrans">ēgapēsen</div>
+          <div class="s-def" id="sDef">Definición aquí</div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend-bar hidden" id="legendBar">
+        <div class="leg-item">
+          <div class="leg-dot" style="background:rgba(126,207,255,0.6)"></div>
+          <span style="color:var(--greek)">Griego</span>
+        </div>
+        <div class="leg-item">
+          <div class="leg-dot" style="background:rgba(168,240,160,0.6)"></div>
+          <span style="color:var(--hebrew)">Hebreo</span>
+        </div>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">toca las palabras</span>
+      </div>
+
+      <div class="chapter-title" id="chapterTitle">Juan — Capítulo 3 · RVR 1960</div>
+
+      <div class="verse-list" id="verseList">
+        <!-- Versículos se cargan aquí -->
+      </div>
+
+      <div class="chapter-nav-btns">
+        <button class="ch-btn" id="btnPrevChapter">← Anterior</button>
+        <button class="ch-btn" id="btnNextChapter">Siguiente →</button>
+      </div>
+
+      <div style="height:16px"></div>
     </div>
 
-    <!-- User Profile Modal -->
-    <div id="profileModal" class="hidden">
-        <div class="profile-modal-content">
-            <div class="profile-header">
-                <button class="profile-close">&times;</button>
-                <div class="profile-avatar">👤</div>
-                <div class="profile-name">Usuario</div>
-                <div class="profile-email">usuario@example.com</div>
-            </div>
-            
-            <div class="profile-stats">
-                <div class="stat-item">
-                    <div class="stat-number" id="favorites-stat">0</div>
-                    <div class="stat-label">Favoritos</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="history-stat">0</div>
-                    <div class="stat-label">Búsquedas</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="joined-stat">0</div>
-                    <div class="stat-label">Días</div>
-                </div>
-            </div>
-            
-            <div class="profile-tabs">
-                <button class="profile-tab-btn active" data-tab="account">⚙️ Cuenta</button>
-                <button class="profile-tab-btn" data-tab="favorites">❤️ Favoritos</button>
-                <button class="profile-tab-btn" data-tab="history">📜 Historial</button>
-                <button class="profile-tab-btn" data-tab="preferences">🎨 Preferencias</button>
-            </div>
-            
-            <div class="profile-content">
-                <!-- Account Tab -->
-                <div class="profile-tab-pane active" id="account-pane">
-                    <div class="setting-group">
-                        <label class="setting-label">Nombre Completo</label>
-                        <input type="text" id="displayNameInput" class="setting-input" placeholder="Tu nombre">
-                        <div class="setting-description">Este es el nombre que verán otros usuarios</div>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label class="setting-label">Correo Electrónico</label>
-                        <input type="email" id="emailInput" class="setting-input" placeholder="tu@email.com">
-                        <div class="setting-description">Tu correo es tu identificador único</div>
-                    </div>
-                    
-                    <button id="saveSettingsBtn" class="profile-btn primary" style="width: 100%; margin-bottom: 1rem;">
-                        💾 Guardar Cambios
-                    </button>
-                </div>
-                
-                <!-- Favorites Tab -->
-                <div class="profile-tab-pane" id="favorites-pane">
-                    <div id="favoritesList" class="favorites-list"></div>
-                </div>
-                
-                <!-- History Tab -->
-                <div class="profile-tab-pane" id="history-pane">
-                    <div id="historyList" class="history-list"></div>
-                    <button id="clearHistoryBtn" class="profile-btn danger" style="width: 100%; margin-top: 1rem;">
-                        🗑️ Limpiar Historial
-                    </button>
-                </div>
-                
-                <!-- Preferences Tab -->
-                <div class="profile-tab-pane" id="preferences-pane">
-                    <div class="preference-item">
-                        <div class="preference-label">Notificaciones</div>
-                        <label class="preference-toggle">
-                            <input type="checkbox" id="notificationToggle" class="toggle-checkbox">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    
-                    <button id="exportDataBtn" class="profile-btn" style="width: 100%; margin-top: 1rem;">
-                        📥 Exportar Datos
-                    </button>
-                </div>
-            </div>
-            
-            <div class="profile-actions">
-                <button class="profile-btn">📱 Compartir Perfil</button>
-                <button class="profile-btn danger" onclick="AuthSystem.logout()">🚪 Cerrar Sesión</button>
-            </div>
+    <!-- ══ SEARCH ══ -->
+    <div id="screen-search" class="screen">
+
+      <div class="search-bar">
+        <input class="search-input" id="searchInput" type="text" placeholder="Juan 3:16 o 'amor'...">
+        <button class="search-btn" id="btnSearch">Buscar</button>
+      </div>
+
+      <div class="search-filters">
+        <div class="filter-chip active" data-filter="all">Todos</div>
+        <div class="filter-chip" data-filter="ot">Antiguo T.</div>
+        <div class="filter-chip" data-filter="nt">Nuevo T.</div>
+        <div class="filter-chip" data-filter="saved">Guardados</div>
+      </div>
+
+      <div class="results-list" id="searchResults">
+        <div style="padding:40px 0;text-align:center;color:var(--text3);font-size:14px">
+          Busca un versículo o palabra clave
         </div>
+      </div>
+
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <img src="assets/images/logo3.png" alt="HolyVerse" class="footer-logo-img" loading="lazy" decoding="async">
-                        <h4>HolyVerse</h4>
-                    </div>
-                    <p data-i18n="footer.desc">Explora el universo bíblico de forma interactiva</p>
-                </div>
-                <div class="footer-section">
-                    <h4 data-i18n="footer.links.title">Enlaces</h4>
-                    <ul>
-                        <li><a href="#" onclick="scrollToTop()" data-i18n="footer.links.top">Arriba</a></li>
-                        <li><a href="#" onclick="document.getElementById('searchInput').focus()" data-i18n="footer.links.search">Buscar</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="footer-cta-buttons">
-                    <button id="installPWA" class="footer-cta-btn install-btn hidden" title="Instalar HolyVerse">
-                        <span class="cta-icon">📱</span>
-                        <span class="cta-text" data-i18n="pwa.install">Instalar App</span>
-                    </button>
-                    <button id="donationBtn" class="footer-cta-btn donate-btn" title="Apoya HolyVerse">
-                        <span class="cta-icon">☕</span>
-                        <span class="cta-text">Apoyar</span>
-                    </button>
-                </div>
-                <p data-i18n="footer.copyright">© 2026 HolyVerse. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
+    <!-- ══ BOT ══ -->
+    <div id="screen-bot" class="screen">
 
-    <!-- Scripts -->
-    <script src="js/i18n.js"></script>
-    <script src="js/performance-mobile.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/ai.js"></script>
-    <script src="js/ai-setup.js"></script>
-    <script src="js/bot.js"></script>
-    <script src="js/bot-ai.js"></script>
-    <script src="js/bot-enhancements.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/donations.js"></script>
-    <script src="js/profile.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/mobile-enhancements.js"></script>
-    <script src="js/main.js"></script>
-    
-    <!-- PWA Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js', { scope: './' })
-                    .then(() => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed', err));
-            });
-        }
-    </script>
+      <div class="bot-header">
+        <div class="bot-avatar">🤖</div>
+        <div class="bot-info">
+          <div class="bot-name">Bible Bot</div>
+          <div class="bot-status" id="botStatus">En línea · Listo</div>
+        </div>
+        <button class="icon-btn" onclick="clearChat()">🗑️</button>
+      </div>
+
+      <div class="chat-area" id="chatArea">
+        <div class="bubble bot">
+          Hola 👋 Soy tu guía del universo bíblico. Puedo explicar versículos, dar contexto histórico, comparar traducciones y más. ¿En qué te puedo ayudar?
+        </div>
+      </div>
+
+      <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" type="text" placeholder="Pregunta sobre la Biblia...">
+        <button class="chat-send" id="btnSend">→</button>
+      </div>
+
+    </div>
+
+    <!-- ══ PROFILE ══ -->
+    <div id="screen-profile" class="screen">
+
+      <div class="profile-hero">
+        <div class="avatar-ring">
+          <div class="avatar-inner" id="profileAvatar">👤</div>
+        </div>
+        <div class="profile-name" id="profileName">Usuario</div>
+        <div class="profile-email" id="profileEmail">Inicia sesión para guardar tu progreso</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num" id="statDays">0</div>
+          <div class="stat-label">Días</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statFavorites">0</div>
+          <div class="stat-label">Favoritos</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statStreak">0</div>
+          <div class="stat-label">Racha 🔥</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statNotes">0</div>
+          <div class="stat-label">Notas</div>
+        </div>
+      </div>
+
+      <div class="menu-list">
+        <div class="menu-item" id="btnLoginMenu" onclick="openAuthSheet()">
+          <div class="mi-icon">🔑</div>
+          <div class="mi-label">Iniciar sesión</div>
+          <div class="mi-arrow">›</div>
+        </div>
+        <div class="menu-item" onclick="showScreen('search')">
+          <div class="mi-icon">❤️</div>
+          <div class="mi-label">Mis favoritos</div>
+          <div class="mi-arrow">›</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">📝</div>
+          <div class="mi-label">Mis notas</div>
+          <div class="mi-arrow">›</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">📅</div>
+          <div class="mi-label">Plan de lectura</div>
+          <div class="mi-arrow">›</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">🌐</div>
+          <div class="mi-label">Idioma</div>
+          <div class="mi-arrow">›</div>
+        </div>
+        <div class="menu-item danger hidden" id="btnLogoutMenu" onclick="logout()">
+          <div class="mi-icon">🚪</div>
+          <div class="mi-label">Cerrar sesión</div>
+          <div class="mi-arrow">›</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- end page-content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" data-screen="home" onclick="showScreen('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Inicio</div>
+    </div>
+    <div class="nav-item" data-screen="bible" onclick="showScreen('bible')">
+      <div class="nav-icon">📖</div>
+      <div class="nav-label">Biblia</div>
+    </div>
+    <div class="nav-item" data-screen="search" onclick="showScreen('search')">
+      <div class="nav-icon">🔍</div>
+      <div class="nav-label">Buscar</div>
+    </div>
+    <div class="nav-item" data-screen="bot" onclick="showScreen('bot')">
+      <div class="nav-icon">🤖</div>
+      <div class="nav-label">Bot</div>
+    </div>
+    <div class="nav-item" data-screen="profile" onclick="showScreen('profile')">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">Perfil</div>
+    </div>
+  </nav>
+
+</div><!-- end app -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- Book Picker -->
+<div class="modal-overlay hidden" id="bookPickerModal" onclick="closeBookPicker(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Selecciona un libro</div>
+    <div style="padding: 0 20px 12px">
+      <input class="form-input" id="bookSearchInput" placeholder="Buscar libro..." oninput="filterBooks(this.value)">
+    </div>
+    <div id="bookPickerList"></div>
+  </div>
+</div>
+
+<!-- Auth Sheet -->
+<div class="modal-overlay hidden" id="authModal" onclick="closeAuthSheet(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Bienvenido</div>
+    <div style="padding: 0 20px 20px">
+      <button class="auth-provider-btn" id="btnGoogleLogin">
+        <span>G</span> Continuar con Google
+      </button>
+      <div class="auth-divider">o continúa con email</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Iniciar sesión</button>
+        <button class="auth-tab" onclick="switchAuthTab('signup')">Crear cuenta</button>
+      </div>
+      <div id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="loginEmail" type="email" placeholder="tu@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input class="form-input" id="loginPassword" type="password" placeholder="••••••">
+        </div>
+        <button class="submit-btn" onclick="loginWithEmail()">Iniciar sesión</button>
+      </div>
+      <div id="signupForm" class="hidden">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input class="form-input" id="signupName" type="text" placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="signupEmail" type="email" placeholder="tu@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input class="form-input" id="signupPassword" type="password" placeholder="Mínimo 6 caracteres">
+        </div>
+        <button class="submit-btn" onclick="signupWithEmail()">Crear cuenta</button>
+      </div>
+      <button class="guest-btn" onclick="closeAuthSheet()">Continuar sin cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/bible.js"></script>
+<script src="js/bot.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { scope: './' })
+      .then(() => console.log('SW registered'))
+      .catch(err => console.log('SW error', err));
+  });
+}
+</script>
+
 </body>
 </html>

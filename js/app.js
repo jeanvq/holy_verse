@@ -112,10 +112,7 @@ function loadDailyVerse() {
       { text: 'And ye shall know the truth, and the truth shall make you free.', reference: 'John 8:32 · KJV' },
     ]
   };
-
-  
-  
-  // Renderizar en el idioma actual
+// Renderizar en el idioma actual
 loadDailyVerse();
 // Botones del versículo del día
 document.getElementById('btnSaveDaily').addEventListener('click', () => {
@@ -308,7 +305,7 @@ function selectBook(name, chapters) {
   closeBookPicker();
   updateBibleHeader();
   if (window.BibleAPI) BibleAPI.loadChapter(name, 1);
-  else loadSampleVerses();
+  else BibleAPI.loadChapter(name, 1);
 }
 
 function updateBibleHeader() {
@@ -445,43 +442,16 @@ document.getElementById('btnNextChapter').addEventListener('click', () => {
   currentChapter++;
   updateBibleHeader();
   if (window.BibleAPI) BibleAPI.loadChapter(currentBookName, currentChapter);
-  else loadSampleVerses();
+  else BibleAPI.loadChapter(currentBookName, currentChapter);
 });
-
-// ── SAMPLE VERSES (mientras conectamos la API) ──
-function loadSampleVerses() {
-  const verses = [
-    {
-      num: 1, text: 'Había un <span class="sw" onclick="showStrongs(this)" data-strong="G444" data-word="ἄνθρωπος" data-tr="anthrōpos" data-lang="greek" data-def="Hombre, ser humano. Referencia al género humano en general.">hombre<sup>G444</sup></span> de los <span class="sw" onclick="showStrongs(this)" data-strong="G5330" data-word="Φαρισαῖος" data-tr="Pharisaios" data-lang="greek" data-def="Fariseo. Del hebreo perushim: separados. Secta judía de la ley oral.">fariseos<sup>G5330</sup></span> que se llamaba <span class="sw" onclick="showStrongs(this)" data-strong="G3530" data-word="Νικόδημος" data-tr="Nikodēmos" data-lang="greek" data-def="Nicodemo. Nombre griego: victoria del pueblo. Miembro del Sanedrín.">Nicodemo<sup>G3530</sup></span>, un principal entre los judíos.'
-    },
-    {
-      num: 2, text: 'Este vino a Jesús de <span class="sw" onclick="showStrongs(this)" data-strong="G3571" data-word="νύξ" data-tr="nyx" data-lang="greek" data-def="Noche. Figurativamente: ignorancia espiritual o actividad encubierta.">noche<sup>G3571</sup></span>, y le dijo: Rabí, sabemos que has venido de Dios como maestro; porque nadie puede hacer estas señales que tú haces, si no está Dios con él.'
-    },
-    {
-      num: 3, text: 'Respondió Jesús y le dijo: De cierto, de cierto te digo, que el que no <span class="sw" onclick="showStrongs(this)" data-strong="G1080" data-word="γεννάω" data-tr="gennaō" data-lang="greek" data-def="Nacer, engendrar. En contexto espiritual: regeneración completa del ser interior.">naciere<sup>G1080</sup></span> de <span class="sw" onclick="showStrongs(this)" data-strong="G509" data-word="ἄνωθεν" data-tr="anōthen" data-lang="greek" data-def="De arriba / de nuevo. Palabra clave: Nicodemo entiende físico; Jesús habla espiritual.">nuevo<sup>G509</sup></span>, no puede ver el reino de Dios.', hl: true
-    },
-    {
-      num: 4, text: 'Nicodemo le dijo: ¿Cómo puede un hombre nacer siendo viejo? ¿Puede acaso entrar por segunda vez en el vientre de su madre, y nacer?'
-    },
-    {
-      num: 5, text: 'Respondió Jesús: De cierto, de cierto te digo, que el que no naciere de <span class="sw" onclick="showStrongs(this)" data-strong="G5204" data-word="ὕδωρ" data-tr="hydōr" data-lang="greek" data-def="Agua. Posible referencia al bautismo, la Palabra, o el Espíritu Santo.">agua<sup>G5204</sup></span> y del <span class="sw" onclick="showStrongs(this)" data-strong="G4151" data-word="πνεῦμα" data-tr="pneuma" data-lang="greek" data-def="Espíritu, viento, aliento. Mismo término para viento en Juan 3:8.">Espíritu<sup>G4151</sup></span>, no puede entrar en el reino de Dios.'
-    },
-    {
-      num: 6, text: 'Lo que es nacido de la <span class="sw" onclick="showStrongs(this)" data-strong="G4561" data-word="σάρξ" data-tr="sarx" data-lang="greek" data-def="Carne. El ser humano en su dimensión física, con sus limitaciones naturales.">carne<sup>G4561</sup></span>, carne es; y lo que es nacido del Espíritu, espíritu es.'
-    },
-    {
-      num: 16, text: 'Porque de tal manera <span class="sw" onclick="showStrongs(this)" data-strong="G25" data-word="ἠγάπησεν" data-tr="ēgapēsen" data-lang="greek" data-def="Amó — agapaō. Amor incondicional basado en elección, no solo emoción. El aoristo indica un acto histórico decisivo.">amó<sup>G25</sup></span> Dios al <span class="sw" onclick="showStrongs(this)" data-strong="G2889" data-word="κόσμος" data-tr="kosmos" data-lang="greek" data-def="Mundo. En Juan: humanidad alejada de Dios — lo que hace más profundo el amor divino.">mundo<sup>G2889</sup></span>, que ha dado a su Hijo <span class="sw" onclick="showStrongs(this)" data-strong="G3439" data-word="μονογενής" data-tr="monogenēs" data-lang="greek" data-def="Unigénito. De monos (único) + genos (clase). Relación ontológica única Padre-Hijo.">unigénito<sup>G3439</sup></span>, para que todo aquel que en él cree, no se pierda, mas tenga vida <span class="sw" onclick="showStrongs(this)" data-strong="G166" data-word="αἰώνιος" data-tr="aiōnios" data-lang="greek" data-def="Eterno — de aiōn (era). No solo duración infinita, sino calidad de vida divina desde el presente.">eterna<sup>G166</sup></span>.', hl: true
-    },
-  ];
-
-  const list = document.getElementById('verseList');
+ const list = document.getElementById('verseList');
   list.innerHTML = verses.map(v => `
     <div class="verse-row ${v.hl ? 'hl' : ''}">
       <span class="vr-num">${v.num}</span>
       <span class="vr-text">${v.text}</span>
     </div>
   `).join('');
-}
+
 
 // ── CHAT BOT ──
 function clearChat() {
@@ -727,9 +697,9 @@ langBtn.addEventListener('click', () => {
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   loadDailyVerse();
-  loadSampleVerses();
   updateProfileUI(null);
   applyLang(currentLang);
+    BibleAPI.loadChapter('Juan', 3);
 
   // Agregar Strong's disabled por defecto (se activa con toggle)
   document.querySelectorAll('.sw').forEach(w => {

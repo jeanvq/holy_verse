@@ -518,8 +518,7 @@ document.getElementById('btnPrevChapter').addEventListener('click', () => {
   if (currentChapter > 1) {
     currentChapter--;
     updateBibleHeader();
-    if (window.BibleAPI) BibleAPI.loadChapter(currentBookName, currentChapter);
-    else loadSampleVerses();
+    BibleAPI.loadChapter(currentBookName, currentChapter);
   } else {
     showToast('Primer capítulo del libro');
   }
@@ -527,18 +526,9 @@ document.getElementById('btnPrevChapter').addEventListener('click', () => {
 document.getElementById('btnNextChapter').addEventListener('click', () => {
   currentChapter++;
   updateBibleHeader();
-  if (window.BibleAPI) BibleAPI.loadChapter(currentBookName, currentChapter);
-  else BibleAPI.loadChapter(currentBookName, currentChapter);
+  BibleAPI.loadChapter(currentBookName, currentChapter);
 });
- const list = document.getElementById('verseList');
-  list.innerHTML = verses.map(v => `
-    <div class="verse-row ${v.hl ? 'hl' : ''}">
-      <span class="vr-num">${v.num}</span>
-      <span class="vr-text">${v.text}</span>
-    </div>
-  `).join('');
-
-
+ 
 // ── CHAT BOT ──
 function clearChat() {
   document.getElementById('chatArea').innerHTML = `

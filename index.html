@@ -436,11 +436,11 @@
 <!-- Scripts -->
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
-<script src="js/bible.js"></script>
 <script src="js/bot.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="js/app.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/bible.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -450,6 +450,27 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-
+<!-- Verse Menu -->
+<div class="modal-overlay hidden" id="verseMenuModal" onclick="closeVerseMenu()">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="padding-bottom:20px">
+    <div class="modal-handle"></div>
+    <div id="verseMenuRef" style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);padding:0 20px 12px"></div>
+    <div id="verseMenuText" style="font-size:14px;color:var(--text2);padding:0 20px 16px;line-height:1.6;font-style:italic;border-bottom:1px solid var(--border)"></div>
+    <div style="padding:12px 20px;display:flex;flex-direction:column;gap:8px;margin-top:4px">
+      <div class="menu-item" onclick="saveVerseFromMenu()">
+        <div class="mi-icon">❤️</div>
+        <div class="mi-label">Guardar en favoritos</div>
+      </div>
+      <div class="menu-item" onclick="copyVerseFromMenu()">
+        <div class="mi-icon">📋</div>
+        <div class="mi-label">Copiar versículo</div>
+      </div>
+      <div class="menu-item" onclick="shareVerseFromMenu()">
+        <div class="mi-icon">↗️</div>
+        <div class="mi-label">Compartir</div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

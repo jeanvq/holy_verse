@@ -30,11 +30,15 @@ const BibleAPI = {
 
       // Renderizar versículos
       verseList.innerHTML = data.verses.map(v => `
-        <div class="verse-row">
-          <span class="vr-num">${v.number}</span>
-          <span class="vr-text">${v.text}</span>
-        </div>
-      `).join('');
+  <div class="verse-row" 
+    oncontextmenu="showVerseMenu(event, '${v.reference.replace(/'/g,"\\'")}', \`${v.text.replace(/`/g,"\\`")}\`)"
+    ontouchstart="startLongPress(event, '${v.reference.replace(/'/g,"\\'")}', \`${v.text.replace(/`/g,"\\`")}\`)"
+    ontouchend="cancelLongPress()"
+    ontouchmove="cancelLongPress()">
+    <span class="vr-num">${v.number}</span>
+    <span class="vr-text">${v.text}</span>
+  </div>
+`).join('');
 
       // Actualizar variables globales
       currentBookName = data.book;
@@ -108,3 +112,47 @@ const BibleAPI = {
     showToast(`📖 ${verse}`);
   }
 };
+// ── VERSE MENU ──
+let activeVerse = null;
+let longPressTimer = null;
+
+function showVerseMenu(e, reference, text) {
+  e.preventDefault();
+  activeVerse = { reference, text };
+  document.getElementById('verseMenuRef').textContent = reference;
+  document.getElementById('verseMenuText').textContent = text.replace(/\[\d+\]/g, '');
+  document.getElementById('verseMenuModal').classList.remove('hidden');
+}
+
+function closeVerseMenu() {
+  document.getElementById('verseMenuModal').classList.add('hidden');
+  activeVerse = null;
+}
+
+function startLongPress(e, reference, text) {
+  longPressTimer = setTimeout(() => {
+    showVerseMenu(e, reference, text);
+  }, 600);
+}
+
+function cancelLongPress() {
+  clearTimeout(longPressTimer);
+}
+
+function saveVerseFromMenu() {
+  if (!activeVerse) return;
+  saveFavorite(activeVerse);
+  closeVerseMenu();
+}
+
+function copyVerseFromMenu() {
+  if (!activeVerse) return;
+  copyToClipboard(`"${activeVerse.text.replace(/\[\d+\]/g, '')}" — ${activeVerse.reference}`);
+  closeVerseMenu();
+}
+
+function shareVerseFromMenu() {
+  if (!activeVerse) return;
+  shareVerse(activeVerse.text.replace(/\[\d+\]/g, ''), activeVerse.reference);
+  closeVerseMenu();
+}

@@ -44,19 +44,21 @@ function showToast(msg, duration = 2500) {
 }
 
 // ── MOOD ──
-document.querySelectorAll('.mood-chip').forEach(chip => {
-  chip.addEventListener('click', function () {
-    document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
-    this.classList.add('active');
-    const mood = this.dataset.mood;
-    loadMoodVerse(mood);
-  });
+document.addEventListener('click', function(e) {
+  const chip = e.target.closest('.mood-chip');
+  if (!chip) return;
+  
+  document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  const mood = chip.dataset.mood;
+  loadMoodVerse(mood);
 });
 
 function loadMoodVerse(mood) {
-  showToast('Buscando versículo para tu estado de ánimo...');
-  // Bible.js se encarga de buscar por mood
-  if (window.BibleAPI) BibleAPI.getVerseByMood(mood);
+  showToast('Buscando versículo...');
+  setTimeout(() => {
+    if (window.BibleAPI) BibleAPI.getVerseByMood(mood);
+  }, 100);
 }
 
 // ── VERSÍCULO DEL DÍA ──
@@ -694,9 +696,13 @@ function applyLang(lang) {
   if (vBtns[1]) vBtns[1].textContent = t.share;
   if (vBtns[2]) vBtns[2].textContent = t.read;
 
-  // Mood chips
+ // Mood chips
   document.querySelectorAll('.mood-chip').forEach((c, i) => {
-    if (t.moods[i]) c.textContent = t.moods[i];
+    if (t.moods[i]) {
+      const mood = c.dataset.mood;
+      c.textContent = t.moods[i];
+      c.dataset.mood = mood;
+    }
   });
 
   // Quick grid

@@ -133,13 +133,50 @@ document.getElementById('btnShareDaily').addEventListener('click', () => {
 
 document.getElementById('btnReadDaily').addEventListener('click', () => {
   showScreen('bible');
-  // Parsear referencia del versículo del día ej: "Juan 3:16"
   const ref = document.getElementById('dailyVerseRef').textContent;
   const match = ref.match(/^(.+?)\s+(\d+):(\d+)/);
   if (match) {
     const book    = match[1].trim();
     const chapter = parseInt(match[2]);
-    BibleAPI.loadChapter(book, chapter);
+    const verse   = parseInt(match[3]);
+    showChapterView();
+    BibleAPI.loadChapter(book, chapter).then(() => {
+      // Scroll al versículo específico
+     setTimeout(() => {
+  const verseEls = document.querySelectorAll('.verse-row');
+  
+  // Buscar el versículo exacto o el bloque que lo contiene
+  let target = null;
+  let closest = null;
+  let closestNum = 0;
+
+  verseEls.forEach(el => {
+    const num = el.querySelector('.vr-num');
+    if (!num) return;
+    const n = parseInt(num.textContent);
+    if (n === verse) {
+      target = el; // exacto
+    } else if (n < verse && n > closestNum) {
+      closestNum = n;
+      closest = el; // el bloque que lo contiene
+    }
+  });
+
+  const finalTarget = target || closest;
+  if (finalTarget) {
+    // Quitar resaltados previos
+    verseEls.forEach(el => {
+      el.classList.remove('hl');
+      el.style.borderLeft = '';
+    });
+    // Resaltar en dorado intenso
+    finalTarget.classList.add('hl');
+    finalTarget.style.borderLeft = '3px solid var(--gold)';
+    finalTarget.style.background = 'rgba(212,168,67,0.15)';
+    finalTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}, 1500);
+    });
   }
 });
 

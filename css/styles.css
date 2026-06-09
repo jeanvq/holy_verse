@@ -612,3 +612,35 @@ body.light .bubble.bot {
   background: #f0ece4;
   border-color: rgba(0,0,0,0.08);
 }
+/* BOOKS GRID */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 0 20px 8px;
+}
+.book-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.book-card:active {
+  background: var(--card2);
+  border-color: var(--gold);
+}
+.book-card-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+.book-card-ch {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 3px;
+}

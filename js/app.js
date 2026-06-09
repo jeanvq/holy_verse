@@ -9,7 +9,8 @@ let strongsEnabled = false;
 let currentBookName = 'Juan';
 let currentChapter  = 3;
 
-// ── NAVEGACIÓN ──
+
+  // ── NAVEGACIÓN ──
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -23,10 +24,13 @@ function showScreen(name) {
   const navItem = document.querySelector(`.nav-item[data-screen="${name}"]`);
   if (navItem) navItem.classList.add('active');
 
-  // Scroll al tope del page-content, no del body
   const content = document.querySelector('.page-content');
   if (content) content.scrollTop = 0;
+
+  // Renderizar libros cuando se abre la pantalla Biblia
+  if (name === 'bible') renderBooksGrid();
 }
+
 
 // ── TOAST ──
 function showToast(msg, duration = 2500) {
@@ -129,6 +133,14 @@ document.getElementById('btnShareDaily').addEventListener('click', () => {
 
 document.getElementById('btnReadDaily').addEventListener('click', () => {
   showScreen('bible');
+  // Parsear referencia del versículo del día ej: "Juan 3:16"
+  const ref = document.getElementById('dailyVerseRef').textContent;
+  const match = ref.match(/^(.+?)\s+(\d+):(\d+)/);
+  if (match) {
+    const book    = match[1].trim();
+    const chapter = parseInt(match[2]);
+    BibleAPI.loadChapter(book, chapter);
+  }
 });
 
 // ── COMPARTIR ──
@@ -164,6 +176,44 @@ function saveFavorite(verse) {
 
 function getFavorites() {
   return JSON.parse(localStorage.getItem('hv_favorites') || '[]');
+}
+function renderFavorites() {
+  const favs = getFavorites();
+  const menu = document.querySelector('.menu-list');
+  
+  // Remover lista previa si existe
+  const existing = document.getElementById('favoritesList');
+  if (existing) existing.remove();
+
+  if (!favs.length) {
+    showToast('No tienes favoritos aún');
+    return;
+  }
+
+  // Crear lista de favoritos
+  const list = document.createElement('div');
+  list.id = 'favoritesList';
+  list.style.cssText = 'padding: 0 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;';
+
+  list.innerHTML = favs.map((v, i) => `
+    <div class="result-card fade-up" style="position:relative">
+      <div class="result-ref">${v.reference}</div>
+      <div class="result-text">${v.text}</div>
+      <button onclick="removeFavorite(${i})" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+    </div>
+  `).join('');
+
+  // Insertar después del menu-list
+  menu.after(list);
+}
+
+function removeFavorite(index) {
+  const favs = getFavorites();
+  favs.splice(index, 1);
+  localStorage.setItem('hv_favorites', JSON.stringify(favs));
+  document.getElementById('statFavorites').textContent = favs.length;
+  renderFavorites();
+  showToast('Eliminado de favoritos');
 }
 
 // ── STRONG'S TOGGLE ──
@@ -304,8 +354,7 @@ function selectBook(name, chapters) {
   currentChapter  = 1;
   closeBookPicker();
   updateBibleHeader();
-  if (window.BibleAPI) BibleAPI.loadChapter(name, 1);
-  else BibleAPI.loadChapter(name, 1);
+  BibleAPI.loadChapter(name, 1);
 }
 
 function updateBibleHeader() {
@@ -694,12 +743,106 @@ langBtn.addEventListener('click', () => {
   applyLang(currentLang);
   showToast(currentLang === 'en' ? '🇺🇸 English' : '🇪🇸 Español');
 });
+
+// ── BOOKS GRID ──
+function renderBooksGrid() {
+  const otGrid = document.getElementById('otGrid');
+  const ntGrid = document.getElementById('ntGrid');
+  if (!otGrid || !ntGrid) return;
+
+  otGrid.innerHTML = BOOKS.ot.map(b => `
+    <div class="book-card" onclick="selectBookFromGrid('${b.name}', ${b.chapters})">
+      <div class="book-card-name">${b.name}</div>
+      <div class="book-card-ch">${b.chapters} cap</div>
+    </div>
+  `).join('');
+
+  ntGrid.innerHTML = BOOKS.nt.map(b => `
+    <div class="book-card" onclick="selectBookFromGrid('${b.name}', ${b.chapters})">
+      <div class="book-card-name">${b.name}</div>
+      <div class="book-card-ch">${b.chapters} cap</div>
+    </div>
+  `).join('');
+}
+
+function filterBooksGrid(query) {
+  // Detectar si es referencia bíblica ej: "Juan 3:16" o "Juan 3"
+  const refMatch = query.match(/^(.+?)\s+(\d+)(?::(\d+))?/);
+  if (refMatch) {
+    const book    = refMatch[1].trim();
+    const chapter = parseInt(refMatch[2]);
+    selectBookFromGrid(book, chapter);
+    return;
+  }
+
+  // Filtrar por nombre
+  const q = query.toLowerCase();
+  const otGrid = document.getElementById('otGrid');
+  const ntGrid = document.getElementById('ntGrid');
+
+  ['ot','nt'].forEach(t => {
+    const grid = document.getElementById(t + 'Grid');
+    const filtered = BOOKS[t].filter(b => b.name.toLowerCase().includes(q));
+    grid.innerHTML = filtered.map(b => `
+      <div class="book-card" onclick="selectBookFromGrid('${b.name}', ${b.chapters})">
+        <div class="book-card-name">${b.name}</div>
+        <div class="book-card-ch">${b.chapters} cap</div>
+      </div>
+    `).join('');
+  });
+}
+
+function selectBookFromGrid(name, totalChapters) {
+  currentBookName = name;
+
+  // Mostrar selector de capítulos
+  const chapterModal = document.getElementById('bookPickerModal');
+  const list = document.getElementById('bookPickerList');
+
+  list.innerHTML = `
+    <div style="padding:0 20px 12px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:12px">${name}</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+        ${Array.from({length: totalChapters}, (_, i) => i + 1).map(ch => `
+          <div onclick="goToChapter('${name}', ${ch})" style="
+            background:var(--card);border:1px solid var(--border);
+            border-radius:8px;padding:10px 0;text-align:center;
+            font-size:14px;cursor:pointer;transition:all 0.15s;
+          " onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+             onmouseout="this.style.borderColor='';this.style.color=''">
+            ${ch}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  chapterModal.classList.remove('hidden');
+}
+
+function goToChapter(book, chapter) {
+  currentBookName = book;
+  currentChapter  = chapter;
+  document.getElementById('bookPickerModal').classList.add('hidden');
+  showChapterView();
+  BibleAPI.loadChapter(book, chapter);
+}
+
+function showBooksView() {
+  document.getElementById('booksView').classList.remove('hidden');
+  document.getElementById('chapterView').classList.add('hidden');
+}
+
+function showChapterView() {
+  document.getElementById('booksView').classList.add('hidden');
+  document.getElementById('chapterView').classList.remove('hidden');
+}
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   loadDailyVerse();
   updateProfileUI(null);
   applyLang(currentLang);
-    BibleAPI.loadChapter('Juan', 3);
+  renderBooksGrid();
 
   // Agregar Strong's disabled por defecto (se activa con toggle)
   document.querySelectorAll('.sw').forEach(w => {

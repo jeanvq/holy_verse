@@ -101,21 +101,94 @@
     </div>
 
     <!-- ══ BIBLE ══ -->
-    <div id="screen-bible" class="screen">
+    <!-- ══ BIBLE ══ -->
+<div id="screen-bible" class="screen">
 
-      <div class="bible-header">
-        <div class="bible-picker" id="biblePicker" onclick="openBookPicker()">
-          <div>
-            <div class="bp-book" id="currentBook">Juan 3</div>
-            <div class="bp-ch" id="currentTranslation">RVR 1960</div>
-          </div>
-          <div class="bp-arrow">▼</div>
-        </div>
-        <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
-          <div class="toggle-dot"></div>
-          Strong's
-        </div>
+  <!-- Vista libros -->
+  <div id="booksView">
+    <div class="bible-header" style="border:none">
+      <div style="flex:1">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)">La Biblia</div>
+        <div style="font-size:11px;color:var(--text3)">Selecciona un libro</div>
       </div>
+      <select id="translationSelect" class="strongs-toggle" onchange="BibleAPI.currentTranslation=this.value" style="padding:8px 12px;border-radius:8px">
+        <option value="nbla">NBLA</option>
+        <option value="ntv">NTV</option>
+        <option value="rvr09">RVR09</option>
+        <option value="bes">BES</option>
+        <option value="vbl">VBL</option>
+        <option value="kjv">KJV</option>
+        <option value="niv">NIV</option>
+        <option value="esv">ESV</option>
+      </select>
+    </div>
+
+    <div style="padding:0 20px 8px">
+      <input class="search-input" id="bookSearchBar" placeholder="Juan 3:16 o buscar libro..." oninput="filterBooksGrid(this.value)" style="width:100%;border-radius:10px;padding:10px 14px">
+    </div>
+
+    <div class="section-label">Antiguo Testamento</div>
+    <div id="otGrid" class="books-grid"></div>
+
+    <div class="section-label">Nuevo Testamento</div>
+    <div id="ntGrid" class="books-grid"></div>
+  </div>
+
+  <!-- Vista capítulo -->
+  <div id="chapterView" class="hidden">
+    <div class="bible-header">
+      <div class="bible-picker" id="biblePicker" onclick="showBooksView()">
+        <div>
+          <div class="bp-book" id="currentBook">Juan 3</div>
+          <div class="bp-ch" id="currentTranslation">NBLA</div>
+        </div>
+        <div class="bp-arrow">▼</div>
+      </div>
+      <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
+        <div class="toggle-dot"></div>
+        Strong's
+      </div>
+    </div>
+
+    <div class="strongs-panel" id="strongsPanel">
+      <div class="strongs-placeholder" id="strongsPlaceholder">
+        🔤 Toca una palabra <span style="color:var(--greek)">azul</span> o <span style="color:var(--hebrew)">verde</span> para ver su definición
+      </div>
+      <div class="strongs-content hidden" id="strongsContent">
+        <div class="strongs-top">
+          <span class="s-badge greek" id="sBadge">GRIEGO</span>
+          <span class="s-num" id="sNum">G25</span>
+        </div>
+        <div class="s-word greek" id="sWord"></div>
+        <div class="s-trans" id="sTrans"></div>
+        <div class="s-def" id="sDef"></div>
+      </div>
+    </div>
+
+    <div class="legend-bar hidden" id="legendBar">
+      <div class="leg-item">
+        <div class="leg-dot" style="background:rgba(126,207,255,0.6)"></div>
+        <span style="color:var(--greek)">Griego</span>
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:rgba(168,240,160,0.6)"></div>
+        <span style="color:var(--hebrew)">Hebreo</span>
+      </div>
+      <span style="font-size:10px;color:var(--text3);margin-left:auto">toca las palabras</span>
+    </div>
+
+    <div class="chapter-title" id="chapterTitle">Juan — Capítulo 3</div>
+    <div class="verse-list" id="verseList"></div>
+
+    <div class="chapter-nav-btns">
+      <button class="ch-btn" id="btnPrevChapter">← Anterior</button>
+      <button class="ch-btn" id="btnNextChapter">Siguiente →</button>
+    </div>
+
+    <div style="height:16px"></div>
+  </div>
+
+</div>
 
       <!-- Strong's panel -->
       <div class="strongs-panel" id="strongsPanel">
@@ -244,11 +317,11 @@
           <div class="mi-label">Iniciar sesión</div>
           <div class="mi-arrow">›</div>
         </div>
-        <div class="menu-item" onclick="showScreen('search')">
-          <div class="mi-icon">❤️</div>
-          <div class="mi-label">Mis favoritos</div>
-          <div class="mi-arrow">›</div>
-        </div>
+        <div class="menu-item" onclick="renderFavorites()">
+  <div class="mi-icon">❤️</div>
+  <div class="mi-label">Mis favoritos</div>
+  <div class="mi-arrow">›</div>
+</div>
         <div class="menu-item">
           <div class="mi-icon">📝</div>
           <div class="mi-label">Mis notas</div>

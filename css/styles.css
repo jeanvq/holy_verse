@@ -644,3 +644,104 @@ body.light .bubble.bot {
   color: var(--text3);
   margin-top: 3px;
 }
+/* VERSE SELECTED (modo Strong's) */
+.verse-row.selected-verse {
+  background: rgba(212,168,67,0.08);
+  border-radius: 8px;
+  outline: 1px solid rgba(212,168,67,0.3);
+}
+
+/* WORD PILLS - palabras griegas clickeables */
+.sw-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(126,207,255,0.1);
+  border: 1px solid rgba(126,207,255,0.3);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  color: var(--greek);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sw-pill:active {
+  background: rgba(126,207,255,0.2);
+}
+.sw-pill-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  color: var(--text3);
+  background: rgba(255,255,255,0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* FONT SIZE CONTROL */
+.font-size-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+.font-size-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.font-size-btn:active {
+  color: var(--gold);
+}
+
+/* Variable de tamaño de letra aplicada al texto de versículos */
+.vr-text {
+  font-size: var(--verse-font-size, 17px);
+}
+/* STRONG TAGS - palabra + número superíndice clickeable */
+.strong-tag {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  color: var(--text);
+  cursor: pointer;
+  border-bottom: 1px dashed var(--greek);
+  padding-bottom: 1px;
+  transition: all 0.15s;
+}
+.strong-tag sup {
+  color: var(--greek);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 1px;
+}
+.strong-tag:active,
+.strong-tag.active-tag {
+  background: rgba(126,207,255,0.12);
+  border-radius: 4px;
+  border-bottom-color: transparent;
+}
+.strong-tag.active-tag sup {
+  color: var(--gold);
+}
+/* STRONG'S INLINE - palabras resaltadas directo en el texto español */
+.sw-inline {
+  color: var(--greek);
+  cursor: pointer;
+  border-bottom: 1px dotted rgba(126,207,255,0.5);
+  transition: all 0.15s;
+  padding: 0 1px;
+}
+.sw-inline:active,
+.sw-inline.active-word {
+  background: rgba(126,207,255,0.15);
+  border-radius: 3px;
+  border-bottom-color: transparent;
+}

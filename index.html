@@ -143,10 +143,14 @@
         </div>
         <div class="bp-arrow">▼</div>
       </div>
-      <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
-        <div class="toggle-dot"></div>
-        Strong's
-      </div>
+      <div class="font-size-control">
+  <button class="font-size-btn" onclick="decreaseFontSize()">A-</button>
+  <button class="font-size-btn" onclick="increaseFontSize()" style="font-size:19px">A+</button>
+</div>
+<div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
+  <div class="toggle-dot"></div>
+  Strong's
+</div>
     </div>
 
     <div class="strongs-panel" id="strongsPanel">
@@ -192,8 +196,8 @@
       <!-- Strong's panel -->
       <div class="strongs-panel" id="strongsPanel">
         <div class="strongs-placeholder" id="strongsPlaceholder">
-          🔤 Toca una palabra <span style="color:var(--greek)">azul</span> o <span style="color:var(--hebrew)">verde</span> para ver su definición
-        </div>
+  📜 Toca cualquier versículo para ver sus palabras originales en griego
+</div>
         <div class="strongs-content hidden" id="strongsContent">
           <div class="strongs-top">
             <span class="s-badge greek" id="sBadge">GRIEGO</span>

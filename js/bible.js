@@ -4,6 +4,7 @@
    ============================================ */
 
 const API_BASE = 'https://holyverse-api-production.up.railway.app';
+const STRONGS_API_BASE = 'https://holyverse-api-production.up.railway.app';
 
 window.BibleAPI = {
 
@@ -23,14 +24,20 @@ window.BibleAPI = {
         return;
       }
 
+      
+
       // Actualizar header
       document.getElementById('currentBook').textContent = `${data.book} ${chapter}`;
       document.getElementById('chapterTitle').textContent = `${data.book} — Capítulo ${chapter} · ${this.currentTranslation.toUpperCase()}`;
       document.getElementById('currentTranslation').textContent = this.currentTranslation.toUpperCase();
 
       // Renderizar versículos
-      verseList.innerHTML = data.verses.map(v => `
+     verseList.innerHTML = data.verses.map(v => `
   <div class="verse-row" 
+    data-book="${data.book}"
+    data-chapter="${chapter}"
+    data-verse="${v.number}"
+    onclick="handleVerseClick(event, this)"
     oncontextmenu="showVerseMenu(event, '${v.reference.replace(/'/g,"\\'")}', \`${v.text.replace(/`/g,"\\`")}\`)"
     ontouchstart="startLongPress(event, '${v.reference.replace(/'/g,"\\'")}', \`${v.text.replace(/`/g,"\\`")}\`)"
     ontouchend="cancelLongPress()"
@@ -49,6 +56,60 @@ window.BibleAPI = {
       console.error(err);
     }
   },
+
+  // ── Cargar capítulo en modo Strong's (griego interlineal) ──
+  async loadChapterStrongs(book, chapter) {
+    const verseList = document.getElementById('verseList');
+    verseList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)">Cargando griego original...</div>';
+
+    try {
+      const res  = await fetch(`${STRONGS_API_BASE}/api/strongswords-chapter/${encodeURIComponent(book)}/${chapter}`);
+      const data = await res.json();
+
+      if (data.error) {
+        verseList.innerHTML = `
+          <div style="padding:40px 24px;text-align:center;color:var(--text3)">
+            <div style="font-size:32px;margin-bottom:12px">📜</div>
+            <div style="margin-bottom:8px">Strong's aún no disponible para este libro</div>
+            <div style="font-size:12px">Por ahora cubrimos el Nuevo Testamento</div>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('currentBook').textContent = `${book} ${chapter}`;
+      document.getElementById('chapterTitle').textContent = `${book} — Capítulo ${chapter} · Griego Original`;
+      document.getElementById('currentTranslation').textContent = 'STRONG\'S';
+
+      const verseNumbers = Object.keys(data.verses).sort((a, b) => parseInt(a) - parseInt(b));
+
+      verseList.innerHTML = verseNumbers.map(vNum => {
+        const words = data.verses[vNum];
+        const wordsHTML = words.map(w => `
+          <span class="sw" 
+            onclick="showStrongsFromWord(this)" 
+            data-strong="${w.strong}" 
+            data-word="${w.word}" 
+            data-lemma="${w.lemma}">${w.word}</span>
+        `).join(' ');
+
+        return `
+          <div class="verse-row">
+            <span class="vr-num">${vNum}</span>
+            <span class="vr-text" style="font-family:'Cormorant Garamond',serif;font-size:19px">${wordsHTML}</span>
+          </div>
+        `;
+      }).join('');
+
+      currentBookName = book;
+      currentChapter  = chapter;
+
+    } catch (err) {
+      verseList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--danger)">Error de conexión</div>';
+      console.error(err);
+    }
+  },
+
+  // ── Búsqueda ──
 
   // ── Búsqueda ──
   async search(query) {

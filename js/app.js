@@ -256,7 +256,6 @@ function removeFavorite(index) {
 }
 
 // ── STRONG'S TOGGLE ──
-
 function toggleStrongs() {
   strongsEnabled = !strongsEnabled;
   const toggle = document.getElementById('strongsToggle');
@@ -267,23 +266,19 @@ function toggleStrongs() {
   panel.classList.toggle('visible', strongsEnabled);
   legend.classList.toggle('hidden', !strongsEnabled);
 
-  // Mostrar/ocultar resaltado en palabras
-  document.querySelectorAll('.sw').forEach(w => {
-    w.style.pointerEvents = strongsEnabled ? 'auto' : 'none';
-    w.style.opacity = strongsEnabled ? '1' : '0.7';
-    w.style.borderBottom = strongsEnabled ? '' : 'none';
-    w.style.background = strongsEnabled ? '' : 'transparent';
-    w.style.color = strongsEnabled ? '' : 'var(--text)';
-  });
-
   if (!strongsEnabled) {
-    // Reset panel a placeholder
     document.getElementById('strongsPlaceholder').classList.remove('hidden');
     document.getElementById('strongsContent').classList.add('hidden');
+
+    // Quitar resaltado de palabras y volver al texto plano original
+    document.querySelectorAll('.verse-row').forEach(v => {
+      delete v.dataset.strongsLoaded;
+    });
+    BibleAPI.loadChapter(currentBookName, currentChapter);
   }
 }
 
-// Mostrar info de una palabra Strong's
+// Mostrar info de una palabra Strong's (desde datos hardcodeados viejos)
 function showStrongs(el) {
   if (!strongsEnabled) return;
 
@@ -305,9 +300,43 @@ function showStrongs(el) {
   document.getElementById('sTrans').textContent = el.dataset.tr || '';
   document.getElementById('sDef').textContent   = el.dataset.def || '';
 
-  // Highlight palabra activa
   document.querySelectorAll('.sw').forEach(w => w.style.outline = 'none');
   el.style.outline = '1.5px solid ' + (isGreek ? 'rgba(126,207,255,0.7)' : 'rgba(168,240,160,0.7)');
+}
+
+// Mostrar info de una palabra Strong's (desde datos REALES del backend)
+async function showStrongsFromWord(el) {
+  const strongNum = el.dataset.strong;
+  if (!strongNum) return;
+
+  document.getElementById('strongsPlaceholder').classList.add('hidden');
+  const content = document.getElementById('strongsContent');
+  content.classList.remove('hidden');
+
+  const badge = document.getElementById('sBadge');
+  badge.textContent = 'GRIEGO';
+  badge.className = 's-badge greek';
+
+  document.getElementById('sNum').textContent = strongNum;
+  const wordEl = document.getElementById('sWord');
+  wordEl.textContent = el.dataset.lemma || el.dataset.word;
+  wordEl.className = 's-word greek';
+  document.getElementById('sTrans').textContent = 'Cargando...';
+  document.getElementById('sDef').textContent = '';
+
+  document.querySelectorAll('.sw').forEach(w => w.style.outline = 'none');
+  el.style.outline = '1.5px solid rgba(126,207,255,0.7)';
+
+  try {
+    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs/${strongNum}`);
+    const data = await res.json();
+
+    document.getElementById('sTrans').textContent = data.translit || '';
+    document.getElementById('sDef').textContent   = data.definition || data.kjv_def || 'Sin definición disponible';
+  } catch (err) {
+    document.getElementById('sTrans').textContent = '';
+    document.getElementById('sDef').textContent = 'Error al cargar definición';
+  }
 }
 
 // ── BOOK PICKER ──
@@ -870,6 +899,109 @@ function showChapterView() {
   document.getElementById('booksView').classList.add('hidden');
   document.getElementById('chapterView').classList.remove('hidden');
 }
+
+// ── STRONG'S INLINE (palabras del versículo resaltadas directamente en el texto) ──
+async function handleVerseClick(e, verseEl) {
+  if (!strongsEnabled) return;
+  if (e.target.closest('.sw-inline')) return; // si ya se clickeó una palabra, no reprocesar
+
+  const book    = verseEl.dataset.book;
+  const chapter = verseEl.dataset.chapter;
+  const verse   = verseEl.dataset.verse;
+
+  // Si este versículo ya está procesado, no lo cargues de nuevo
+  if (verseEl.dataset.strongsLoaded === 'true') return;
+
+  const textSpan = verseEl.querySelector('.vr-text');
+  const originalText = textSpan.textContent;
+
+  try {
+    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/strongswords/${encodeURIComponent(book)}/${chapter}/${verse}`);
+    const data = await res.json();
+
+    if (data.error || !data.words?.length) return; // sin datos, deja el texto normal
+
+    // Limpiar el texto de marcadores de versículo [n]
+    const cleanText = originalText.replace(/\[\d+\]/g, '').trim();
+    const spanishWords = cleanText.split(/\s+/);
+
+    // Palabras griegas sin las muy comunes (artículos, conjunciones simples)
+    const SKIP_STRONGS = ['G3588', 'G2532', 'G1161']; // el/la, y, pero/y
+    const greekWords = data.words;
+
+    // Alinear por posición proporcional (mapeo simple por índice escalado)
+    const ratio = greekWords.length / spanishWords.length;
+
+    const html = spanishWords.map((word, i) => {
+      const greekIndex = Math.min(greekWords.length - 1, Math.round(i * ratio));
+      const gw = greekWords[greekIndex];
+
+      // Solo resaltar si la palabra griega tiene peso léxico
+      if (gw && !SKIP_STRONGS.includes(gw.strong) && word.length > 2) {
+        return `<span class="sw-inline" onclick="showWordDefInline(event, '${gw.strong}', '${gw.lemma.replace(/'/g,"\\'")}', '${gw.word.replace(/'/g,"\\'")}')">${word}</span>`;
+      }
+      return word;
+    }).join(' ');
+
+    textSpan.innerHTML = html;
+    verseEl.dataset.strongsLoaded = 'true';
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function showWordDefInline(e, strongNum, lemma, originalWord) {
+  e.stopPropagation();
+
+  document.getElementById('strongsPlaceholder').classList.add('hidden');
+  const content = document.getElementById('strongsContent');
+  content.classList.remove('hidden');
+
+  content.innerHTML = `
+    <div class="strongs-top">
+      <span class="s-badge greek">GRIEGO</span>
+      <span class="s-num">${strongNum}</span>
+    </div>
+    <div class="s-word greek">${originalWord}</div>
+    <div class="s-trans" id="sTrans">Cargando...</div>
+    <div class="s-def" id="sDef"></div>
+  `;
+
+  document.querySelectorAll('.sw-inline').forEach(w => w.classList.remove('active-word'));
+  e.currentTarget.classList.add('active-word');
+
+  try {
+    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs/${strongNum}`);
+    const data = await res.json();
+    document.getElementById('sTrans').textContent = data.translit || '';
+    document.getElementById('sDef').textContent   = data.definition || data.kjv_def || 'Sin definición';
+  } catch (err) {
+    document.getElementById('sDef').textContent = 'Error al cargar';
+  }
+}
+
+// ── TAMAÑO DE LETRA ──
+let fontSizeLevel = parseInt(localStorage.getItem('hv_font_size')) || 0;
+
+function applyFontSize() {
+  const sizes = ['15px', '17px', '19px', '21px', '23px'];
+  const index = Math.max(0, Math.min(sizes.length - 1, 2 + fontSizeLevel));
+  document.documentElement.style.setProperty('--verse-font-size', sizes[index]);
+}
+
+function increaseFontSize() {
+  if (fontSizeLevel < 2) fontSizeLevel++;
+  localStorage.setItem('hv_font_size', fontSizeLevel);
+  applyFontSize();
+}
+
+function decreaseFontSize() {
+  if (fontSizeLevel > -2) fontSizeLevel--;
+  localStorage.setItem('hv_font_size', fontSizeLevel);
+  applyFontSize();
+}
+
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   loadDailyVerse();

@@ -100,7 +100,7 @@
       <div style="height:16px"></div>
     </div>
 
-    <!-- ══ BIBLE ══ -->
+ <!-- ══ BIBLE ══ -->
 <div id="screen-bible" class="screen">
 
   <!-- Vista libros -->
@@ -143,19 +143,31 @@
         </div>
         <div class="bp-arrow">▼</div>
       </div>
-      <div class="font-size-control">
-  <button class="font-size-btn" onclick="decreaseFontSize()">A-</button>
-  <button class="font-size-btn" onclick="increaseFontSize()" style="font-size:19px">A+</button>
-</div>
-<div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
-  <div class="toggle-dot"></div>
-  Strong's
-</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select class="translation-inline-select" onchange="BibleAPI.setTranslation(this.value)">
+          <option value="nbla">NBLA</option>
+          <option value="ntv">NTV</option>
+          <option value="rvr09">RVR09</option>
+          <option value="bes">BES</option>
+          <option value="vbl">VBL</option>
+          <option value="kjv">KJV</option>
+          <option value="niv">NIV</option>
+          <option value="esv">ESV</option>
+        </select>
+        <div class="font-size-control">
+          <button class="font-size-btn" onclick="decreaseFontSize()">A-</button>
+          <button class="font-size-btn" onclick="increaseFontSize()" style="font-size:19px">A+</button>
+        </div>
+        <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
+          <div class="toggle-dot"></div>
+          Strong's
+        </div>
+      </div>
     </div>
 
     <div class="strongs-panel" id="strongsPanel">
       <div class="strongs-placeholder" id="strongsPlaceholder">
-        🔤 Toca una palabra <span style="color:var(--greek)">azul</span> o <span style="color:var(--hebrew)">verde</span> para ver su definición
+        📜 Toca cualquier versículo para ver sus palabras originales en griego
       </div>
       <div class="strongs-content hidden" id="strongsContent">
         <div class="strongs-top">
@@ -465,6 +477,19 @@ if ('serviceWorker' in navigator) {
         <div class="mi-label">Compartir</div>
       </div>
     </div>
+  </div>
+</div>
+<!-- Strong's Floating Panel -->
+<div id="strongsFloating" class="strongs-floating hidden" onclick="closeStrongsFloat()">
+  <div class="strongs-float-content" onclick="event.stopPropagation()">
+    <div class="strongs-float-header">
+      <span class="s-badge greek" id="sfBadge">GRIEGO</span>
+      <span class="s-num" id="sfNum"></span>
+      <button onclick="closeStrongsFloat()" style="margin-left:auto;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div class="s-word greek" id="sfWord"></div>
+    <div class="s-trans" id="sfTrans"></div>
+    <div class="s-def" id="sfDef"></div>
   </div>
 </div>
 </body>

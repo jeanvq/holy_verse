@@ -328,7 +328,7 @@ async function showStrongsFromWord(el) {
   el.style.outline = '1.5px solid rgba(126,207,255,0.7)';
 
   try {
-    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs/${strongNum}`);
+    const res = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs-es/${strongNum}`);
     const data = await res.json();
 
     document.getElementById('sTrans').textContent = data.translit || '';
@@ -891,94 +891,110 @@ function goToChapter(book, chapter) {
 }
 
 function showBooksView() {
-  document.getElementById('booksView').classList.remove('hidden');
-  document.getElementById('chapterView').classList.add('hidden');
+  const booksView   = document.getElementById('booksView');
+  const chapterView = document.getElementById('chapterView');
+  if (booksView)   booksView.classList.remove('hidden');
+  if (chapterView) chapterView.classList.add('hidden');
 }
 
 function showChapterView() {
-  document.getElementById('booksView').classList.add('hidden');
-  document.getElementById('chapterView').classList.remove('hidden');
+  const booksView   = document.getElementById('booksView');
+  const chapterView = document.getElementById('chapterView');
+  if (booksView)   booksView.classList.add('hidden');
+  if (chapterView) chapterView.classList.remove('hidden');
 }
 
 // ── STRONG'S INLINE (palabras del versículo resaltadas directamente en el texto) ──
 async function handleVerseClick(e, verseEl) {
   if (!strongsEnabled) return;
-  if (e.target.closest('.sw-inline')) return; // si ya se clickeó una palabra, no reprocesar
+  if (e.target.closest('.sw-inline')) return;
 
   const book    = verseEl.dataset.book;
   const chapter = verseEl.dataset.chapter;
   const verse   = verseEl.dataset.verse;
 
-  // Si este versículo ya está procesado, no lo cargues de nuevo
-  if (verseEl.dataset.strongsLoaded === 'true') return;
+  // Highlight visual
+  document.querySelectorAll('.verse-row').forEach(v => v.classList.remove('selected-verse'));
+  verseEl.classList.add('selected-verse');
 
-  const textSpan = verseEl.querySelector('.vr-text');
-  const originalText = textSpan.textContent;
+  const floating = document.getElementById('strongsFloating');
+  floating.classList.remove('hidden');
+  const floatContent = floating.querySelector('.strongs-float-content');
+  floatContent.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3)">Cargando...</div>';
 
   try {
     const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/strongswords/${encodeURIComponent(book)}/${chapter}/${verse}`);
     const data = await res.json();
 
-    if (data.error || !data.words?.length) return; // sin datos, deja el texto normal
+    if (data.error || !data.words?.length) {
+      floatContent.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:11px;color:var(--text3);text-transform:uppercase">Solo disponible en el NT</span>
+          <button onclick="closeStrongsFloat()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+        </div>`;
+      return;
+    }
 
-    // Limpiar el texto de marcadores de versículo [n]
-    const cleanText = originalText.replace(/\[\d+\]/g, '').trim();
-    const spanishWords = cleanText.split(/\s+/);
+    const SKIP = ['G3588','G2532','G1161','G1063','G3739'];
+    const words = data.words.filter(w => !SKIP.includes(w.strong));
 
-    // Palabras griegas sin las muy comunes (artículos, conjunciones simples)
-    const SKIP_STRONGS = ['G3588', 'G2532', 'G1161']; // el/la, y, pero/y
-    const greekWords = data.words;
+    const wordsHTML = words.map(w => `
+      <span class="strong-tag" onclick="showWordDefInline(event, '${w.strong}', '${w.lemma.replace(/'/g,"\\'")}', '${w.word.replace(/'/g,"\\'")}')">
+        ${w.word}<sup>${w.strong}</sup>
+      </span>
+    `).join('');
 
-    // Alinear por posición proporcional (mapeo simple por índice escalado)
-    const ratio = greekWords.length / spanishWords.length;
-
-    const html = spanishWords.map((word, i) => {
-      const greekIndex = Math.min(greekWords.length - 1, Math.round(i * ratio));
-      const gw = greekWords[greekIndex];
-
-      // Solo resaltar si la palabra griega tiene peso léxico
-      if (gw && !SKIP_STRONGS.includes(gw.strong) && word.length > 2) {
-        return `<span class="sw-inline" onclick="showWordDefInline(event, '${gw.strong}', '${gw.lemma.replace(/'/g,"\\'")}', '${gw.word.replace(/'/g,"\\'")}')">${word}</span>`;
-      }
-      return word;
-    }).join(' ');
-
-    textSpan.innerHTML = html;
-    verseEl.dataset.strongsLoaded = 'true';
+    floatContent.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">${book} ${chapter}:${verse} · Griego original</span>
+        <button onclick="closeStrongsFloat()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 12px;line-height:2;margin-bottom:8px">
+        ${wordsHTML}
+      </div>
+      <div id="wordDefBox" style="display:none;border-top:1px solid var(--border);padding-top:12px;margin-top:8px">
+        <div class="strongs-top">
+          <span class="s-badge greek">GRIEGO</span>
+          <span class="s-num" id="sfNum"></span>
+        </div>
+        <div class="s-word greek" id="sfWord"></div>
+        <div class="s-trans" id="sfTrans"></div>
+        <div class="s-def" id="sfDef"></div>
+      </div>
+    `;
 
   } catch (err) {
-    console.error(err);
+    floatContent.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">Error de conexión</div>';
   }
 }
 
 async function showWordDefInline(e, strongNum, lemma, originalWord) {
   e.stopPropagation();
 
-  document.getElementById('strongsPlaceholder').classList.add('hidden');
-  const content = document.getElementById('strongsContent');
-  content.classList.remove('hidden');
+  const box = document.getElementById('wordDefBox');
+  box.style.display = 'block';
 
-  content.innerHTML = `
-    <div class="strongs-top">
-      <span class="s-badge greek">GRIEGO</span>
-      <span class="s-num">${strongNum}</span>
-    </div>
-    <div class="s-word greek">${originalWord}</div>
-    <div class="s-trans" id="sTrans">Cargando...</div>
-    <div class="s-def" id="sDef"></div>
-  `;
+  document.getElementById('sfNum').textContent  = strongNum;
+  document.getElementById('sfWord').textContent = originalWord;
+  document.getElementById('sfTrans').textContent = 'Cargando...';
+  document.getElementById('sfDef').textContent  = '';
 
-  document.querySelectorAll('.sw-inline').forEach(w => w.classList.remove('active-word'));
-  e.currentTarget.classList.add('active-word');
+  document.querySelectorAll('.strong-tag').forEach(t => t.classList.remove('active-tag'));
+  e.currentTarget.classList.add('active-tag');
 
   try {
-    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs/${strongNum}`);
+    const res = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs-es/${strongNum}`);
     const data = await res.json();
-    document.getElementById('sTrans').textContent = data.translit || '';
-    document.getElementById('sDef').textContent   = data.definition || data.kjv_def || 'Sin definición';
+    document.getElementById('sfTrans').textContent = data.translit || '';
+    document.getElementById('sfDef').textContent   = data.definition || data.kjv_def || 'Sin definición';
   } catch (err) {
-    document.getElementById('sDef').textContent = 'Error al cargar';
+    document.getElementById('sfDef').textContent = 'Error al cargar';
   }
+}
+
+function closeStrongsFloat() {
+  document.getElementById('strongsFloating').classList.add('hidden');
+  document.querySelectorAll('.strong-tag').forEach(t => t.classList.remove('active-tag'));
 }
 
 // ── TAMAÑO DE LETRA ──
@@ -1017,3 +1033,4 @@ document.addEventListener('DOMContentLoaded', () => {
     w.style.borderBottom = 'none';
   });
 });
+

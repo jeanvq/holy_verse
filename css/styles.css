@@ -705,6 +705,15 @@ body.light .bubble.bot {
 .vr-text {
   font-size: var(--verse-font-size, 17px);
 }
+.translation-inline-select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  font-size: 12px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
 /* STRONG TAGS - palabra + número superíndice clickeable */
 .strong-tag {
   font-family: 'Cormorant Garamond', serif;
@@ -744,4 +753,31 @@ body.light .bubble.bot {
   background: rgba(126,207,255,0.15);
   border-radius: 3px;
   border-bottom-color: transparent;
+}
+/* STRONG'S FLOATING PANEL */
+.strongs-floating {
+  position: fixed;
+  bottom: 80px;
+  left: 16px;
+  right: 16px;
+  z-index: 999;
+  background: transparent;
+}
+.strongs-float-content {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: slideUp 0.2s ease;
+}
+.strongs-float-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

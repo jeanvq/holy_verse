@@ -716,30 +716,33 @@ body.light .bubble.bot {
 }
 /* STRONG TAGS - palabra + número superíndice clickeable */
 .strong-tag {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
   font-family: 'Cormorant Garamond', serif;
   font-size: 17px;
   color: var(--text);
   cursor: pointer;
-  border-bottom: 1px dashed var(--greek);
-  padding-bottom: 1px;
+  border: 1px solid rgba(126,207,255,0.2);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: rgba(126,207,255,0.05);
   transition: all 0.15s;
-}
-.strong-tag sup {
-  color: var(--greek);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  margin-left: 1px;
+  min-width: 60px;
+  text-align: center;
 }
 .strong-tag:active,
 .strong-tag.active-tag {
-  background: rgba(126,207,255,0.12);
-  border-radius: 4px;
-  border-bottom-color: transparent;
+  background: rgba(126,207,255,0.15);
+  border-color: var(--greek);
 }
-.strong-tag.active-tag sup {
-  color: var(--gold);
+.strong-tag sup {
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  margin-top: 2px;
 }
+
 /* STRONG'S INLINE - palabras resaltadas directo en el texto español */
 .sw-inline {
   color: var(--greek);

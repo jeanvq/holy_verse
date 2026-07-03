@@ -939,10 +939,12 @@ async function handleVerseClick(e, verseEl) {
     const words = data.words.filter(w => !SKIP.includes(w.strong));
 
     const wordsHTML = words.map(w => `
-      <span class="strong-tag" onclick="showWordDefInline(event, '${w.strong}', '${w.lemma.replace(/'/g,"\\'")}', '${w.word.replace(/'/g,"\\'")}')">
-        ${w.word}<sup>${w.strong}</sup>
-      </span>
-    `).join('');
+  <span class="strong-tag" onclick="showWordDefInline(event, '${w.strong}', '${w.lemma.replace(/'/g,"\\'")}', '${w.word.replace(/'/g,"\\'")}')">
+    <span style="display:block;font-size:16px">${w.word}</span>
+    <span style="display:block;font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif">${w.lemma || ''}</span>
+    <sup style="font-size:9px">${w.strong}</sup>
+  </span>
+`).join('');
 
     floatContent.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -986,7 +988,10 @@ async function showWordDefInline(e, strongNum, lemma, originalWord) {
     const res = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs-es/${strongNum}`);
     const data = await res.json();
     document.getElementById('sfTrans').textContent = data.translit || '';
-    document.getElementById('sfDef').textContent   = data.definition || data.kjv_def || 'Sin definición';
+document.getElementById('sfDef').innerHTML = `
+  ${data.short ? `<div style="font-size:18px;color:var(--gold);font-weight:600;margin-bottom:6px">= ${data.short}</div>` : ''}
+  <div style="color:var(--text2);font-size:13px;line-height:1.5">${data.definition || 'Sin definición'}</div>
+`;
   } catch (err) {
     document.getElementById('sfDef').textContent = 'Error al cargar';
   }

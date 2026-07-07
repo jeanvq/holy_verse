@@ -958,7 +958,7 @@ const res = await fetch(endpoint);
 
     floatContent.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">${book} ${chapter}:${verse} · Griego original</span>
+        <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">${book} ${chapter}:${verse} · ${isNT ? 'Griego' : 'Hebreo'} original</span>
         <button onclick="closeStrongsFloat()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:8px 12px;line-height:2;margin-bottom:8px">
@@ -966,10 +966,10 @@ const res = await fetch(endpoint);
       </div>
       <div id="wordDefBox" style="display:none;border-top:1px solid var(--border);padding-top:12px;margin-top:8px">
         <div class="strongs-top">
-          <span class="s-badge greek">GRIEGO</span>
+          <span class="s-badge ${isNT ? 'greek' : 'hebrew'}">${isNT ? 'GRIEGO' : 'HEBREO'}</span>
           <span class="s-num" id="sfNum"></span>
         </div>
-        <div class="s-word greek" id="sfWord"></div>
+        <div class="s-word ${isNT ? 'greek' : 'hebrew'}" id="sfWord"></div>
         <div class="s-trans" id="sfTrans"></div>
         <div class="s-def" id="sfDef"></div>
       </div>
@@ -997,8 +997,9 @@ async function showWordDefInline(e, strongNum, lemma, originalWord) {
   try {
     const res = await fetch(`https://holyverse-api-production.up.railway.app/api/strongs-es/${strongNum}`);
     const data = await res.json();
-    document.getElementById('sfTrans').textContent = data.translit || '';
+document.getElementById('sfTrans').textContent = '';
 document.getElementById('sfDef').innerHTML = `
+  ${data.translit ? `<div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-style:italic">📢 ${data.translit}</div>` : ''}
   ${data.short ? `<div style="font-size:18px;color:var(--gold);font-weight:600;margin-bottom:6px">= ${data.short}</div>` : ''}
   <div style="color:var(--text2);font-size:13px;line-height:1.5">${data.definition || 'Sin definición'}</div>
 `;

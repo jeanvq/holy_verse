@@ -923,7 +923,12 @@ async function handleVerseClick(e, verseEl) {
   floatContent.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3)">Cargando...</div>';
 
   try {
-    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/strongswords/${encodeURIComponent(book)}/${chapter}/${verse}`);
+    const NT_BOOKS = ['Mateo','Marcos','Lucas','Juan','Hechos','Romanos','1 Corintios','2 Corintios','Gálatas','Efesios','Filipenses','Colosenses','1 Tesalonicenses','2 Tesalonicenses','1 Timoteo','2 Timoteo','Tito','Filemón','Hebreos','Santiago','1 Pedro','2 Pedro','1 Juan','2 Juan','3 Juan','Judas','Apocalipsis'];
+const isNT = NT_BOOKS.includes(book);
+const endpoint = isNT 
+  ? `https://holyverse-api-production.up.railway.app/api/strongswords/${encodeURIComponent(book)}/${chapter}/${verse}`
+  : `https://holyverse-api-production.up.railway.app/api/at-strongswords/${encodeURIComponent(book)}/${chapter}/${verse}`;
+const res = await fetch(endpoint);
     const data = await res.json();
 
     if (data.error || !data.words?.length) {

@@ -949,7 +949,7 @@ const res = await fetch(endpoint);
     });
 
     const wordsHTML = words.map(w => `
-  <span class="strong-tag" onclick="showWordDefInline(event, '${w.strong}', '${w.lemma.replace(/'/g,"\\'")}', '${w.word.replace(/'/g,"\\'")}')">
+  <span class="strong-tag" onclick="showWordDefInline(event, '${w.strong}', '${(w.lemma || w.word).replace(/'/g,"\\'")}', '${w.word.replace(/'/g,"\\'")}')">
     <span style="display:block;font-size:16px">${w.word}</span>
     <span style="display:block;font-size:10px;color:var(--text3);font-family:'DM Sans',sans-serif">${w.lemma || ''}</span>
     <sup style="font-size:9px">${w.strong}</sup>

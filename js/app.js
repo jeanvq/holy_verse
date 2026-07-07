@@ -932,16 +932,21 @@ const res = await fetch(endpoint);
     const data = await res.json();
 
     if (data.error || !data.words?.length) {
-      floatContent.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:11px;color:var(--text3);text-transform:uppercase">Solo disponible en el NT</span>
-          <button onclick="closeStrongsFloat()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
-        </div>`;
-      return;
-    }
+  floatContent.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:11px;color:var(--text3);text-transform:uppercase">Strong's no disponible para este versículo</span>
+      <button onclick="closeStrongsFloat()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+    </div>`;
+  return;
+}
 
-    const SKIP = ['G3588','G2532','G1161','G1063','G3739'];
-    const words = data.words.filter(w => !SKIP.includes(w.strong));
+    const SKIP_GREEK = ['G3588','G2532','G1161','G1063','G3739'];
+    const SKIP_HEBREW = ['H853','H834','H3588','H1961'];
+    const words = data.words.filter(w => {
+      if (w.strong.startsWith('G')) return !SKIP_GREEK.includes(w.strong);
+      if (w.strong.startsWith('H')) return !SKIP_HEBREW.includes(w.strong);
+      return true;
+    });
 
     const wordsHTML = words.map(w => `
   <span class="strong-tag" onclick="showWordDefInline(event, '${w.strong}', '${w.lemma.replace(/'/g,"\\'")}', '${w.word.replace(/'/g,"\\'")}')">

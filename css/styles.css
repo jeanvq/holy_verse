@@ -784,3 +784,9 @@ body.light .bubble.bot {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes pulse-gold {
+  0%   { background: rgba(212,168,67,0.08); }
+  50%  { background: rgba(212,168,67,0.25); }
+  100% { background: rgba(212,168,67,0.08); }
+}

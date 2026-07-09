@@ -1096,6 +1096,14 @@ function decreaseFontSize() {
   localStorage.setItem('hv_font_size', fontSizeLevel);
   applyFontSize();
 }
+function closeStrongsFloat() {
+  document.getElementById('strongsFloating').classList.add('hidden');
+  document.querySelectorAll('.strong-tag').forEach(t => t.classList.remove('active-tag'));
+  document.querySelectorAll('.sw-word').forEach(w => {
+    w.style.fontWeight = 'normal';
+    w.style.textDecoration = 'none';
+  });
+}
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {

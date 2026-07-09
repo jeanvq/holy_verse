@@ -948,37 +948,43 @@ async function handleVerseClick(e, verseEl) {
       return;
     }
 
+// 1. Obtener texto español
+    const textSpan     = verseEl.querySelector('.vr-text');
+    const originalText = textSpan.textContent.replace(/\[\d+\]/g, '').trim();
+    const spanishWords = originalText.split(/\s+/);
+
+    // 2. Filtrar palabras con contenido
     const SKIP_GREEK  = ['G3588','G1063','G2532','G1161','G3739','G1519','G0846'];
-const SKIP_HEBREW = ['H0853','H0834','H3588','H1961','H1886','H2050'];
+    const SKIP_HEBREW = ['H0853','H0834','H3588','H1961','H1886','H2050'];
+    const contentWords = data.words.filter(w =>
+      !SKIP_GREEK.includes(w.strong) && !SKIP_HEBREW.includes(w.strong) && w.gloss && w.gloss !== '-'
+    );
 
-const contentWords = data.words.filter(w => 
-  !SKIP_GREEK.includes(w.strong) && !SKIP_HEBREW.includes(w.strong) && w.gloss && w.gloss !== '-'
-);
+    // 3. Calcular ratio y resaltar
+    const ratio = contentWords.length / spanishWords.length;
 
-const ratio = contentWords.length / spanishWords.length;
+    const highlightedText = spanishWords.map((word, i) => {
+      const cleanWord = word.replace(/[.,;:«»"'¿?!¡()\[\]]/g, '');
+      if (cleanWord.length <= 2) return word;
 
-const highlightedText = spanishWords.map((word, i) => {
-  const cleanWord = word.replace(/[.,;:«»"'¿?!¡()\[\]]/g, '');
-  if (cleanWord.length <= 2) return word;
+      const gwIndex = Math.min(contentWords.length - 1, Math.round(i * ratio));
+      const gw = contentWords[gwIndex];
+      if (!gw) return word;
 
-  const gwIndex = Math.min(contentWords.length - 1, Math.round(i * ratio));
-  const gw = contentWords[gwIndex];
-  if (!gw) return word;
+      const isGreek = gw.strong.startsWith('G');
+      const color   = isGreek ? 'var(--greek)' : 'var(--hebrew)';
 
-  const isGreek  = gw.strong.startsWith('G');
-  const color    = isGreek ? 'var(--greek)' : 'var(--hebrew)';
-  const glossES  = gw.gloss; // usamos el gloss en inglés por ahora
-
-  return `<span 
-    class="sw-word" 
-    style="color:${color};border-bottom:1px dotted ${color};cursor:pointer"
-    title="${glossES}"
-    onclick="showWordFromText(event, '${gw.strong}', '${(gw.lemma || gw.word).replace(/'/g,"\\'")}', '${gw.word.replace(/'/g,"\\'")}', '${word.replace(/'/g,"\\'")}')"
-    >${word}</span>`;
-}).join(' ');
+      return `<span 
+        class="sw-word" 
+        style="color:${color};border-bottom:1px dotted ${color};cursor:pointer"
+        title="${gw.gloss}"
+        onclick="showWordFromText(event, '${gw.strong}', '${(gw.lemma || gw.word).replace(/'/g,"\\'")}', '${gw.word.replace(/'/g,"\\'")}', '${word.replace(/'/g,"\\'")}')"
+        >${word}</span>`;
+    }).join(' ');
 
     textSpan.innerHTML = highlightedText;
     verseEl.dataset.strongsLoaded = 'true';
+   
 
     // Mostrar panel con resumen
     floatContent.innerHTML = `

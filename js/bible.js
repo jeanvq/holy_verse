@@ -160,46 +160,25 @@ window.BibleAPI = {
   },
 
   // ── Verso por mood ──
-  async getVerseByMood(mood) {
-    const moodMap = {
-      hopeful:  { book: 'Jeremías', bookEn: 'Jeremiah', chapter: 29, verse: 11 },
-      anxious:  { book: 'Filipenses', bookEn: 'Philippians', chapter: 4, verse: 6 },
-      grieving: { book: 'Salmo', bookEn: 'Psalm', chapter: 34, verse: 18 },
-      joyful:   { book: 'Salmo', bookEn: 'Psalm', chapter: 118, verse: 24 },
-      confused: { book: 'Proverbios', bookEn: 'Proverbs', chapter: 3, verse: 5 },
-      peaceful: { book: 'Isaías', bookEn: 'Isaiah', chapter: 26, verse: 3 },
-    };
-
-    const entry = moodMap[mood];
-    if (!entry) return;
-    
-
-    const lang = window.currentLang || localStorage.getItem('hv_lang') || 'es';
-    const book        = lang === 'en' ? entry.bookEn : entry.book;
-    const translation = lang === 'en' ? 'kjv' : 'nbla';
-
-    console.log('mood:', mood, 'lang:', lang, 'book:', entry.book);
-
+ async getVerseByMood(mood) {
     try {
-      console.log('Fetching mood verse for:', mood, book, entry.chapter, translation);
-      const res  = await fetch(`${API_BASE}/api/bible/${encodeURIComponent(book)}/${entry.chapter}?translation=${translation}`);
+      const lang = window.currentLang || localStorage.getItem('hv_lang') || 'es';
+      const res  = await fetch(`${API_BASE}/api/verse/mood`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mood, lang })
+      });
       const data = await res.json();
 
-      if (data.verses?.length) {
-        // Buscar el versículo específico o el bloque que lo contiene
-        const target = data.verses.find(v => v.number === entry.verse) || 
-                       data.verses.reduce((prev, curr) => 
-                         curr.number <= entry.verse && curr.number > (prev?.number || 0) ? curr : prev, null);
-
-        if (target) {
-          document.getElementById('dailyVerseText').textContent = target.text.replace(/\[\d+\]/g, '');
-          document.getElementById('dailyVerseRef').textContent  = `${target.reference} · ${translation.toUpperCase()}`;
-          document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'smooth' });
-          showToast('📖 ' + target.reference);
-        }
+      if (data.text) {
+        document.getElementById('dailyVerseText').textContent = data.text;
+        document.getElementById('dailyVerseRef').textContent  = `${data.reference} · ${data.translation}`;
+        document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'smooth' });
+        showToast('📖 ' + data.reference);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Mood verse error:', err);
+      showToast('⚠️ Error obteniendo versículo');
     }
   }
 };

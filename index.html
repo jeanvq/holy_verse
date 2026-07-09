@@ -72,11 +72,11 @@
           <div class="qc-label">Strong's</div>
           <div class="qc-sub">Griego · Hebreo</div>
         </div>
-        <div class="quick-card">
-          <div class="qc-icon">👥</div>
-          <div class="qc-label">Personajes</div>
-          <div class="qc-sub">Próximamente</div>
-        </div>
+        <div class="quick-card" onclick="showScreen('characters')">
+  <div class="qc-icon">👥</div>
+  <div class="qc-label">Personajes</div>
+  <div class="qc-sub">40+ personajes</div>
+</div>
         <div class="quick-card">
           <div class="qc-icon">🗺️</div>
           <div class="qc-label">Mapas</div>
@@ -245,6 +245,35 @@
       <div class="verse-list" id="verseList">
         <!-- Versículos se cargan aquí -->
       </div>
+
+<!-- ══ CHARACTERS ══ -->
+<div id="screen-characters" class="screen">
+
+  <!-- Lista de personajes -->
+  <div id="charactersListView">
+    <div style="padding:20px 20px 12px;font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold)">
+      Personajes Bíblicos
+    </div>
+    <div style="padding:0 20px 16px;font-size:13px;color:var(--text3)">
+      Selecciona un personaje para ver su perfil completo
+    </div>
+    <div id="charactersList" style="padding:0 20px;display:flex;flex-direction:column;gap:10px"></div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- Perfil del personaje -->
+  <div id="characterProfileView" class="hidden">
+    <div style="padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+      <button onclick="showCharactersList()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">←</button>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)" id="charProfileName">-</div>
+    </div>
+    <div id="charProfileContent" style="padding:20px">
+      <div style="text-align:center;color:var(--text3)">Cargando...</div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+</div>
 
     <!-- ══ SEARCH ══ -->
     <div id="screen-search" class="screen">

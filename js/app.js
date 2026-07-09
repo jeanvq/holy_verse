@@ -14,6 +14,8 @@ let currentChapter  = 3;
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (name === 'characters') renderCharactersList();
+  if (name === 'characters') renderCharactersList();
 
   const screen = document.getElementById('screen-' + name);
   if (screen) {
@@ -1105,12 +1107,135 @@ function closeStrongsFloat() {
   });
 }
 
+// ── PERSONAJES BÍBLICOS ──
+const API_CHARACTERS = 'https://holyverse-api-production.up.railway.app';
+
+const CHARACTERS_LIST = [
+  { name: 'Adán',              emoji: '🌱' },
+  { name: 'Eva',               emoji: '🍎' },
+  { name: 'Noé',               emoji: '🚢' },
+  { name: 'Abraham',           emoji: '⭐' },
+  { name: 'Sara',              emoji: '👸' },
+  { name: 'Isaac',             emoji: '🕊️' },
+  { name: 'Jacob',             emoji: '🪨' },
+  { name: 'José',              emoji: '🎨' },
+  { name: 'Moisés',            emoji: '📜' },
+  { name: 'Josué',             emoji: '⚔️' },
+  { name: 'Débora',            emoji: '🌴' },
+  { name: 'Sansón',            emoji: '💪' },
+  { name: 'Rut',               emoji: '🌾' },
+  { name: 'Samuel',            emoji: '🕯️' },
+  { name: 'David',             emoji: '👑' },
+  { name: 'Salomón',           emoji: '💎' },
+  { name: 'Elías',             emoji: '🔥' },
+  { name: 'Isaías',            emoji: '📖' },
+  { name: 'Jeremías',          emoji: '😢' },
+  { name: 'Daniel',            emoji: '🦁' },
+  { name: 'Ester',             emoji: '👑' },
+  { name: 'Job',               emoji: '🙏' },
+  { name: 'Jonás',             emoji: '🐋' },
+  { name: 'María',             emoji: '💙' },
+  { name: 'Juan el Bautista',  emoji: '💧' },
+  { name: 'Jesús',             emoji: '✝️' },
+  { name: 'Pedro',             emoji: '🪨' },
+  { name: 'Juan',              emoji: '❤️' },
+  { name: 'Pablo',             emoji: '✉️' },
+  { name: 'María Magdalena',   emoji: '🌹' },
+];
+
+function renderCharactersList() {
+  const list = document.getElementById('charactersList');
+  if (!list) return;
+
+  list.innerHTML = CHARACTERS_LIST.map(c => `
+    <div onclick="loadCharacterProfile('${c.name}')" style="
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;
+      transition:all 0.15s;-webkit-tap-highlight-color:transparent">
+      <div style="font-size:28px">${c.emoji}</div>
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)">${c.name}</div>
+      </div>
+      <div style="margin-left:auto;color:var(--text3)">›</div>
+    </div>
+  `).join('');
+}
+
+async function loadCharacterProfile(name) {
+  document.getElementById('charactersListView').classList.add('hidden');
+  document.getElementById('characterProfileView').classList.remove('hidden');
+  document.getElementById('charProfileName').textContent = name;
+  document.getElementById('charProfileContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Cargando perfil...</div>';
+
+  try {
+    const res  = await fetch(`${API_CHARACTERS}/api/character/${encodeURIComponent(name)}`);
+    const data = await res.json();
+
+    document.getElementById('charProfileContent').innerHTML = `
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:64px;margin-bottom:8px">${data.emoji}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold)">${data.name}</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:4px">${data.role} · ${data.period}</div>
+        ${data.tribe ? `<div style="font-size:12px;color:var(--text3)">Tribu: ${data.tribe}</div>` : ''}
+      </div>
+
+      <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:13px;color:var(--text2);line-height:1.6">${data.summary}</div>
+      </div>
+
+      ${data.funFact ? `
+      <div style="background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">💡 Dato curioso</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6">${data.funFact}</div>
+      </div>` : ''}
+
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">📅 Línea de tiempo</div>
+        ${data.timeline?.map(t => `
+          <div style="display:flex;gap:12px;margin-bottom:12px">
+            <div style="min-width:80px;font-size:11px;color:var(--gold);font-weight:600;padding-top:2px">${t.year}</div>
+            <div style="flex:1;font-size:13px;color:var(--text2);line-height:1.5;border-left:2px solid var(--border);padding-left:12px">${t.event}</div>
+          </div>
+        `).join('') || ''}
+      </div>
+
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">📖 Versículos clave</div>
+        ${data.keyVerses?.map(v => `
+          <div style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--gold);margin-bottom:4px">${v.reference}</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5;font-style:italic">"${v.text}"</div>
+          </div>
+        `).join('') || ''}
+      </div>
+
+      <div>
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">📚 Aparece en</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${data.books?.map(b => `
+            <span style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text2)">${b}</span>
+          `).join('') || ''}
+        </div>
+      </div>
+    `;
+
+  } catch (err) {
+    document.getElementById('charProfileContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger)">Error cargando perfil</div>';
+  }
+}
+
+function showCharactersList() {
+  document.getElementById('charactersListView').classList.remove('hidden');
+  document.getElementById('characterProfileView').classList.add('hidden');
+}
+
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   loadDailyVerse();
   updateProfileUI(null);
   applyLang(currentLang);
   renderBooksGrid();
+  renderCharactersList();
 
   // Agregar Strong's disabled por defecto (se activa con toggle)
   document.querySelectorAll('.sw').forEach(w => {

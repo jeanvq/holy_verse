@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="HolyVerse">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
@@ -76,7 +77,7 @@
   <div class="qc-label">Personajes</div>
   <div class="qc-sub">40+ personajes</div>
 </div>
-        <div class="quick-card">
+        <div class="quick-card" onclick="showScreen('maps')">
           <div class="qc-icon">🗺️</div>
           <div class="qc-label">Mapas</div>
           <div class="qc-sub">Tierra Santa</div>
@@ -275,6 +276,39 @@
 
   </div><!-- end page-content -->
 </div><!-- end screen-characters -->
+
+<!-- ══ MAPS ══ -->
+<div id="screen-maps" class="screen">
+  <div class="page-content">
+    
+    <div style="padding:16px 20px 8px;font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold)">
+      Mapas Bíblicos
+    </div>
+
+    <!-- Selector de mapa -->
+    <div style="padding:0 20px 12px;display:flex;gap:8px;overflow-x:auto">
+      <div class="map-chip active" onclick="loadMap('holy-land')">🗺️ Tierra Santa</div>
+      <div class="map-chip" onclick="loadMap('exodus')">🏜️ El Éxodo</div>
+      <div class="map-chip" onclick="loadMap('paul')">⛵ Viajes de Pablo</div>
+      <div class="map-chip" onclick="loadMap('jesus')">✝️ Tiempos de Jesús</div>
+    </div>
+
+    <!-- Mapa -->
+    <div id="bibleMap" style="height:400px;margin:0 20px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>
+
+    <!-- Info del lugar seleccionado -->
+    <div id="placeInfo" class="hidden" style="margin:12px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)" id="placeName"></div>
+        <button onclick="closePlaceInfo()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-top:8px" id="placeDescription"></div>
+      <div style="font-size:12px;color:var(--gold);margin-top:8px;font-style:italic" id="placeVerse"></div>
+    </div>
+
+    <div style="height:20px"></div>
+  </div>
+</div>
 
     <!-- ══ SEARCH ══ -->
     <div id="screen-search" class="screen">
@@ -477,6 +511,7 @@
 </div>
 
 <!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/bot.js"></script>

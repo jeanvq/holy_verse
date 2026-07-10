@@ -16,6 +16,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (name === 'characters') renderCharactersList();
   if (name === 'characters') renderCharactersList();
+  if (name === 'maps') setTimeout(() => initBibleMap(), 100);
 
   const screen = document.getElementById('screen-' + name);
   if (screen) {
@@ -1227,6 +1228,120 @@ async function loadCharacterProfile(name) {
 function showCharactersList() {
   document.getElementById('charactersListView').classList.remove('hidden');
   document.getElementById('characterProfileView').classList.add('hidden');
+}
+
+// ── MAPAS BÍBLICOS ──
+let bibleMap = null;
+let currentMapLayer = null;
+
+const BIBLE_PLACES = {
+  'holy-land': [
+    { name: 'Jerusalén', lat: 31.7683, lng: 35.2137, desc: 'Capital de Israel, lugar de la crucifixión y resurrección de Jesús. Ciudad santa para judíos, cristianos y musulmanes.', verse: '"Jerusalén, la ciudad del gran Rey" (Salmos 48:2)' },
+    { name: 'Belén', lat: 31.7054, lng: 35.2024, desc: 'Ciudad natal de David y lugar de nacimiento de Jesús. Ubicada al sur de Jerusalén en Judea.', verse: '"Pero tú, Belén Efrata... de ti me saldrá el que será Señor en Israel" (Miqueas 5:2)' },
+    { name: 'Nazaret', lat: 32.7021, lng: 35.2978, desc: 'Ciudad donde Jesús creció y vivió hasta los 30 años. Ubicada en la región de Galilea.', verse: '"Y vino a Nazaret, donde se había criado" (Lucas 4:16)' },
+    { name: 'Mar de Galilea', lat: 32.8208, lng: 35.5847, desc: 'Lago donde Jesús caminó sobre las aguas, calmó la tormenta y llamó a sus primeros discípulos.', verse: '"Venid en pos de mí, y os haré pescadores de hombres" (Mateo 4:19)' },
+    { name: 'Río Jordán', lat: 31.8331, lng: 35.5508, desc: 'Río donde Jesús fue bautizado por Juan el Bautista. También donde los israelitas cruzaron para entrar a Canaán.', verse: '"Y Jesús, después que fue bautizado, subió luego del agua" (Mateo 3:16)' },
+    { name: 'Mar Muerto', lat: 31.5590, lng: 35.4732, desc: 'El lago más salado del mundo, ubicado en el punto más bajo de la Tierra. Cerca de Sodoma y Gomorra.', verse: '"El mar Salado" (Génesis 14:3)' },
+    { name: 'Monte Sinaí', lat: 28.5390, lng: 33.9750, desc: 'Montaña donde Dios entregó los Diez Mandamientos a Moisés. También llamado Horeb.', verse: '"Y dio a Moisés... las dos tablas del testimonio" (Éxodo 31:18)' },
+    { name: 'Jericó', lat: 31.8567, lng: 35.4610, desc: 'Primera ciudad conquistada por Josué en Canaán. También donde Zaqueo conoció a Jesús.', verse: '"Y los muros de Jericó cayeron" (Josué 6:20)' },
+    { name: 'Capernaum', lat: 32.8808, lng: 35.5754, desc: 'Ciudad orilla del Mar de Galilea donde Jesús estableció su base de ministerio y realizó muchos milagros.', verse: '"Y vino a Capernaum, ciudad de Galilea" (Lucas 4:31)' },
+    { name: 'Hebrón', lat: 31.5326, lng: 35.0998, desc: 'Ciudad donde Abraham, Isaac y Jacob fueron enterrados. David fue coronado rey aquí antes de conquistar Jerusalén.', verse: '"Y moró Abraham en el encinar de Mamre, que está en Hebrón" (Génesis 13:18)' },
+  ],
+  'exodus': [
+    { name: 'Egipto (Gosén)', lat: 30.8025, lng: 31.9602, desc: 'Región donde los israelitas vivieron en esclavitud durante 430 años.', verse: '"Y los egipcios hicieron servir a los hijos de Israel" (Éxodo 1:13)' },
+    { name: 'Mar Rojo', lat: 29.8597, lng: 32.5500, desc: 'Lugar donde Dios partió las aguas para que los israelitas cruzaran huyendo del faraón.', verse: '"Y los hijos de Israel entraron por en medio del mar" (Éxodo 14:22)' },
+    { name: 'Monte Sinaí', lat: 28.5390, lng: 33.9750, desc: 'Donde Moisés recibió los Diez Mandamientos y la Ley de Dios.', verse: '"Y dio a Moisés las dos tablas del testimonio" (Éxodo 31:18)' },
+    { name: 'Cades-barnea', lat: 30.6833, lng: 34.4167, desc: 'Oasis donde Israel acampó 38 años durante el desierto por su desobediencia.', verse: '"Y morasteis en Cades por muchos días" (Deuteronomio 1:46)' },
+    { name: 'Jericó', lat: 31.8567, lng: 35.4610, desc: 'Primera ciudad conquistada en la Tierra Prometida.', verse: '"Y los muros de Jericó cayeron" (Josué 6:20)' },
+  ],
+  'paul': [
+    { name: 'Antioquía', lat: 36.2021, lng: 36.1608, desc: 'Base de operaciones de Pablo. Aquí los discípulos fueron llamados "cristianos" por primera vez.', verse: '"Y a los discípulos se les llamó cristianos por primera vez en Antioquía" (Hechos 11:26)' },
+    { name: 'Éfeso', lat: 37.9395, lng: 27.3417, desc: 'Pablo ministró aquí 3 años. Importante ciudad con el templo de Artemisa.', verse: '"Y esto duró por espacio de dos años" (Hechos 19:10)' },
+    { name: 'Corinto', lat: 37.9081, lng: 22.8784, desc: 'Importante ciudad griega donde Pablo fundó una iglesia y escribió dos epístolas.', verse: '"Y se detuvo allí un año y seis meses" (Hechos 18:11)' },
+    { name: 'Filipos', lat: 41.0138, lng: 24.2864, desc: 'Primera ciudad europea donde Pablo predicó. Lugar de conversión de Lidia.', verse: '"Y el Señor abrió el corazón de Lidia" (Hechos 16:14)' },
+    { name: 'Roma', lat: 41.9028, lng: 12.4964, desc: 'Capital del Imperio Romano donde Pablo llegó como prisionero y escribió varias epístolas.', verse: '"Así que llegamos a Roma" (Hechos 28:14)' },
+    { name: 'Atenas', lat: 37.9838, lng: 23.7275, desc: 'Ciudad donde Pablo predicó en el Areópago sobre el "Dios no conocido".', verse: '"Varones atenienses, en todo observo que sois muy religiosos" (Hechos 17:22)' },
+  ],
+  'jesus': [
+    { name: 'Belén', lat: 31.7054, lng: 35.2024, desc: 'Lugar de nacimiento de Jesús.', verse: '"Y dio a luz a su hijo primogénito" (Lucas 2:7)' },
+    { name: 'Nazaret', lat: 32.7021, lng: 35.2978, desc: 'Donde Jesús creció.', verse: '"Y estaba sujeto a ellos" (Lucas 2:51)' },
+    { name: 'Río Jordán', lat: 31.8331, lng: 35.5508, desc: 'Lugar del bautismo de Jesús.', verse: '"Y Jesús fue bautizado" (Mateo 3:16)' },
+    { name: 'Monte de las Tentaciones', lat: 31.8614, lng: 35.4408, desc: 'Donde Jesús ayunó 40 días y fue tentado por Satanás.', verse: '"Y ayunó cuarenta días y cuarenta noches" (Mateo 4:2)' },
+    { name: 'Capernaum', lat: 32.8808, lng: 35.5754, desc: 'Centro del ministerio de Jesús en Galilea.', verse: '"Venid en pos de mí" (Mateo 4:19)' },
+    { name: 'Monte de las Bienaventuranzas', lat: 32.9056, lng: 35.5508, desc: 'Lugar del Sermón del Monte.', verse: '"Bienaventurados los pobres en espíritu" (Mateo 5:3)' },
+    { name: 'Getsemaní', lat: 31.7794, lng: 35.2397, desc: 'Jardín donde Jesús oró antes de ser arrestado.', verse: '"No sea como yo quiero, sino como tú" (Mateo 26:39)' },
+    { name: 'Gólgota', lat: 31.7784, lng: 35.2297, desc: 'Lugar de la crucifixión de Jesús.', verse: '"Y cuando llegaron al lugar llamado Gólgota... le crucificaron" (Mateo 27:33)' },
+  ]
+};
+
+function initBibleMap() {
+  if (bibleMap) return;
+
+  bibleMap = L.map('bibleMap', {
+    center: [31.7683, 35.2137],
+    zoom: 7,
+    zoomControl: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(bibleMap);
+
+  loadMap('holy-land');
+}
+
+function loadMap(mapType) {
+  if (!bibleMap) return;
+
+  // Actualizar chips
+  document.querySelectorAll('.map-chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+
+  // Limpiar marcadores anteriores
+  if (currentMapLayer) bibleMap.removeLayer(currentMapLayer);
+
+  const places = BIBLE_PLACES[mapType];
+  if (!places) return;
+
+  currentMapLayer = L.layerGroup();
+
+  places.forEach(place => {
+    const marker = L.marker([place.lat, place.lng], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="
+          background:var(--gold);color:#000;
+          border-radius:50%;width:32px;height:32px;
+          display:flex;align-items:center;justify-content:center;
+          font-size:11px;font-weight:700;border:2px solid #fff;
+          box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:pointer;
+          white-space:nowrap;
+        ">📍</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32]
+      })
+    });
+
+    marker.on('click', () => showPlaceInfo(place));
+    currentMapLayer.addLayer(marker);
+  });
+
+  currentMapLayer.addTo(bibleMap);
+
+  // Ajustar vista
+  const bounds = L.latLngBounds(places.map(p => [p.lat, p.lng]));
+  bibleMap.fitBounds(bounds, { padding: [30, 30] });
+}
+
+function showPlaceInfo(place) {
+  document.getElementById('placeName').textContent = place.name;
+  document.getElementById('placeDescription').textContent = place.desc;
+  document.getElementById('placeVerse').textContent = place.verse;
+  document.getElementById('placeInfo').classList.remove('hidden');
+}
+
+function closePlaceInfo() {
+  document.getElementById('placeInfo').classList.add('hidden');
 }
 
 // ── INIT ──

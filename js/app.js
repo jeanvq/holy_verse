@@ -1152,7 +1152,7 @@ function renderCharactersList() {
       background:var(--card);border:1px solid var(--border);border-radius:12px;
       padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;
       transition:all 0.15s;-webkit-tap-highlight-color:transparent">
-      <div style="font-size:28px">${c.emoji}</div>
+      
       <div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)">${c.name}</div>
       </div>
@@ -1173,7 +1173,7 @@ async function loadCharacterProfile(name) {
 
     document.getElementById('charProfileContent').innerHTML = `
       <div style="text-align:center;margin-bottom:20px">
-        <div style="font-size:64px;margin-bottom:8px">${data.emoji}</div>
+        ${data.name === 'Jesús' ? `<div style="font-size:64px;margin-bottom:8px">${data.emoji}</div>` : ''}
         <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold)">${data.name}</div>
         <div style="font-size:13px;color:var(--text3);margin-top:4px">${data.role} · ${data.period}</div>
         ${data.tribe ? `<div style="font-size:12px;color:var(--text3)">Tribu: ${data.tribe}</div>` : ''}

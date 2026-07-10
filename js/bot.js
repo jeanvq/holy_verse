@@ -5,7 +5,7 @@
 
 const BOT_API = 'https://holyverse-api-production.up.railway.app';
 
-const BibleBot = {
+window.BibleBot = {
   history: [],
 
   async ask(message) {

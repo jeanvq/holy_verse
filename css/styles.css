@@ -52,6 +52,7 @@ a { color: inherit; text-decoration: none; }
 .page-content {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: calc(var(--nav-h) + 16px + var(--safe-bottom));
 }
 

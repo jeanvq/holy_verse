@@ -597,13 +597,13 @@ function sendMessage() {
         <div class="typing-dot"></div>
       </div>
     </div>`;
-  area.scrollTop = area.scrollHeight;
+  document.querySelector('.page-content').scrollTop = document.querySelector('.page-content').scrollHeight;
 
   // Llamar al bot
   if (window.BibleBot) {
     BibleBot.ask(msg).then(reply => {
-      document.getElementById(typingId).outerHTML = `<div class="bubble bot fade-up">${reply}</div>`;
-      area.scrollTop = area.scrollHeight;
+      document.getElementById(typingId).outerHTML = `<div class="bubble bot fade-up">${formatBotReply(reply)}</div>`;
+      document.querySelector('.page-content').scrollTop = document.querySelector('.page-content').scrollHeight;
     });
   } else {
     setTimeout(() => {
@@ -611,7 +611,7 @@ function sendMessage() {
         <div class="bubble bot fade-up">
           El Bible Bot se está configurando. Por favor conecta tu API key de Anthropic en <code>js/bot.js</code>.
         </div>`;
-      area.scrollTop = area.scrollHeight;
+      document.querySelector('.page-content').scrollTop = document.querySelector('.page-content').scrollHeight;
     }, 1000);
   }
 }
@@ -650,8 +650,8 @@ const translations = {
     // Quick grid
     bible: 'Biblia', bibleDesc: '66 libros',
     strongs: 'Strong\'s', strongsDesc: 'Griego · Hebreo', strongsBadge: 'Nuevo',
-    characters: 'Personajes', charactersDesc: 'Próximamente',
-    maps: 'Mapas', mapsDesc: 'Próximamente',
+    characters: 'Personajes', charactersDesc: 'Perfiles de personajes bíblicos',
+    maps: 'Mapas', mapsDesc: 'Tierra prometida, viajes de Pablo, etc.',
     // Plan
     planTitle: 'Nuevo Testamento en 90 días',
     planMeta: 'Día 31 de 90 · Juan 3',
@@ -1295,7 +1295,7 @@ function loadMap(mapType) {
 
   // Actualizar chips
   document.querySelectorAll('.map-chip').forEach(c => c.classList.remove('active'));
-  event.target.classList.add('active');
+  if (typeof event !== 'undefined' && event && event.target) event.target.classList.add('active');
 
   // Limpiar marcadores anteriores
   if (currentMapLayer) bibleMap.removeLayer(currentMapLayer);
@@ -1361,3 +1361,79 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// ── DEVOCIONAL DIARIO ──
+let devotionalData = null;
+
+function formatBotReply(text) {
+  return text
+    .replace(/^### (.+)$/gm, '<div style="font-size:14px;font-weight:700;color:var(--gold);margin:8px 0 4px">$1</div>')
+    .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:700;color:var(--gold);margin:10px 0 4px">$1</div>')
+    .replace(/^# (.+)$/gm, '<div style="font-size:17px;font-weight:700;color:var(--gold);margin:10px 0 6px">$1</div>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^- (.+)$/gm, '<div style="padding-left:12px;margin:3px 0">• $1</div>')
+    .replace(/^\d+\. (.+)$/gm, '<div style="padding-left:12px;margin:3px 0">$1</div>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+
+async function loadDailyDevotional() {
+  // Si ya está cargado, abrir el modal
+  if (devotionalData) {
+    openDevotionalModal(devotionalData);
+    return;
+  }
+
+  try {
+    const lang = window.currentLang || 'es';
+    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/devotional?lang=${lang}`);
+    const data = await res.json();
+    devotionalData = data;
+
+    // Actualizar el strip
+    document.getElementById('devotionalTheme').textContent = data.theme;
+    document.getElementById('devotionalVerse').textContent = data.verse;
+
+    openDevotionalModal(data);
+  } catch (err) {
+    console.error('Devotional error:', err);
+  }
+}
+
+function openDevotionalModal(data) {
+  document.getElementById('devotionalModalTheme').textContent     = data.theme;
+  document.getElementById('devotionalModalVerse').textContent     = data.verse;
+  document.getElementById('devotionalModalReflection').textContent = data.reflection;
+  document.getElementById('devotionalModalPrayer').textContent    = data.prayer;
+  document.getElementById('devotionalModal').classList.remove('hidden');
+}
+
+function closeDevotionalModal() {
+  document.getElementById('devotionalModal').classList.add('hidden');
+}
+
+async function loadDailyDevotionalBackground() {
+  try {
+    const lang = window.currentLang || 'es';
+    const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/devotional?lang=${lang}`);
+    const data = await res.json();
+    devotionalData = data;
+    if (document.getElementById('devotionalTheme')) {
+      document.getElementById('devotionalTheme').textContent = data.theme;
+      document.getElementById('devotionalVerse').textContent = data.verse;
+    }
+  } catch (err) {
+    console.error('Devotional background error:', err);
+  }
+}
+
+function saveDevotionalFavorite() {
+  if (!devotionalData) return;
+  saveFavorite({
+    reference: `📖 ${devotionalData.theme}`,
+    text: `${devotionalData.verse} — ${devotionalData.reflection}\n\n🙏 ${devotionalData.prayer}`
+  });
+}
+
+// ── INIT ──
+loadDailyDevotionalBackground();

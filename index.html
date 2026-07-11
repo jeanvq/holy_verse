@@ -84,21 +84,20 @@
         </div>
       </div>
 
-      <!-- Plan de lectura -->
-      <div class="section-label">Tu plan de lectura</div>
-      <div class="plan-strip">
-        <div class="plan-icon">📅</div>
+     <!-- Devocional del día -->
+      <div class="section-label">Devocional del día</div>
+      <div class="plan-strip" id="devotionalStrip" onclick="loadDailyDevotional()" style="cursor:pointer">
+        <div class="plan-icon">🙏</div>
         <div class="plan-info">
-          <div class="plan-title">Nuevo Testamento en 90 días</div>
-          <div class="plan-bar">
-            <div class="plan-progress" id="planProgress" style="width:34%"></div>
-          </div>
-          <div class="plan-meta" id="planMeta">Día 31 de 90 · Juan 3</div>
+          <div class="plan-title" id="devotionalTheme">Cargando...</div>
+          <div class="plan-meta" id="devotionalVerse"></div>
         </div>
       </div>
 
       <div style="height:16px"></div>
     </div>
+
+ <!-- ══ BIBLE ══ -->
 
  <!-- ══ BIBLE ══ -->
 <div id="screen-bible" class="screen">
@@ -506,6 +505,23 @@
         <button class="submit-btn" onclick="signupWithEmail()">Crear cuenta</button>
       </div>
       <button class="guest-btn" onclick="closeAuthSheet()">Continuar sin cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Devocional del Día -->
+<div class="modal-overlay hidden" id="devotionalModal" onclick="closeDevotionalModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Devocional del Día</div>
+    <div id="devotionalModalTheme" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);padding:0 20px 8px"></div>
+    <div id="devotionalModalVerse" style="font-size:13px;color:var(--text3);padding:0 20px 16px;font-style:italic"></div>
+    <div id="devotionalModalReflection" style="font-size:14px;color:var(--text2);line-height:1.6;padding:0 20px 16px"></div>
+    <div class="modal-title" style="font-size:14px">🙏 Oración</div>
+    <div id="devotionalModalPrayer" style="font-size:14px;color:var(--text2);line-height:1.6;padding:0 20px 20px;font-style:italic"></div>
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
+      <button class="v-btn" onclick="saveDevotionalFavorite()">♡ Guardar</button>
+      <button class="guest-btn" onclick="closeDevotionalModal()">Cerrar</button>
     </div>
   </div>
 </div>

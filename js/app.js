@@ -467,6 +467,18 @@ function signupWithEmail() {
 function logout() {
   if (window.AuthSystem) AuthSystem.logout();
 }
+function forgotPassword() {
+  const email = document.getElementById('loginEmail').value;
+  AuthSystem.forgotPassword(email);
+}
+
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🔓' : '🔒';
+}
 
 // ── PROFILE ──
 function updateProfileUI(user) {

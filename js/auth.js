@@ -1,81 +1,113 @@
 /* ============================================
-   HolyVerse v2 — auth.js
+   HolyVerse — auth.js (Firebase)
    ============================================ */
 
-const SUPABASE_URL      = 'https://ejdhomxyqqitgjwjhkvn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqZGhvbXh5cXFpdGdqd2poa3ZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwODA4ODYsImV4cCI6MjA4NTY1Njg4Nn0.0sDQA7rKcedbzHKrcoG0IuanezhSVIo2AHsmlmy5Qvc';
+const firebaseConfig = {
+  apiKey: "AIzaSyCfwhQXZ8sgAr-g8Iq_VDAZkQUfW6Mig28",
+  authDomain: "holyverse-d2b32.firebaseapp.com",
+  projectId: "holyverse-d2b32",
+  storageBucket: "holyverse-d2b32.firebasestorage.app",
+  messagingSenderId: "1074473315560",
+  appId: "1:1074473315560:web:7845b4a6eae73d2f83ed5d"
+};
 
-let supabaseClient = null;
-let currentUser    = null;
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-function initSupabase() {
+const AuthSystem = {
+  async loginWithEmail(email, password) {
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      showToast('✅ Sesión iniciada');
+      closeAuthSheet();
+    } catch (err) {
+      showToast(this.friendlyError(err.code));
+    }
+  },
+
+  async signupWithEmail(name, email, password) {
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      await db.collection('users').doc(cred.user.uid).set({
+        name,
+        email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast('✅ Cuenta creada');
+      closeAuthSheet();
+    } catch (err) {
+      showToast(this.friendlyError(err.code));
+    }
+  },
+
+  async loginWithGoogle() {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      const docRef = db.collection('users').doc(user.uid);
+      const doc = await docRef.get();
+      if (!doc.exists) {
+        await docRef.set({
+          name: user.displayName || '',
+          email: user.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      showToast('✅ Sesión iniciada con Google');
+      closeAuthSheet();
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        showToast(this.friendlyError(err.code));
+      }
+    }
+  },
+
+  async forgotPassword(email) {
+  if (!email) {
+    showToast('Escribe tu correo arriba primero');
+    return;
+  }
   try {
-    if (!window.supabase) return;
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    await auth.sendPasswordResetEmail(email);
+    showToast('📧 Revisa tu correo para restablecer tu contraseña');
+  } catch (err) {
+    showToast(this.friendlyError(err.code));
+  }
+},
 
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-  currentUser = session?.user || null;
-  if (typeof updateProfileUI === 'function') updateProfileUI(currentUser);
-  if (typeof closeAuthSheet === 'function' && currentUser) {
-    closeAuthSheet();
-    showToast('✅ Sesión iniciada');
+  async logout() {
+    await auth.signOut();
+    showToast('Sesión cerrada');
+  },
+
+  friendlyError(code) {
+    const messages = {
+      'auth/invalid-email': 'Correo inválido',
+      'auth/user-not-found': 'No existe una cuenta con ese correo',
+      'auth/wrong-password': 'Contraseña incorrecta',
+      'auth/invalid-credential': 'Correo o contraseña incorrectos',
+      'auth/email-already-in-use': 'Ya existe una cuenta con ese correo',
+      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres',
+      'auth/too-many-requests': 'Demasiados intentos, espera un momento'
+    };
+    return messages[code] || 'Ocurrió un error, intenta de nuevo';
+  }
+};
+
+window.AuthSystem = AuthSystem;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnGoogle = document.getElementById('btnGoogleLogin');
+  if (btnGoogle) {
+    btnGoogle.addEventListener('click', () => AuthSystem.loginWithGoogle());
   }
 });
 
-    supabaseClient.auth.getSession().then(({ data }) => {
-  currentUser = data?.session?.user || null;
-  if (typeof updateProfileUI === 'function') updateProfileUI(currentUser);
-});
-
-  } catch (e) {
-    console.warn('Supabase error:', e.message);
+auth.onAuthStateChanged(user => {
+  if (typeof updateProfileUI === 'function') {
+    updateProfileUI(user);
   }
-}
-
-// Google login
-document.getElementById('btnGoogleLogin').addEventListener('click', async () => {
-  if (!supabaseClient) { showToast('⚠️ Supabase no configurado'); return; }
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin }
-  });
-  if (error) showToast('❌ ' + error.message);
 });
-
-// Email login
-window.loginWithEmail = async function () {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPassword').value;
-  if (!email || !pass) { showToast('Completa todos los campos'); return; }
-  if (!supabaseClient) { showToast('⚠️ Supabase no configurado'); return; }
-  showToast('Iniciando sesión...');
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-  if (error) showToast('❌ ' + error.message);
-};
-
-// Email signup
-window.signupWithEmail = async function () {
-  const name  = document.getElementById('signupName').value.trim();
-  const email = document.getElementById('signupEmail').value.trim();
-  const pass  = document.getElementById('signupPassword').value;
-  if (!name || !email || !pass) { showToast('Completa todos los campos'); return; }
-  if (!supabaseClient) { showToast('⚠️ Supabase no configurado'); return; }
-  showToast('Creando cuenta...');
-  const { error } = await supabaseClient.auth.signUp({
-    email, password: pass,
-    options: { data: { full_name: name } }
-  });
-  if (error) showToast('❌ ' + error.message);
-  else showToast('✅ Revisa tu email para confirmar');
-};
-
-// Logout
-window.logout = async function () {
-  if (supabaseClient) await supabaseClient.auth.signOut();
-  currentUser = null;
-  updateProfileUI(null);
-  showToast('👋 Sesión cerrada');
-  showScreen('home');
-};
-
-document.addEventListener('DOMContentLoaded', initSupabase);

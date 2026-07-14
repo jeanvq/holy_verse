@@ -45,9 +45,23 @@ const AuthSystem = {
   async loginWithGoogle() {
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithRedirect(provider);
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+    const docRef = db.collection('users').doc(user.uid);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      await docRef.set({
+        name: user.displayName || '',
+        email: user.email || '',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    showToast('✅ Sesión iniciada con Google');
+    closeAuthSheet();
   } catch (err) {
-    showToast(this.friendlyError(err.code));
+    if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+      showToast(this.friendlyError(err.code));
+    }
   }
 },
 

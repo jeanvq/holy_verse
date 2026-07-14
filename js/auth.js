@@ -43,27 +43,34 @@ const AuthSystem = {
   },
 
   async loginWithGoogle() {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(provider);
-      const user = result.user;
-      const docRef = db.collection('users').doc(user.uid);
-      const doc = await docRef.get();
-      if (!doc.exists) {
-        await docRef.set({
-          name: user.displayName || '',
-          email: user.email || '',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-      showToast('✅ Sesión iniciada con Google');
-      closeAuthSheet();
-    } catch (err) {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        showToast(this.friendlyError(err.code));
-      }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithRedirect(provider);
+  } catch (err) {
+    showToast(this.friendlyError(err.code));
+  }
+},
+
+async handleRedirectResult() {
+  try {
+    const result = await auth.getRedirectResult();
+    if (!result.user) return;
+    const user = result.user;
+    const docRef = db.collection('users').doc(user.uid);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      await docRef.set({
+        name: user.displayName || '',
+        email: user.email || '',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }
-  },
+    showToast('✅ Sesión iniciada con Google');
+    closeAuthSheet();
+  } catch (err) {
+    if (err.code) showToast(this.friendlyError(err.code));
+  }
+},
 
   async forgotPassword(email) {
   if (!email) {
@@ -105,6 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGoogle.addEventListener('click', () => AuthSystem.loginWithGoogle());
   }
 });
+
+AuthSystem.handleRedirectResult();
 
 auth.onAuthStateChanged(user => {
   if (typeof updateProfileUI === 'function') {

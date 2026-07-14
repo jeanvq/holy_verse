@@ -93,10 +93,13 @@ function loadDailyVerse() {
   const day = new Date().getDate();
 
   window.updateDailyVerseByLang = function(lang) {
-    const verse = fallback[lang][day % fallback[lang].length];
-    if (textEl) textEl.textContent = verse.text;
-    if (refEl)  refEl.textContent  = verse.reference;
-  };
+  const verse = fallback[lang][day % fallback[lang].length];
+  if (textEl) textEl.textContent = verse.text;
+  if (refEl)  refEl.textContent  = verse.reference;
+
+  const btn = document.getElementById('btnSaveDaily');
+  isFavorited(verse.reference).then(saved => setSaveButtonState(btn, saved));
+};
 
   window.updateDailyVerseByLang(currentLang);
 }
@@ -127,7 +130,7 @@ loadDailyVerse();
 document.getElementById('btnSaveDaily').addEventListener('click', () => {
   const text = document.getElementById('dailyVerseText').textContent;
   const ref  = document.getElementById('dailyVerseRef').textContent;
-  saveFavorite({ text, reference: ref });
+  toggleFavoriteBtn({ text, reference: ref }, document.getElementById('btnSaveDaily'));
 });
 
 document.getElementById('btnShareDaily').addEventListener('click', () => {
@@ -202,28 +205,63 @@ function copyToClipboard(text) {
     .catch(() => showToast('No se pudo copiar'));
 }
 
-// ── FAVORITOS ──
-function saveFavorite(verse) {
-  const favs = JSON.parse(localStorage.getItem('hv_favorites') || '[]');
-  const exists = favs.some(f => f.reference === verse.reference);
-  if (exists) {
-    showToast('Ya está en tus favoritos');
-    return;
-  }
-  favs.unshift({ ...verse, savedAt: new Date().toISOString() });
-  localStorage.setItem('hv_favorites', JSON.stringify(favs));
-  document.getElementById('statFavorites').textContent = favs.length;
-  showToast('❤️ Guardado en favoritos');
+// ── FAVORITOS (Firestore si hay sesión, localStorage si es invitado) ──
+function sanitizeFavId(reference) {
+  return reference.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 200);
 }
 
-function getFavorites() {
+async function saveFavorite(verse) {
+  const id = sanitizeFavId(verse.reference);
+  const user = auth.currentUser;
+
+  if (user) {
+    const ref = db.collection('users').doc(user.uid).collection('favoritos').doc(id);
+    const doc = await ref.get();
+    if (doc.exists) {
+      showToast('Ya está en tus favoritos');
+      return;
+    }
+    await ref.set({
+      reference: verse.reference,
+      text: verse.text,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } else {
+    const favs = JSON.parse(localStorage.getItem('hv_favorites') || '[]');
+    if (favs.some(f => f.reference === verse.reference)) {
+      showToast('Ya está en tus favoritos');
+      return;
+    }
+    favs.unshift({ id, ...verse, savedAt: new Date().toISOString() });
+    localStorage.setItem('hv_favorites', JSON.stringify(favs));
+  }
+
+  showToast('❤️ Guardado en favoritos');
+  updateFavoritesCount();
+}
+
+async function getFavorites() {
+  const user = auth.currentUser;
+
+  if (user) {
+    const snap = await db.collection('users').doc(user.uid).collection('favoritos')
+      .orderBy('savedAt', 'desc').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
   return JSON.parse(localStorage.getItem('hv_favorites') || '[]');
 }
-function renderFavorites() {
-  const favs = getFavorites();
+
+async function updateFavoritesCount() {
+  const favs = await getFavorites();
+  const statEl = document.getElementById('statFavorites');
+  if (statEl) statEl.textContent = favs.length;
+}
+
+async function renderFavorites() {
+  const favs = await getFavorites();
   const menu = document.querySelector('.menu-list');
-  
-  // Remover lista previa si existe
+
   const existing = document.getElementById('favoritesList');
   if (existing) existing.remove();
 
@@ -232,29 +270,64 @@ function renderFavorites() {
     return;
   }
 
-  // Crear lista de favoritos
   const list = document.createElement('div');
   list.id = 'favoritesList';
   list.style.cssText = 'padding: 0 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;';
 
-  list.innerHTML = favs.map((v, i) => `
+  list.innerHTML = favs.map(v => `
     <div class="result-card fade-up" style="position:relative">
       <div class="result-ref">${v.reference}</div>
       <div class="result-text">${v.text}</div>
-      <button onclick="removeFavorite(${i})" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+      <button onclick="removeFavorite('${v.id}')" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
     </div>
   `).join('');
 
-  // Insertar después del menu-list
   menu.after(list);
 }
 
-function removeFavorite(index) {
-  const favs = getFavorites();
-  favs.splice(index, 1);
-  localStorage.setItem('hv_favorites', JSON.stringify(favs));
-  document.getElementById('statFavorites').textContent = favs.length;
-  renderFavorites();
+async function isFavorited(reference) {
+  const id = sanitizeFavId(reference);
+  const user = auth.currentUser;
+
+  if (user) {
+    const doc = await db.collection('users').doc(user.uid).collection('favoritos').doc(id).get();
+    return doc.exists;
+  }
+
+  const favs = JSON.parse(localStorage.getItem('hv_favorites') || '[]');
+  return favs.some(f => f.reference === reference);
+}
+
+function setSaveButtonState(btn, saved) {
+  if (!btn) return;
+  btn.textContent = saved ? '♥ Guardado' : '♡ Guardar';
+  btn.style.color = saved ? 'var(--gold)' : '';
+  btn.style.borderColor = saved ? 'var(--gold)' : '';
+}
+
+async function toggleFavoriteBtn(verse, btn) {
+  const saved = await isFavorited(verse.reference);
+  if (saved) {
+    await removeFavorite(sanitizeFavId(verse.reference));
+    setSaveButtonState(btn, false);
+  } else {
+    await saveFavorite(verse);
+    setSaveButtonState(btn, true);
+  }
+}
+
+async function removeFavorite(id) {
+  const user = auth.currentUser;
+
+  if (user) {
+    await db.collection('users').doc(user.uid).collection('favoritos').doc(id).delete();
+  } else {
+    const favs = JSON.parse(localStorage.getItem('hv_favorites') || '[]');
+    localStorage.setItem('hv_favorites', JSON.stringify(favs.filter(f => f.id !== id)));
+  }
+
+  await renderFavorites();
+  updateFavoritesCount();
   showToast('Eliminado de favoritos');
 }
 
@@ -496,8 +569,8 @@ function updateProfileUI(user) {
     document.getElementById('btnLogoutMenu').classList.add('hidden');
   }
   // Stats
-  const favs = getFavorites();
-  document.getElementById('statFavorites').textContent = favs.length;
+  // Stats
+  updateFavoritesCount();
 }
 
 // ── STRONG'S INFO ──
@@ -651,7 +724,7 @@ const translations = {
     dailyTag:    'Versículo del día',
     moodLabel:   '¿Cómo te sientes hoy?',
     exploreLabel:'Explorar',
-    planLabel:   'Tu plan de lectura',
+    planLabel:   'Devocional del dia',
     save:        '♡ Guardar',
     share:       '↗ Compartir',
     read:        '📖 Leer',
@@ -686,7 +759,7 @@ const translations = {
     dailyTag:    'Verse of the day',
     moodLabel:   'How are you feeling today?',
     exploreLabel:'Explore',
-    planLabel:   'Your reading plan',
+    planLabel:   'Daily devotional',
     save:        '♡ Save',
     share:       '↗ Share',
     read:        '📖 Read',

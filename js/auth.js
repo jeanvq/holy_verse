@@ -16,11 +16,50 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 const AuthSystem = {
+
+async migrateGuestData(uid) {
+  const localFavs = JSON.parse(localStorage.getItem('hv_favorites') || '[]');
+  const localHighlights = JSON.parse(localStorage.getItem('hv_highlights') || '[]');
+
+  if (!localFavs.length && !localHighlights.length) return;
+
+  const batch = db.batch();
+
+  localFavs.forEach(fav => {
+    const id = sanitizeFavId(fav.reference);
+    const ref = db.collection('users').doc(uid).collection('favoritos').doc(id);
+    batch.set(ref, {
+      reference: fav.reference,
+      text: fav.text,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+
+  localHighlights.forEach(h => {
+    const id = sanitizeFavId(h.reference);
+    const ref = db.collection('users').doc(uid).collection('subrayados').doc(id);
+    batch.set(ref, {
+      reference: h.reference,
+      text: h.text,
+      book: h.book || null,
+      chapter: h.chapter || null,
+      verse: h.verse || null,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+
+  await batch.commit();
+  localStorage.removeItem('hv_favorites');
+  localStorage.removeItem('hv_highlights');
+  showToast('✅ Tus favoritos y subrayados de invitado se sincronizaron con tu cuenta');
+},
+  
   async loginWithEmail(email, password) {
-    try {
-      await auth.signInWithEmailAndPassword(email, password);
-      showToast('✅ Sesión iniciada');
-      closeAuthSheet();
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, password);
+    await this.migrateGuestData(cred.user.uid);
+    showToast('✅ Sesión iniciada');
+    closeAuthSheet();
     } catch (err) {
       showToast(this.friendlyError(err.code));
     }
@@ -35,6 +74,7 @@ const AuthSystem = {
         email,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      await this.migrateGuestData(cred.user.uid);
       showToast('✅ Cuenta creada');
       closeAuthSheet();
     } catch (err) {
@@ -50,14 +90,15 @@ const AuthSystem = {
     const docRef = db.collection('users').doc(user.uid);
     const doc = await docRef.get();
     if (!doc.exists) {
-      await docRef.set({
-        name: user.displayName || '',
-        email: user.email || '',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-    showToast('✅ Sesión iniciada con Google');
-    closeAuthSheet();
+        await docRef.set({
+          name: user.displayName || '',
+          email: user.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      await this.migrateGuestData(user.uid);
+      showToast('✅ Sesión iniciada con Google');
+      closeAuthSheet();
   } catch (err) {
     if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
       showToast(this.friendlyError(err.code));

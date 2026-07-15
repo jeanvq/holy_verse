@@ -875,7 +875,7 @@ const translations = {
     // Profile
     profileGuest: 'Inicia sesión para guardar tu progreso',
     menuLogin: 'Iniciar sesión', menuFavs: 'Mis favoritos',
-    menuNotes: 'Mis notas', menuPlan: 'Plan de lectura',
+    menuNotes: 'Mis Versículos Resaltados',
     menuLang: 'Idioma', menuLogout: 'Cerrar sesión',
     // Bible
     strLabel: 'Strong\'s', strHint: 'toca las palabras',
@@ -900,9 +900,6 @@ const translations = {
     strongs: 'Strong\'s', strongsDesc: 'Greek · Hebrew', strongsBadge: 'New',
     characters: 'Characters', charactersDesc: 'Coming soon',
     maps: 'Maps', mapsDesc: 'Coming soon',
-    // Plan
-    planTitle: 'New Testament in 90 days',
-    planMeta: 'Day 31 of 90 · John 3',
     // Nav
     navHome: 'Home', navBible: 'Bible', navSearch: 'Search', navBot: 'Bot', navProfile: 'Profile',
     // Search filters
@@ -910,7 +907,7 @@ const translations = {
     // Profile
     profileGuest: 'Sign in to save your progress',
     menuLogin: 'Sign in', menuFavs: 'My favorites',
-    menuNotes: 'My notes', menuPlan: 'Reading plan',
+    menuNotes: 'My highlighted verses',
     menuLang: 'Language', menuLogout: 'Sign out',
     // Bible
     strLabel: 'Strong\'s', strHint: 'tap highlighted words',
@@ -963,14 +960,7 @@ function applyLang(lang) {
   if (qcSubs[2])   qcSubs[2].textContent   = t.charactersDesc;
   if (qcLabels[3]) qcLabels[3].textContent = t.maps;
   if (qcSubs[3])   qcSubs[3].textContent   = t.mapsDesc;
-
-  // Plan
-  const planTitle = document.querySelector('.plan-title');
-  const planMeta  = document.getElementById('planMeta');
-  if (planTitle) planTitle.textContent = t.planTitle;
-  if (planMeta)  planMeta.textContent  = t.planMeta;
-
-  // Bottom nav
+// Bottom nav
   const navLabels = document.querySelectorAll('.nav-label');
   const navKeys   = ['navHome','navBible','navSearch','navBot','navProfile'];
   navLabels.forEach((el, i) => { if (navKeys[i]) el.textContent = t[navKeys[i]]; });
@@ -988,12 +978,11 @@ function applyLang(lang) {
     profileEmail.textContent = t.profileGuest;
   }
   const menuItems = document.querySelectorAll('.mi-label');
-  if (menuItems[0]) menuItems[0].textContent = t.menuLogin;
-  if (menuItems[1]) menuItems[1].textContent = t.menuFavs;
-  if (menuItems[2]) menuItems[2].textContent = t.menuNotes;
-  if (menuItems[3]) menuItems[3].textContent = t.menuPlan;
-  if (menuItems[4]) menuItems[4].textContent = t.menuLang;
-  if (menuItems[5]) menuItems[5].textContent = t.menuLogout;
+if (menuItems[0]) menuItems[0].textContent = t.menuLogin;
+if (menuItems[1]) menuItems[1].textContent = t.menuFavs;
+if (menuItems[2]) menuItems[2].textContent = t.menuNotes;
+if (menuItems[3]) menuItems[3].textContent = t.menuLang;
+if (menuItems[4]) menuItems[4].textContent = t.menuLogout;
 
   // Bible chapter nav
   const prevBtn = document.getElementById('btnPrevChapter');

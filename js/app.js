@@ -651,9 +651,39 @@ function togglePasswordVisibility(inputId, btn) {
   btn.textContent = isHidden ? '🔓' : '🔒';
 }
 
+async function trackDailyVisit(user) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const docRef = db.collection('users').doc(user.uid);
+  const doc = await docRef.get();
+  const data = doc.exists ? doc.data() : {};
+
+  if (data.lastVisitDate === todayStr) {
+    renderStreakStats(data.streak || 0, data.totalDays || 0);
+    return;
+  }
+
+  let newStreak = 1;
+  if (data.lastVisitDate) {
+    const diffDays = Math.round((new Date(todayStr) - new Date(data.lastVisitDate)) / 86400000);
+    if (diffDays === 1) newStreak = (data.streak || 0) + 1;
+  }
+  const newTotalDays = (data.totalDays || 0) + 1;
+
+  await docRef.set({ lastVisitDate: todayStr, streak: newStreak, totalDays: newTotalDays }, { merge: true });
+  renderStreakStats(newStreak, newTotalDays);
+}
+
+function renderStreakStats(streak, totalDays) {
+  const streakEl = document.getElementById('statStreak');
+  const daysEl = document.getElementById('statDays');
+  if (streakEl) streakEl.textContent = streak;
+  if (daysEl) daysEl.textContent = totalDays;
+}
+
 // ── PROFILE ──
 function updateProfileUI(user) {
   if (user) {
+    trackDailyVisit(user);
     document.getElementById('profileName').textContent  = user.displayName || 'Usuario';
     document.getElementById('profileEmail').textContent = user.email || '';
     document.getElementById('profileAvatar').textContent = (user.displayName || 'U')[0].toUpperCase();
@@ -1378,7 +1408,10 @@ async function loadCharacterProfile(name) {
         ${data.timeline?.map(t => `
           <div style="display:flex;gap:12px;margin-bottom:12px">
             <div style="min-width:80px;font-size:11px;color:var(--gold);font-weight:600;padding-top:2px">${t.year}</div>
-            <div style="flex:1;font-size:13px;color:var(--text2);line-height:1.5;border-left:2px solid var(--border);padding-left:12px">${t.event}</div>
+            <div style="flex:1;font-size:13px;color:var(--text2);line-height:1.5;border-left:2px solid var(--border);padding-left:12px">
+              ${t.event}
+              ${t.reference ? `<div style="font-size:11px;color:var(--gold);margin-top:4px;font-style:italic">📖 ${t.reference}</div>` : ''}
+            </div>
           </div>
         `).join('') || ''}
       </div>

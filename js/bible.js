@@ -172,11 +172,14 @@ window.BibleAPI = {
       const data = await res.json();
 
       if (data.text) {
-        document.getElementById('dailyVerseText').textContent = data.text;
-        document.getElementById('dailyVerseRef').textContent  = `${data.reference} · ${data.translation}`;
-        document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'smooth' });
-        showToast('📖 ' + data.reference);
-      }
+  document.getElementById('dailyVerseText').textContent = data.text;
+  document.getElementById('dailyVerseRef').textContent  = `${data.reference} · ${data.translation}`;
+  document.querySelector('.verse-tag').textContent = 'Versículo para tu momento';
+  const btn = document.getElementById('btnSaveDaily');
+  isFavorited(data.reference).then(saved => setSaveButtonState(btn, saved));
+  document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('📖 ' + data.reference);
+}
     } catch (err) {
       console.error('Mood verse error:', err);
       showToast('⚠️ Error obteniendo versículo');
@@ -238,14 +241,19 @@ function shareVerseFromMenu() {
 
 async function toggleHighlightFromMenu() {
   if (!activeVerse) return;
-  const highlighted = await isHighlighted(activeVerse.reference);
-  if (highlighted) {
-    await removeHighlight(sanitizeFavId(activeVerse.reference));
-    showToast('Subrayado quitado');
-  } else {
-    await saveHighlight(activeVerse);
-    showToast('🖍️ Versículo subrayado');
+  try {
+    const highlighted = await isHighlighted(activeVerse.reference);
+    if (highlighted) {
+      await removeHighlight(sanitizeFavId(activeVerse.reference));
+      showToast('Subrayado quitado');
+    } else {
+      await saveHighlight(activeVerse);
+      showToast('🖍️ Versículo subrayado');
+    }
+    applyHighlightsToChapter();
+  } catch (err) {
+    console.error('Highlight error:', err);
+    showToast('⚠️ No se pudo subrayar');
   }
-  applyHighlightsToChapter();
   closeVerseMenu();
 }

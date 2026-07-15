@@ -843,3 +843,8 @@ body.light .bubble.bot {
   position: static;
   flex-shrink: 0;
 }
+
+.verse-row.highlighted {
+  background: rgba(212,168,67,0.15);
+  border-left: 3px solid var(--gold);
+}

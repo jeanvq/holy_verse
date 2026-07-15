@@ -331,6 +331,104 @@ async function removeFavorite(id) {
   showToast('Eliminado de favoritos');
 }
 
+// ── SUBRAYADOS ──
+async function saveHighlight(verse) {
+  const id = sanitizeFavId(verse.reference);
+  const user = auth.currentUser;
+
+  if (user) {
+    await db.collection('users').doc(user.uid).collection('subrayados').doc(id).set({
+      reference: verse.reference,
+      text: verse.text,
+      book: verse.book,
+      chapter: verse.chapter,
+      verse: verse.verse,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } else {
+    const highlights = JSON.parse(localStorage.getItem('hv_highlights') || '[]');
+    if (!highlights.some(h => h.reference === verse.reference)) {
+      highlights.unshift({ id, ...verse, savedAt: new Date().toISOString() });
+      localStorage.setItem('hv_highlights', JSON.stringify(highlights));
+    }
+  }
+}
+
+async function removeHighlight(id) {
+  const user = auth.currentUser;
+  if (user) {
+    await db.collection('users').doc(user.uid).collection('subrayados').doc(id).delete();
+  } else {
+    const highlights = JSON.parse(localStorage.getItem('hv_highlights') || '[]');
+    localStorage.setItem('hv_highlights', JSON.stringify(highlights.filter(h => h.id !== id)));
+  }
+}
+
+async function getHighlights() {
+  const user = auth.currentUser;
+  if (user) {
+    const snap = await db.collection('users').doc(user.uid).collection('subrayados').orderBy('savedAt', 'desc').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+  return JSON.parse(localStorage.getItem('hv_highlights') || '[]');
+}
+
+async function isHighlighted(reference) {
+  const id = sanitizeFavId(reference);
+  const user = auth.currentUser;
+  if (user) {
+    const doc = await db.collection('users').doc(user.uid).collection('subrayados').doc(id).get();
+    return doc.exists;
+  }
+  const highlights = JSON.parse(localStorage.getItem('hv_highlights') || '[]');
+  return highlights.some(h => h.reference === reference);
+}
+
+async function renderHighlights() {
+  const highlights = await getHighlights();
+  const menu = document.querySelector('.menu-list');
+
+  const existing = document.getElementById('highlightsList');
+  if (existing) existing.remove();
+
+  if (!highlights.length) {
+    showToast('No tienes versículos subrayados aún');
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.id = 'highlightsList';
+  list.style.cssText = 'padding: 0 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;';
+
+  list.innerHTML = highlights.map(v => `
+    <div class="result-card fade-up" style="position:relative;border-left:3px solid var(--gold)">
+      <div class="result-ref">${v.reference}</div>
+      <div class="result-text">${v.text}</div>
+      <button onclick="removeHighlightFromProfile('${v.id}')" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+    </div>
+  `).join('');
+
+  menu.after(list);
+}
+
+async function removeHighlightFromProfile(id) {
+  await removeHighlight(id);
+  await renderHighlights();
+  showToast('Subrayado eliminado');
+}
+
+async function applyHighlightsToChapter() {
+  const highlights = await getHighlights();
+  document.querySelectorAll('.verse-row').forEach(row => {
+    const match = highlights.some(h =>
+      h.book === row.dataset.book &&
+      String(h.chapter) === String(row.dataset.chapter) &&
+      String(h.verse) === String(row.dataset.verse)
+    );
+    row.classList.toggle('highlighted', match);
+  });
+}
+
 // ── STRONG'S TOGGLE ──
 function toggleStrongs() {
   strongsEnabled = !strongsEnabled;

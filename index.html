@@ -398,6 +398,11 @@
   <div class="mi-label">Mis favoritos</div>
   <div class="mi-arrow">›</div>
 </div>
+        <div class="menu-item" onclick="renderHighlights()">
+  <div class="mi-icon">🖍️</div>
+  <div class="mi-label">Mis subrayados</div>
+  <div class="mi-arrow">›</div>
+</div>
         <div class="menu-item">
           <div class="mi-icon">📝</div>
           <div class="mi-label">Mis notas</div>
@@ -565,6 +570,10 @@ if ('serviceWorker' in navigator) {
       <div class="menu-item" onclick="saveVerseFromMenu()">
         <div class="mi-icon">❤️</div>
         <div class="mi-label">Guardar en favoritos</div>
+      </div>
+      <div class="menu-item" onclick="toggleHighlightFromMenu()">
+        <div class="mi-icon">🖍️</div>
+        <div class="mi-label">Subrayar</div>
       </div>
       <div class="menu-item" onclick="copyVerseFromMenu()">
         <div class="mi-icon">📋</div>

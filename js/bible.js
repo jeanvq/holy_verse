@@ -50,6 +50,7 @@ window.BibleAPI = {
       // Actualizar variables globales
       currentBookName = data.book;
       currentChapter  = chapter;
+      applyHighlightsToChapter();
 
     } catch (err) {
       verseList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--danger)">Error de conexión</div>';
@@ -189,7 +190,14 @@ let longPressTimer = null;
 
 function showVerseMenu(e, reference, text) {
   e.preventDefault();
-  activeVerse = { reference, text };
+  const row = e.currentTarget || e.target.closest('.verse-row');
+  activeVerse = {
+    reference,
+    text,
+    book: row ? row.dataset.book : null,
+    chapter: row ? row.dataset.chapter : null,
+    verse: row ? row.dataset.verse : null
+  };
   document.getElementById('verseMenuRef').textContent = reference;
   document.getElementById('verseMenuText').textContent = text.replace(/\[\d+\]/g, '');
   document.getElementById('verseMenuModal').classList.remove('hidden');
@@ -225,5 +233,19 @@ function copyVerseFromMenu() {
 function shareVerseFromMenu() {
   if (!activeVerse) return;
   shareVerse(activeVerse.text.replace(/\[\d+\]/g, ''), activeVerse.reference);
+  closeVerseMenu();
+}
+
+async function toggleHighlightFromMenu() {
+  if (!activeVerse) return;
+  const highlighted = await isHighlighted(activeVerse.reference);
+  if (highlighted) {
+    await removeHighlight(sanitizeFavId(activeVerse.reference));
+    showToast('Subrayado quitado');
+  } else {
+    await saveHighlight(activeVerse);
+    showToast('🖍️ Versículo subrayado');
+  }
+  applyHighlightsToChapter();
   closeVerseMenu();
 }

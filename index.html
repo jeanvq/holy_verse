@@ -106,21 +106,25 @@
   <div id="booksView">
     <div class="bible-header" style="border:none">
       <div style="flex:1">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)">La Biblia</div>
-        <div style="font-size:11px;color:var(--text3)">Selecciona un libro</div>
+        <div id="bibleScreenTitle" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)">La Biblia</div>
+        <div id="bibleScreenSubtitle" style="font-size:11px;color:var(--text3)">Selecciona un libro</div>
       </div>
       <select id="translationSelect" class="strongs-toggle" onchange="BibleAPI.currentTranslation=this.value" style="padding:8px 12px;border-radius:8px">
-  <option value="rvr1960">RVR1960</option>
-  <option value="nbla">NBLA</option>
-  <option value="ntv">NTV</option>
-  <option value="nvi">NVI</option>
-  <option value="rva2015">RVA2015</option>
-  <option value="rvc">RVC</option>
-  <option value="rvr09">RVR09</option>
-  <option value="bes">BES</option>
-  <option value="vbl">VBL</option>
-  <option value="kjv">KJV</option>
-  <option value="esv">ESV</option>
+  <optgroup label="Español">
+    <option value="rvr1960">RVR1960</option>
+    <option value="nbla">NBLA</option>
+    <option value="ntv">NTV</option>
+    <option value="nvi">NVI</option>
+    <option value="rva2015">RVA2015</option>
+    <option value="rvc">RVC</option>
+    <option value="rvr09">RVR09</option>
+    <option value="bes">BES</option>
+    <option value="vbl">VBL</option>
+  </optgroup>
+  <optgroup label="English">
+    <option value="kjv">KJV</option>
+    <option value="esv">ESV</option>
+  </optgroup>
 </select>
     </div>
 
@@ -147,17 +151,21 @@
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <select class="translation-inline-select" onchange="BibleAPI.setTranslation(this.value)">
-  <option value="rvr1960">RVR1960</option>
-  <option value="nbla">NBLA</option>
-  <option value="ntv">NTV</option>
-  <option value="nvi">NVI</option>
-  <option value="rva2015">RVA2015</option>
-  <option value="rvc">RVC</option>
-  <option value="rvr09">RVR09</option>
-  <option value="bes">BES</option>
-  <option value="vbl">VBL</option>
-  <option value="kjv">KJV</option>
-  <option value="esv">ESV</option>
+  <optgroup label="Español">
+    <option value="rvr1960">RVR1960</option>
+    <option value="nbla">NBLA</option>
+    <option value="ntv">NTV</option>
+    <option value="nvi">NVI</option>
+    <option value="rva2015">RVA2015</option>
+    <option value="rvc">RVC</option>
+    <option value="rvr09">RVR09</option>
+    <option value="bes">BES</option>
+    <option value="vbl">VBL</option>
+  </optgroup>
+  <optgroup label="English">
+    <option value="kjv">KJV</option>
+    <option value="esv">ESV</option>
+  </optgroup>
 </select>
         <div class="font-size-control">
           <button class="font-size-btn" onclick="decreaseFontSize()">A-</button>
@@ -452,7 +460,7 @@
 <div class="modal-overlay hidden" id="bookPickerModal" onclick="closeBookPicker(event)">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-title">Selecciona un libro</div>
+    <div class="modal-title" id="bookPickerTitle">Selecciona un libro</div>
     <div style="padding: 0 20px 12px">
       <input class="form-input" id="bookSearchInput" placeholder="Buscar libro..." oninput="filterBooks(this.value)">
     </div>

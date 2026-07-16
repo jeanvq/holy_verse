@@ -555,6 +555,30 @@ const BOOKS = {
   ]
 };
 
+const BOOK_NAMES_EN = {
+  'Génesis': 'Genesis', 'Éxodo': 'Exodus', 'Levítico': 'Leviticus', 'Números': 'Numbers',
+  'Deuteronomio': 'Deuteronomy', 'Josué': 'Joshua', 'Jueces': 'Judges', 'Rut': 'Ruth',
+  '1 Samuel': '1 Samuel', '2 Samuel': '2 Samuel', '1 Reyes': '1 Kings', '2 Reyes': '2 Kings',
+  '1 Crónicas': '1 Chronicles', '2 Crónicas': '2 Chronicles', 'Esdras': 'Ezra', 'Nehemías': 'Nehemiah',
+  'Ester': 'Esther', 'Job': 'Job', 'Salmos': 'Psalms', 'Proverbios': 'Proverbs',
+  'Eclesiastés': 'Ecclesiastes', 'Cantares': 'Song of Songs', 'Isaías': 'Isaiah', 'Jeremías': 'Jeremiah',
+  'Lamentaciones': 'Lamentations', 'Ezequiel': 'Ezekiel', 'Daniel': 'Daniel', 'Oseas': 'Hosea',
+  'Joel': 'Joel', 'Amós': 'Amos', 'Abdías': 'Obadiah', 'Jonás': 'Jonah',
+  'Miqueas': 'Micah', 'Nahúm': 'Nahum', 'Habacuc': 'Habakkuk', 'Sofonías': 'Zephaniah',
+  'Hageo': 'Haggai', 'Zacarías': 'Zechariah', 'Malaquías': 'Malachi',
+  'Mateo': 'Matthew', 'Marcos': 'Mark', 'Lucas': 'Luke', 'Juan': 'John',
+  'Hechos': 'Acts', 'Romanos': 'Romans', '1 Corintios': '1 Corinthians', '2 Corintios': '2 Corinthians',
+  'Gálatas': 'Galatians', 'Efesios': 'Ephesians', 'Filipenses': 'Philippians', 'Colosenses': 'Colossians',
+  '1 Tesalonicenses': '1 Thessalonians', '2 Tesalonicenses': '2 Thessalonians', '1 Timoteo': '1 Timothy', '2 Timoteo': '2 Timothy',
+  'Tito': 'Titus', 'Filemón': 'Philemon', 'Hebreos': 'Hebrews', 'Santiago': 'James',
+  '1 Pedro': '1 Peter', '2 Pedro': '2 Peter', '1 Juan': '1 John', '2 Juan': '2 John',
+  '3 Juan': '3 John', 'Judas': 'Jude', 'Apocalipsis': 'Revelation'
+};
+
+function displayBookName(name) {
+  return currentLang === 'en' ? (BOOK_NAMES_EN[name] || name) : name;
+}
+
 function openBookPicker() {
   renderBookList('');
   document.getElementById('bookPickerModal').classList.remove('hidden');
@@ -863,6 +887,11 @@ const translations = {
     botGreeting: 'Hola 👋 Soy tu guía del universo bíblico. ¿En qué te puedo ayudar?',
     botPlaceholder: 'Pregunta sobre la Biblia...',
     searchPlaceholder: 'Juan 3:16 o \'amor\'...',
+    bookPickerTitle: 'Selecciona un libro',
+    bookPickerPlaceholder: 'Buscar libro...',
+    bibleScreenTitle: 'La Biblia',
+    bibleScreenSubtitle: 'Selecciona un libro',
+
     // Quick grid
     bible: 'Biblia', bibleDesc: '66 libros',
     strongs: 'Strong\'s', strongsDesc: 'Griego · Hebreo', strongsBadge: 'Nuevo',
@@ -898,6 +927,10 @@ const translations = {
     botGreeting: 'Hi 👋 I\'m your biblical universe guide. How can I help you?',
     botPlaceholder: 'Ask about the Bible...',
     searchPlaceholder: 'John 3:16 or \'love\'...',
+    bookPickerTitle: 'Select a book',
+    bookPickerPlaceholder: 'Search book...',
+    bibleScreenTitle: 'The Bible',
+    bibleScreenSubtitle: 'Select a book',
     // Quick grid
     bible: 'Bible', bibleDesc: '66 books',
     strongs: 'Strong\'s', strongsDesc: 'Greek · Hebrew', strongsBadge: 'New',
@@ -921,9 +954,11 @@ const translations = {
 };
 
 function applyLang(lang) {
+  
   const t = translations[lang];
   // Actualizar versículo del día
   if (window.updateDailyVerseByLang) updateDailyVerseByLang(lang);
+  renderBooksGrid();
 
   // Verse hero
   const verseTag = document.querySelector('.verse-tag');
@@ -1004,6 +1039,16 @@ if (menuItems[4]) menuItems[4].textContent = t.menuLogout;
   if (chatInput) chatInput.placeholder = t.botPlaceholder;
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.placeholder = t.searchPlaceholder;
+
+  const bookPickerTitle = document.getElementById('bookPickerTitle');
+  if (bookPickerTitle) bookPickerTitle.textContent = t.bookPickerTitle;
+  const bookSearchInput = document.getElementById('bookSearchInput');
+  if (bookSearchInput) bookSearchInput.placeholder = t.bookPickerPlaceholder;
+
+  const bibleScreenTitle = document.getElementById('bibleScreenTitle');
+  if (bibleScreenTitle) bibleScreenTitle.textContent = t.bibleScreenTitle;
+  const bibleScreenSubtitle = document.getElementById('bibleScreenSubtitle');
+  if (bibleScreenSubtitle) bibleScreenSubtitle.textContent = t.bibleScreenSubtitle;
 }
 
 langBtn.addEventListener('click', () => {
@@ -1022,14 +1067,14 @@ function renderBooksGrid() {
 
   otGrid.innerHTML = BOOKS.ot.map(b => `
     <div class="book-card" onclick="selectBookFromGrid('${b.name}', ${b.chapters})">
-      <div class="book-card-name">${b.name}</div>
+      <div class="book-card-name">${displayBookName(b.name)}</div>
       <div class="book-card-ch">${b.chapters} cap</div>
     </div>
   `).join('');
 
   ntGrid.innerHTML = BOOKS.nt.map(b => `
     <div class="book-card" onclick="selectBookFromGrid('${b.name}', ${b.chapters})">
-      <div class="book-card-name">${b.name}</div>
+      <div class="book-card-name">${displayBookName(b.name)}</div>
       <div class="book-card-ch">${b.chapters} cap</div>
     </div>
   `).join('');
@@ -1071,7 +1116,7 @@ function selectBookFromGrid(name, totalChapters) {
 
   list.innerHTML = `
     <div style="padding:0 20px 12px">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:12px">${name}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:12px">${displayBookName(name)}</div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
         ${Array.from({length: totalChapters}, (_, i) => i + 1).map(ch => `
           <div onclick="goToChapter('${name}', ${ch})" style="

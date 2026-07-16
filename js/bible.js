@@ -15,8 +15,16 @@ window.BibleAPI = {
     const verseList = document.getElementById('verseList');
     verseList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)">Cargando...</div>';
 
+    // Actualizar header de inmediato (así no se queda pegado en el libro anterior si algo falla)
+    document.getElementById('currentBook').textContent = `${typeof displayBookName === 'function' ? displayBookName(book) : book} ${chapter}`;
+
     try {
-      const res  = await fetch(`${API_BASE}/api/bible/${encodeURIComponent(book)}/${chapter}?translation=${this.currentTranslation}`);
+      const isEnglishTranslation = this.currentTranslation === 'kjv' || this.currentTranslation === 'esv';
+      const apiBook = isEnglishTranslation && typeof BOOK_NAMES_EN !== 'undefined'
+        ? (BOOK_NAMES_EN[book] || book)
+        : book;
+
+      const res  = await fetch(`${API_BASE}/api/bible/${encodeURIComponent(apiBook)}/${chapter}?translation=${this.currentTranslation}`);
       const data = await res.json();
 
       if (data.error) {
@@ -24,11 +32,11 @@ window.BibleAPI = {
         return;
       }
 
-      
+      const displayName = typeof displayBookName === 'function' ? displayBookName(book) : book;
 
       // Actualizar header
-      document.getElementById('currentBook').textContent = `${data.book} ${chapter}`;
-      document.getElementById('chapterTitle').textContent = `${data.book} — Capítulo ${chapter} · ${this.currentTranslation.toUpperCase()}`;
+      document.getElementById('currentBook').textContent = `${displayName} ${chapter}`;
+      document.getElementById('chapterTitle').textContent = `${displayName} — Capítulo ${chapter} · ${this.currentTranslation.toUpperCase()}`;
       document.getElementById('currentTranslation').textContent = this.currentTranslation.toUpperCase();
 
       // Renderizar versículos
@@ -47,8 +55,8 @@ window.BibleAPI = {
   </div>
 `).join('');
 
-      // Actualizar variables globales
-      currentBookName = data.book;
+      // Actualizar variables globales (siempre en español — es el identificador interno canónico)
+      currentBookName = book;
       currentChapter  = chapter;
       applyHighlightsToChapter();
 

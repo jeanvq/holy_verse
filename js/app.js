@@ -842,6 +842,9 @@ themeBtn.addEventListener('click', () => {
   localStorage.setItem('hv_theme', isLight ? 'light' : 'dark');
 });
 
+// ── PERFIL (topbar) ──
+document.getElementById('btnProfile').addEventListener('click', () => showScreen('profile'));
+
 // ── IDIOMA ES/EN ──
 const langBtn = document.getElementById('btnLang');
 // currentLang declarado ariba

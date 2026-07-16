@@ -901,8 +901,8 @@ const translations = {
     // Quick grid
     bible: 'Bible', bibleDesc: '66 books',
     strongs: 'Strong\'s', strongsDesc: 'Greek · Hebrew', strongsBadge: 'New',
-    characters: 'Characters', charactersDesc: 'Coming soon',
-    maps: 'Maps', mapsDesc: 'Coming soon',
+    characters: 'Characters', charactersDesc: 'Profiles of biblical characters',
+    maps: 'Maps', mapsDesc: 'Promised Land, Paul\'s journeys, etc.',
     // Nav
     navHome: 'Home', navBible: 'Bible', navSearch: 'Search', navBot: 'Bot', navProfile: 'Profile',
     // Search filters

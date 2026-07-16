@@ -300,7 +300,9 @@ async function isFavorited(reference) {
 
 function setSaveButtonState(btn, saved) {
   if (!btn) return;
-  btn.textContent = saved ? '♥ Guardado' : '♡ Guardar';
+  const savedLabels = { es: '♥ Guardado', en: '♥ Saved' };
+  const defaultLabels = { es: '♡ Guardar', en: '♡ Save' };
+  btn.textContent = saved ? (savedLabels[currentLang] || savedLabels.es) : (defaultLabels[currentLang] || defaultLabels.es);
   btn.style.color = saved ? 'var(--gold)' : '';
   btn.style.borderColor = saved ? 'var(--gold)' : '';
 }
@@ -931,6 +933,7 @@ const translations = {
     bookPickerPlaceholder: 'Search book...',
     bibleScreenTitle: 'The Bible',
     bibleScreenSubtitle: 'Select a book',
+    bookSearchBarPlaceholder: 'John 3:16 or search book...',
     // Quick grid
     bible: 'Bible', bibleDesc: '66 books',
     strongs: 'Strong\'s', strongsDesc: 'Greek · Hebrew', strongsBadge: 'New',
@@ -959,6 +962,8 @@ function applyLang(lang) {
   // Actualizar versículo del día
   if (window.updateDailyVerseByLang) updateDailyVerseByLang(lang);
   renderBooksGrid();
+  devotionalData = null;
+  loadDailyDevotionalBackground();
 
   // Verse hero
   const verseTag = document.querySelector('.verse-tag');
@@ -1049,6 +1054,9 @@ if (menuItems[4]) menuItems[4].textContent = t.menuLogout;
   if (bibleScreenTitle) bibleScreenTitle.textContent = t.bibleScreenTitle;
   const bibleScreenSubtitle = document.getElementById('bibleScreenSubtitle');
   if (bibleScreenSubtitle) bibleScreenSubtitle.textContent = t.bibleScreenSubtitle;
+
+  const bookSearchBar = document.getElementById('bookSearchBar');
+  if (bookSearchBar) bookSearchBar.placeholder = t.bookSearchBarPlaceholder;
 }
 
 langBtn.addEventListener('click', () => {
@@ -1638,7 +1646,7 @@ async function loadDailyDevotional() {
   }
 
   try {
-    const lang = window.currentLang || 'es';
+    const lang = currentLang || 'es';
     const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/devotional?lang=${lang}`);
     const data = await res.json();
     devotionalData = data;
@@ -1667,7 +1675,7 @@ function closeDevotionalModal() {
 
 async function loadDailyDevotionalBackground() {
   try {
-    const lang = window.currentLang || 'es';
+    const lang = currentLang || 'es';
     const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/devotional?lang=${lang}`);
     const data = await res.json();
     devotionalData = data;

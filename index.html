@@ -376,23 +376,11 @@
         <div class="profile-email" id="profileEmail">Inicia sesión para guardar tu progreso</div>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-box">
-          <div class="stat-num" id="statDays">0</div>
-          <div class="stat-label">Días</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" id="statFavorites">0</div>
-          <div class="stat-label">Favoritos</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" id="statStreak">0</div>
-          <div class="stat-label">Racha 🔥</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" id="statNotes">0</div>
-          <div class="stat-label">Notas</div>
-        </div>
+      <div class="streak-hero">
+        <div class="streak-flame">🔥</div>
+        <div class="streak-count" id="statStreak">0</div>
+        <div class="streak-label">días seguidos</div>
+        <div class="streak-sub"><span id="statDays">0</span> días usando la app</div>
       </div>
 
       <div class="menu-list">
@@ -404,11 +392,13 @@
         <div class="menu-item" onclick="renderFavorites()">
   <div class="mi-icon">❤️</div>
   <div class="mi-label">Mis favoritos</div>
+  <div class="mi-count" id="statFavorites">0</div>
   <div class="mi-arrow">›</div>
 </div>
         <div class="menu-item" onclick="renderHighlights()">
   <div class="mi-icon">🖍️</div>
   <div class="mi-label">Mis subrayados</div>
+  <div class="mi-count" id="statHighlights">0</div>
   <div class="mi-arrow">›</div>
 </div>
         <div class="menu-item">

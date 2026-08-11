@@ -699,11 +699,17 @@ async function trackDailyVisit(user) {
   renderStreakStats(newStreak, newTotalDays);
 }
 
-function renderStreakStats(streak, totalDays) {
+async function renderStreakStats(streak, totalDays) {
   const streakEl = document.getElementById('statStreak');
   const daysEl = document.getElementById('statDays');
   if (streakEl) streakEl.textContent = streak;
   if (daysEl) daysEl.textContent = totalDays;
+
+  const highlightsEl = document.getElementById('statHighlights');
+  if (highlightsEl) {
+    const highlights = await getHighlights();
+    highlightsEl.textContent = highlights.length;
+  }
 }
 
 // ── PROFILE ──

@@ -1049,6 +1049,8 @@ const translations = {
     obSkip: 'Saltar',
     obNext: 'Siguiente',
     obStart: 'Comenzar',
+    mapsScreenTitle: 'Mapas Bíblicos',
+    mapChip1: 'Tierra Santa', mapChip2: 'El Éxodo', mapChip3: 'Viajes de Pablo', mapChip4: 'Tiempos de Jesús',
 
     // Quick grid
     bible: 'Biblia', bibleDesc: '66 libros',
@@ -1103,6 +1105,8 @@ const translations = {
     obSkip: 'Skip',
     obNext: 'Next',
     obStart: 'Get Started',
+    mapsScreenTitle: 'Bible Maps',
+    mapChip1: 'Holy Land', mapChip2: 'The Exodus', mapChip3: "Paul's Journeys", mapChip4: 'Times of Jesus',
 
     // Quick grid
     bible: 'Bible', bibleDesc: '66 books',
@@ -1233,7 +1237,16 @@ const miLogin = document.getElementById('miLogin');
 
   const bookSearchBar = document.getElementById('bookSearchBar');
   if (bookSearchBar) bookSearchBar.placeholder = t.bookSearchBarPlaceholder;
+
   updateOnboardingLang(lang);
+  if (typeof bibleMap !== 'undefined' && bibleMap) loadMap(currentMapType);
+
+  const mapsScreenTitle = document.getElementById('mapsScreenTitle');
+  if (mapsScreenTitle) mapsScreenTitle.textContent = t.mapsScreenTitle;
+  ['mapChip1','mapChip2','mapChip3','mapChip4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t[id];
+  });
 }
 
 langBtn.addEventListener('click', () => {
@@ -1711,6 +1724,45 @@ const BIBLE_PLACES = {
     { name: 'Gólgota', lat: 31.7784, lng: 35.2297, desc: 'Lugar de la crucifixión de Jesús.', verse: '"Y cuando llegaron al lugar llamado Gólgota... le crucificaron" (Mateo 27:33)' },
   ]
 };
+const BIBLE_PLACES_EN = {
+  'holy-land': [
+    { name: 'Jerusalem', lat: 31.7683, lng: 35.2137, desc: 'Capital of Israel, site of the crucifixion and resurrection of Jesus. A holy city for Jews, Christians, and Muslims.', verse: '"Jerusalem, the city of the great King" (Psalm 48:2)' },
+    { name: 'Bethlehem', lat: 31.7054, lng: 35.2024, desc: "David's hometown and Jesus' birthplace. Located south of Jerusalem in Judea.", verse: '"But you, Bethlehem Ephrathah... out of you will come for me the one who will be ruler over Israel" (Micah 5:2)' },
+    { name: 'Nazareth', lat: 32.7021, lng: 35.2978, desc: 'The town where Jesus grew up and lived until he was about 30. Located in the region of Galilee.', verse: '"And he went to Nazareth, where he had been brought up" (Luke 4:16)' },
+    { name: 'Sea of Galilee', lat: 32.8208, lng: 35.5847, desc: 'The lake where Jesus walked on water, calmed the storm, and called his first disciples.', verse: '"Come, follow me, and I will send you out to fish for people" (Matthew 4:19)' },
+    { name: 'Jordan River', lat: 31.8331, lng: 35.5508, desc: 'The river where Jesus was baptized by John the Baptist. Also where the Israelites crossed to enter Canaan.', verse: '"As soon as Jesus was baptized, he went up out of the water" (Matthew 3:16)' },
+    { name: 'Dead Sea', lat: 31.5590, lng: 35.4732, desc: "The saltiest lake in the world, located at the lowest point on Earth. Near ancient Sodom and Gomorrah.", verse: '"The Salt Sea" (Genesis 14:3)' },
+    { name: 'Mount Sinai', lat: 28.5390, lng: 33.9750, desc: 'The mountain where God gave Moses the Ten Commandments. Also called Horeb.', verse: '"He gave Moses... the two tablets of the covenant law" (Exodus 31:18)' },
+    { name: 'Jericho', lat: 31.8567, lng: 35.4610, desc: 'The first city conquered by Joshua in Canaan. Also where Zacchaeus met Jesus.', verse: '"So the walls of Jericho fell" (Joshua 6:20)' },
+    { name: 'Capernaum', lat: 32.8808, lng: 35.5754, desc: 'A town on the shore of the Sea of Galilee where Jesus based his ministry and performed many miracles.', verse: '"And he came down to Capernaum, a town in Galilee" (Luke 4:31)' },
+    { name: 'Hebron', lat: 31.5326, lng: 35.0998, desc: 'The city where Abraham, Isaac, and Jacob were buried. David was crowned king here before taking Jerusalem.', verse: '"So Abram... went and lived near the great trees of Mamre at Hebron" (Genesis 13:18)' },
+  ],
+  'exodus': [
+    { name: 'Egypt (Goshen)', lat: 30.8025, lng: 31.9602, desc: 'The region where the Israelites lived in slavery for 430 years.', verse: '"And the Egyptians made the Israelites work as slaves" (Exodus 1:13)' },
+    { name: 'Red Sea', lat: 29.8597, lng: 32.5500, desc: 'Where God parted the waters so the Israelites could cross while fleeing Pharaoh.', verse: '"And the Israelites went through the sea on dry ground" (Exodus 14:22)' },
+    { name: 'Mount Sinai', lat: 28.5390, lng: 33.9750, desc: "Where Moses received the Ten Commandments and God's Law.", verse: '"He gave Moses the two tablets of the covenant law" (Exodus 31:18)' },
+    { name: 'Kadesh-barnea', lat: 30.6833, lng: 34.4167, desc: 'The oasis where Israel camped for 38 years in the wilderness because of their disobedience.', verse: '"And so you remained in Kadesh many days" (Deuteronomy 1:46)' },
+    { name: 'Jericho', lat: 31.8567, lng: 35.4610, desc: 'The first city conquered in the Promised Land.', verse: '"So the walls of Jericho fell" (Joshua 6:20)' },
+  ],
+  'paul': [
+    { name: 'Antioch', lat: 36.2021, lng: 36.1608, desc: "Paul's home base. Here the disciples were first called \"Christians.\"", verse: '"The disciples were called Christians first at Antioch" (Acts 11:26)' },
+    { name: 'Ephesus', lat: 37.9395, lng: 27.3417, desc: 'Paul ministered here for 3 years. An important city with the Temple of Artemis.', verse: '"This continued for two years" (Acts 19:10)' },
+    { name: 'Corinth', lat: 37.9081, lng: 22.8784, desc: 'An important Greek city where Paul founded a church and wrote two epistles.', verse: '"So Paul stayed for a year and a half" (Acts 18:11)' },
+    { name: 'Philippi', lat: 41.0138, lng: 24.2864, desc: 'The first European city where Paul preached. Site of Lydia\'s conversion.', verse: "\"The Lord opened her heart to respond\" (Acts 16:14)" },
+    { name: 'Rome', lat: 41.9028, lng: 12.4964, desc: 'Capital of the Roman Empire, where Paul arrived as a prisoner and wrote several epistles.', verse: '"And so we came to Rome" (Acts 28:14)' },
+    { name: 'Athens', lat: 37.9838, lng: 23.7275, desc: 'The city where Paul preached at the Areopagus about the "unknown God."', verse: '"People of Athens! I see that in every way you are very religious" (Acts 17:22)' },
+  ],
+  'jesus': [
+    { name: 'Bethlehem', lat: 31.7054, lng: 35.2024, desc: "The birthplace of Jesus.", verse: '"And she gave birth to her firstborn, a son" (Luke 2:7)' },
+    { name: 'Nazareth', lat: 32.7021, lng: 35.2978, desc: 'Where Jesus grew up.', verse: '"And was obedient to them" (Luke 2:51)' },
+    { name: 'Jordan River', lat: 31.8331, lng: 35.5508, desc: "The site of Jesus' baptism.", verse: '"And Jesus was baptized" (Matthew 3:16)' },
+    { name: 'Mount of Temptation', lat: 31.8614, lng: 35.4408, desc: 'Where Jesus fasted 40 days and was tempted by Satan.', verse: '"And he fasted forty days and forty nights" (Matthew 4:2)' },
+    { name: 'Capernaum', lat: 32.8808, lng: 35.5754, desc: "The center of Jesus' ministry in Galilee.", verse: '"Come, follow me" (Matthew 4:19)' },
+    { name: 'Mount of Beatitudes', lat: 32.9056, lng: 35.5508, desc: 'The site of the Sermon on the Mount.', verse: '"Blessed are the poor in spirit" (Matthew 5:3)' },
+    { name: 'Gethsemane', lat: 31.7794, lng: 35.2397, desc: 'The garden where Jesus prayed before being arrested.', verse: '"Not as I will, but as you will" (Matthew 26:39)' },
+    { name: 'Golgotha', lat: 31.7784, lng: 35.2297, desc: 'The site of the crucifixion of Jesus.', verse: '"And when they came to the place called Golgotha... they crucified him" (Matthew 27:33)' },
+  ]
+};
 
 function initBibleMap() {
   if (bibleMap) return;
@@ -1728,8 +1780,11 @@ function initBibleMap() {
   loadMap('holy-land');
 }
 
+let currentMapType = 'holy-land';
+
 function loadMap(mapType) {
   if (!bibleMap) return;
+  currentMapType = mapType;
 
   // Actualizar chips
   document.querySelectorAll('.map-chip').forEach(c => c.classList.remove('active'));
@@ -1738,7 +1793,8 @@ function loadMap(mapType) {
   // Limpiar marcadores anteriores
   if (currentMapLayer) bibleMap.removeLayer(currentMapLayer);
 
-  const places = BIBLE_PLACES[mapType];
+  const dataset = currentLang === 'en' ? BIBLE_PLACES_EN : BIBLE_PLACES;
+  const places = dataset[mapType];
   if (!places) return;
 
   currentMapLayer = L.layerGroup();

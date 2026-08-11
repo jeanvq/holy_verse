@@ -325,16 +325,16 @@
 <div id="screen-maps" class="screen">
   <div class="page-content">
     
-    <div style="padding:16px 20px 8px;font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold)">
+    <div id="mapsScreenTitle" style="padding:16px 20px 8px;font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold)">
       Mapas Bíblicos
     </div>
 
     <!-- Selector de mapa -->
     <div style="padding:0 20px 12px;display:flex;gap:8px;overflow-x:auto">
-      <div class="map-chip active" onclick="loadMap('holy-land')">🗺️ Tierra Santa</div>
-      <div class="map-chip" onclick="loadMap('exodus')">🏜️ El Éxodo</div>
-      <div class="map-chip" onclick="loadMap('paul')">⛵ Viajes de Pablo</div>
-      <div class="map-chip" onclick="loadMap('jesus')">✝️ Tiempos de Jesús</div>
+      <div class="map-chip active" onclick="loadMap('holy-land')">🗺️ <span id="mapChip1">Tierra Santa</span></div>
+      <div class="map-chip" onclick="loadMap('exodus')">🏜️ <span id="mapChip2">El Éxodo</span></div>
+      <div class="map-chip" onclick="loadMap('paul')">⛵ <span id="mapChip3">Viajes de Pablo</span></div>
+      <div class="map-chip" onclick="loadMap('jesus')">✝️ <span id="mapChip4">Tiempos de Jesús</span></div>
     </div>
 
     <!-- Mapa -->

@@ -9,6 +9,52 @@ let strongsEnabled = false;
 let currentBookName = 'Juan';
 let currentChapter  = 3;
 
+// ── ONBOARDING ──
+const ONBOARDING_SLIDE_COUNT = 4;
+let onboardingIndex = 0;
+
+function checkOnboarding() {
+  if (localStorage.getItem('hv_onboarding_seen')) return;
+  document.getElementById('onboardingModal').classList.remove('hidden');
+  const slidesEl = document.getElementById('onboardingSlides');
+  slidesEl.addEventListener('scroll', () => {
+    const idx = Math.round(slidesEl.scrollLeft / slidesEl.clientWidth);
+    setOnboardingIndex(idx);
+  });
+}
+
+function setOnboardingIndex(idx) {
+  onboardingIndex = Math.max(0, Math.min(ONBOARDING_SLIDE_COUNT - 1, idx));
+  document.querySelectorAll('.onboarding-dot').forEach((d, i) => d.classList.toggle('active', i === onboardingIndex));
+  const btn = document.getElementById('onboardingNextBtn');
+  const isLast = onboardingIndex === ONBOARDING_SLIDE_COUNT - 1;
+  if (btn) btn.textContent = isLast ? (translations[currentLang].obStart) : (translations[currentLang].obNext);
+}
+
+function onboardingNext() {
+  if (onboardingIndex >= ONBOARDING_SLIDE_COUNT - 1) {
+    closeOnboarding();
+    return;
+  }
+  const slidesEl = document.getElementById('onboardingSlides');
+  slidesEl.scrollLeft = slidesEl.clientWidth * (onboardingIndex + 1);
+}
+
+function closeOnboarding() {
+  localStorage.setItem('hv_onboarding_seen', '1');
+  document.getElementById('onboardingModal').classList.add('hidden');
+}
+
+function updateOnboardingLang(lang) {
+  const t = translations[lang];
+  const ids = ['obTitle1','obDesc1','obTitle2','obDesc2','obTitle3','obDesc3','obTitle4','obDesc4','obSkip'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && t[id]) el.textContent = t[id];
+  });
+  const btn = document.getElementById('onboardingNextBtn');
+  if (btn) btn.textContent = onboardingIndex === ONBOARDING_SLIDE_COUNT - 1 ? t.obStart : t.obNext;
+}
 
   // ── NAVEGACIÓN ──
 function showScreen(name) {
@@ -985,6 +1031,19 @@ const translations = {
     bookPickerPlaceholder: 'Buscar libro...',
     bibleScreenTitle: 'La Biblia',
     bibleScreenSubtitle: 'Selecciona un libro',
+    bookSearchBarPlaceholder: 'Juan 3:16 o buscar libro...',
+
+    obTitle1: 'Explora la Biblia',
+    obDesc1: '66 libros, múltiples traducciones, y análisis de palabras originales en griego y hebreo con Strong\'s.',
+    obTitle2: 'Bible Bot',
+    obDesc2: 'Pregúntale lo que quieras sobre la Biblia — contexto histórico, explicaciones, comparaciones — y obtén respuestas al instante.',
+    obTitle3: 'Devocional diario',
+    obDesc3: 'Cada día, un nuevo tema, versículo, reflexión y oración para acompañar tu caminar con Dios.',
+    obTitle4: 'Guarda tu recorrido',
+    obDesc4: 'Marca versículos favoritos, subráyalos, y escribe tus propias notas — todo sincronizado si creas una cuenta.',
+    obSkip: 'Saltar',
+    obNext: 'Siguiente',
+    obStart: 'Comenzar',
 
     // Quick grid
     bible: 'Biblia', bibleDesc: '66 libros',
@@ -1027,11 +1086,25 @@ const translations = {
     bibleScreenTitle: 'The Bible',
     bibleScreenSubtitle: 'Select a book',
     bookSearchBarPlaceholder: 'John 3:16 or search book...',
+
+    obTitle1: 'Explore the Bible',
+    obDesc1: '66 books, multiple translations, and original Greek/Hebrew word analysis with Strong\'s.',
+    obTitle2: 'Bible Bot',
+    obDesc2: 'Ask anything about the Bible — historical context, explanations, comparisons — and get instant answers.',
+    obTitle3: 'Daily Devotional',
+    obDesc3: 'Every day, a new theme, verse, reflection, and prayer to accompany your walk with God.',
+    obTitle4: 'Save Your Journey',
+    obDesc4: 'Bookmark favorite verses, highlight them, and write your own notes — all synced if you create an account.',
+    obSkip: 'Skip',
+    obNext: 'Next',
+    obStart: 'Get Started',
+
     // Quick grid
     bible: 'Bible', bibleDesc: '66 books',
     strongs: 'Strong\'s', strongsDesc: 'Greek · Hebrew', strongsBadge: 'New',
     characters: 'Characters', charactersDesc: 'Profiles of biblical characters',
     maps: 'Maps', mapsDesc: 'Promised Land, Paul\'s journeys, etc.',
+    
     // Nav
     navHome: 'Home', navBible: 'Bible', navSearch: 'Search', navBot: 'Bot', navProfile: 'Profile',
     // Search filters
@@ -1155,6 +1228,7 @@ const miLogin = document.getElementById('miLogin');
 
   const bookSearchBar = document.getElementById('bookSearchBar');
   if (bookSearchBar) bookSearchBar.placeholder = t.bookSearchBarPlaceholder;
+  updateOnboardingLang(lang);
 }
 
 langBtn.addEventListener('click', () => {
@@ -1705,6 +1779,7 @@ function closePlaceInfo() {
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
+  checkOnboarding();
   loadDailyVerse();
   updateProfileUI(null);
   applyLang(currentLang);

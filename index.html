@@ -17,6 +17,43 @@
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <!-- Onboarding -->
+<div class="modal-overlay hidden" id="onboardingModal" style="align-items:center;justify-content:center">
+  <div class="onboarding-card">
+    <div class="onboarding-slides" id="onboardingSlides">
+      <div class="onboarding-slide">
+        <div class="onboarding-emoji">📖</div>
+        <div class="onboarding-title" id="obTitle1">Explora la Biblia</div>
+        <div class="onboarding-desc" id="obDesc1">66 libros, múltiples traducciones, y análisis de palabras originales en griego y hebreo con Strong's.</div>
+      </div>
+      <div class="onboarding-slide">
+        <div class="onboarding-emoji">🤖</div>
+        <div class="onboarding-title" id="obTitle2">Bible Bot</div>
+        <div class="onboarding-desc" id="obDesc2">Pregúntale lo que quieras sobre la Biblia — contexto histórico, explicaciones, comparaciones — y obtén respuestas al instante.</div>
+      </div>
+      <div class="onboarding-slide">
+        <div class="onboarding-emoji">🙏</div>
+        <div class="onboarding-title" id="obTitle3">Devocional diario</div>
+        <div class="onboarding-desc" id="obDesc3">Cada día, un nuevo tema, versículo, reflexión y oración para acompañar tu caminar con Dios.</div>
+      </div>
+      <div class="onboarding-slide">
+        <div class="onboarding-emoji">❤️</div>
+        <div class="onboarding-title" id="obTitle4">Guarda tu recorrido</div>
+        <div class="onboarding-desc" id="obDesc4">Marca versículos favoritos, subráyalos, y escribe tus propias notas — todo sincronizado si creas una cuenta.</div>
+      </div>
+    </div>
+    <div class="onboarding-dots" id="onboardingDots">
+      <div class="onboarding-dot active"></div>
+      <div class="onboarding-dot"></div>
+      <div class="onboarding-dot"></div>
+      <div class="onboarding-dot"></div>
+    </div>
+    <div class="onboarding-actions">
+      <span class="onboarding-skip" id="obSkip" onclick="closeOnboarding()">Saltar</span>
+      <button class="v-btn primary" id="onboardingNextBtn" onclick="onboardingNext()">Siguiente</button>
+    </div>
+  </div>
+</div>
 
 <div class="app">
 

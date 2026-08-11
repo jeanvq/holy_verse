@@ -386,39 +386,35 @@
       <div class="menu-list">
         <div class="menu-item" id="btnLoginMenu" onclick="openAuthSheet()">
           <div class="mi-icon">🔑</div>
-          <div class="mi-label">Iniciar sesión</div>
+          <div class="mi-label" id="miLogin">Iniciar sesión</div>
           <div class="mi-arrow">›</div>
         </div>
         <div class="menu-item" onclick="renderFavorites()">
-  <div class="mi-icon">❤️</div>
-  <div class="mi-label">Mis favoritos</div>
-  <div class="mi-count" id="statFavorites">0</div>
-  <div class="mi-arrow">›</div>
-</div>
+          <div class="mi-icon">❤️</div>
+          <div class="mi-label" id="miFavs">Mis favoritos</div>
+          <div class="mi-count" id="statFavorites">0</div>
+          <div class="mi-arrow">›</div>
+        </div>
         <div class="menu-item" onclick="renderHighlights()">
-  <div class="mi-icon">🖍️</div>
-  <div class="mi-label">Mis subrayados</div>
-  <div class="mi-count" id="statHighlights">0</div>
-  <div class="mi-arrow">›</div>
-</div>
-        <div class="menu-item">
-          <div class="mi-icon">🌐</div>
-          <div class="mi-label">Idioma</div>
+          <div class="mi-icon">🖍️</div>
+          <div class="mi-label" id="miHighlights">Mis Versículos Resaltados</div>
+          <div class="mi-count" id="statHighlights">0</div>
+          <div class="mi-arrow">›</div>
+        </div>
+        <div class="menu-item" onclick="renderNotes()">
+          <div class="mi-icon">📝</div>
+          <div class="mi-label" id="miNotes">Mis notas</div>
+          <div class="mi-count" id="statNotesCount">0</div>
           <div class="mi-arrow">›</div>
         </div>
         <div class="menu-item danger hidden" id="btnLogoutMenu" onclick="logout()">
           <div class="mi-icon">🚪</div>
-          <div class="mi-label">Cerrar sesión</div>
+          <div class="mi-label" id="miLogout">Cerrar sesión</div>
           <div class="mi-arrow">›</div>
         </div>
       </div>
 
-      <div style="text-align:center;margin-top:24px;font-size:12px;color:var(--text3)">
-        <a href="terms.html" style="color:var(--text3)">Términos</a> ·
-        <a href="privacy.html" style="color:var(--text3)">Privacidad</a>
-      </div>
-
-    </div>
+    </div><!-- end screen-profile -->
 
   </div><!-- end page-content -->
 
@@ -517,6 +513,23 @@
   </div>
 </div>
 
+<!-- Nota personal -->
+<div class="modal-overlay hidden" id="noteModal" onclick="closeNoteModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nota personal</div>
+    <div id="noteModalRef" style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);padding:0 20px 4px"></div>
+    <div id="noteModalVerseText" style="font-size:13px;color:var(--text3);padding:0 20px 16px;font-style:italic"></div>
+    <div style="padding:0 20px 16px">
+      <textarea id="noteModalTextarea" class="form-input" rows="5" placeholder="Escribe tu reflexión sobre este versículo..." style="resize:vertical;width:100%;font-family:inherit"></textarea>
+    </div>
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
+      <button class="v-btn" onclick="saveNoteFromModal()">💾 Guardar nota</button>
+      <button class="guest-btn" onclick="closeNoteModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Devocional del Día -->
 <div class="modal-overlay hidden" id="devotionalModal" onclick="closeDevotionalModal(event)">
   <div class="modal-sheet" onclick="event.stopPropagation()">
@@ -568,6 +581,10 @@ if ('serviceWorker' in navigator) {
       <div class="menu-item" onclick="toggleHighlightFromMenu()">
         <div class="mi-icon">🖍️</div>
         <div class="mi-label">Subrayar</div>
+      </div>
+      <div class="menu-item" onclick="toggleNoteFromMenu()">
+        <div class="mi-icon">📝</div>
+        <div class="mi-label">Agregar nota</div>
       </div>
       <div class="menu-item" onclick="copyVerseFromMenu()">
         <div class="mi-icon">📋</div>

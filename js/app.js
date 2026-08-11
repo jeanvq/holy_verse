@@ -333,6 +333,91 @@ async function removeFavorite(id) {
   showToast('Eliminado de favoritos');
 }
 
+// ── NOTAS ──
+async function saveNote(verse, noteText) {
+  const id = sanitizeFavId(verse.reference);
+  const user = auth.currentUser;
+
+  if (user) {
+    await db.collection('users').doc(user.uid).collection('notas').doc(id).set({
+      reference: verse.reference,
+      text: verse.text,
+      note: noteText,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } else {
+    const notes = JSON.parse(localStorage.getItem('hv_notes') || '[]');
+    const filtered = notes.filter(n => n.reference !== verse.reference);
+    filtered.unshift({ id, reference: verse.reference, text: verse.text, note: noteText, savedAt: new Date().toISOString() });
+    localStorage.setItem('hv_notes', JSON.stringify(filtered));
+  }
+}
+
+async function getNotes() {
+  const user = auth.currentUser;
+  if (user) {
+    const snap = await db.collection('users').doc(user.uid).collection('notas').orderBy('savedAt', 'desc').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+  return JSON.parse(localStorage.getItem('hv_notes') || '[]');
+}
+
+async function getNote(reference) {
+  const notes = await getNotes();
+  return notes.find(n => n.reference === reference) || null;
+}
+
+async function removeNote(id) {
+  const user = auth.currentUser;
+  if (user) {
+    await db.collection('users').doc(user.uid).collection('notas').doc(id).delete();
+  } else {
+    const notes = JSON.parse(localStorage.getItem('hv_notes') || '[]');
+    localStorage.setItem('hv_notes', JSON.stringify(notes.filter(n => n.id !== id)));
+  }
+}
+
+async function updateNotesCount() {
+  const notes = await getNotes();
+  const el = document.getElementById('statNotesCount');
+  if (el) el.textContent = notes.length;
+}
+
+async function renderNotes() {
+  const notes = await getNotes();
+  const menu = document.querySelector('.menu-list');
+
+  const existing = document.getElementById('notesList');
+  if (existing) existing.remove();
+
+  if (!notes.length) {
+    showToast('No tienes notas aún');
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.id = 'notesList';
+  list.style.cssText = 'padding: 0 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;';
+
+  list.innerHTML = notes.map(n => `
+    <div class="result-card fade-up" style="position:relative">
+      <div class="result-ref">${n.reference}</div>
+      <div class="result-text" style="font-style:italic;opacity:0.8">${n.text}</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)">${n.note}</div>
+      <button onclick="removeNoteFromProfile('${n.id}')" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+    </div>
+  `).join('');
+
+  menu.after(list);
+}
+
+async function removeNoteFromProfile(id) {
+  await removeNote(id);
+  await renderNotes();
+  updateNotesCount();
+  showToast('Nota eliminada');
+}
+
 // ── SUBRAYADOS ──
 async function saveHighlight(verse) {
   const id = sanitizeFavId(verse.reference);
@@ -728,9 +813,10 @@ function updateProfileUI(user) {
     document.getElementById('btnLoginMenu').classList.remove('hidden');
     document.getElementById('btnLogoutMenu').classList.add('hidden');
   }
-  // Stats
+  
   // Stats
   updateFavoritesCount();
+  updateNotesCount();
 }
 
 // ── STRONG'S INFO ──
@@ -916,6 +1002,7 @@ const translations = {
     profileGuest: 'Inicia sesión para guardar tu progreso',
     menuLogin: 'Iniciar sesión', menuFavs: 'Mis favoritos',
     menuNotes: 'Mis Versículos Resaltados',
+    menuMyNotes: 'Mis notas',
     menuLang: 'Idioma', menuLogout: 'Cerrar sesión',
     // Bible
     strLabel: 'Strong\'s', strHint: 'toca las palabras',
@@ -953,6 +1040,7 @@ const translations = {
     profileGuest: 'Sign in to save your progress',
     menuLogin: 'Sign in', menuFavs: 'My favorites',
     menuNotes: 'My highlighted verses',
+    menuMyNotes: 'My Notes',
     menuLang: 'Language', menuLogout: 'Sign out',
     // Bible
     strLabel: 'Strong\'s', strHint: 'tap highlighted words',
@@ -1026,12 +1114,16 @@ function applyLang(lang) {
   if (profileEmail && profileEmail.textContent.includes('sesión') || profileEmail && profileEmail.textContent.includes('Sign')) {
     profileEmail.textContent = t.profileGuest;
   }
-  const menuItems = document.querySelectorAll('.mi-label');
-if (menuItems[0]) menuItems[0].textContent = t.menuLogin;
-if (menuItems[1]) menuItems[1].textContent = t.menuFavs;
-if (menuItems[2]) menuItems[2].textContent = t.menuNotes;
-if (menuItems[3]) menuItems[3].textContent = t.menuLang;
-if (menuItems[4]) menuItems[4].textContent = t.menuLogout;
+const miLogin = document.getElementById('miLogin');
+  if (miLogin) miLogin.textContent = t.menuLogin;
+  const miFavs = document.getElementById('miFavs');
+  if (miFavs) miFavs.textContent = t.menuFavs;
+  const miHighlights = document.getElementById('miHighlights');
+  if (miHighlights) miHighlights.textContent = t.menuNotes;
+  const miNotes = document.getElementById('miNotes');
+  if (miNotes) miNotes.textContent = t.menuMyNotes;
+  const miLogout = document.getElementById('miLogout');
+  if (miLogout) miLogout.textContent = t.menuLogout;
 
   // Bible chapter nav
   const prevBtn = document.getElementById('btnPrevChapter');

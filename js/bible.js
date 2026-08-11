@@ -197,6 +197,7 @@ window.BibleAPI = {
 
 // ── VERSE MENU ──
 let activeVerse = null;
+let activeNoteVerse = null;
 let longPressTimer = null;
 
 function showVerseMenu(e, reference, text) {
@@ -264,4 +265,45 @@ async function toggleHighlightFromMenu() {
     showToast('⚠️ No se pudo subrayar');
   }
   closeVerseMenu();
+}
+
+async function toggleNoteFromMenu() {
+  if (!activeVerse) return;
+  activeNoteVerse = { ...activeVerse };
+  document.getElementById('noteModalRef').textContent = activeNoteVerse.reference;
+  document.getElementById('noteModalVerseText').textContent = activeNoteVerse.text.replace(/\[\d+\]/g, '');
+  document.getElementById('noteModalTextarea').value = '';
+  closeVerseMenu();
+  document.getElementById('noteModal').classList.remove('hidden');
+
+  try {
+    const existing = await getNote(activeNoteVerse.reference);
+    if (existing) document.getElementById('noteModalTextarea').value = existing.note;
+  } catch (err) {
+    console.error('Error loading note:', err);
+  }
+}
+
+function closeNoteModal(e) {
+  if (!e || e.target === document.getElementById('noteModal')) {
+    document.getElementById('noteModal').classList.add('hidden');
+  }
+}
+
+async function saveNoteFromModal() {
+  if (!activeNoteVerse) return;
+  const text = document.getElementById('noteModalTextarea').value.trim();
+  if (!text) {
+    showToast('Escribe algo antes de guardar');
+    return;
+  }
+  try {
+    await saveNote(activeNoteVerse, text);
+    showToast('📝 Nota guardada');
+    document.getElementById('noteModal').classList.add('hidden');
+    updateNotesCount();
+  } catch (err) {
+    console.error('Note error:', err);
+    showToast('⚠️ No se pudo guardar la nota');
+  }
 }

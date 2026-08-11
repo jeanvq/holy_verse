@@ -257,6 +257,7 @@ async function toggleHighlightFromMenu() {
       showToast('Subrayado quitado');
     } else {
       await saveHighlight(activeVerse);
+      if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('verse_highlighted', { reference: activeVerse.reference });
       showToast('🖍️ Versículo subrayado');
     }
     applyHighlightsToChapter();
@@ -299,6 +300,7 @@ async function saveNoteFromModal() {
   }
   try {
     await saveNote(activeNoteVerse, text);
+    if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('note_added', { reference: activeNoteVerse.reference });
     showToast('📝 Nota guardada');
     document.getElementById('noteModal').classList.add('hidden');
     updateNotesCount();

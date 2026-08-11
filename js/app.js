@@ -41,6 +41,7 @@ function onboardingNext() {
 }
 
 function closeOnboarding() {
+  if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('onboarding_completed');
   localStorage.setItem('hv_onboarding_seen', '1');
   document.getElementById('onboardingModal').classList.add('hidden');
 }
@@ -104,6 +105,7 @@ document.addEventListener('click', function(e) {
 });
 
 function loadMoodVerse(mood) {
+  if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('mood_selected', { mood });
   showToast('Buscando versículo...');
   setTimeout(() => {
     if (window.BibleAPI) BibleAPI.getVerseByMood(mood);
@@ -282,6 +284,7 @@ async function saveFavorite(verse) {
     localStorage.setItem('hv_favorites', JSON.stringify(favs));
   }
 
+  if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('verse_favorited', { reference: verse.reference });
   showToast('❤️ Guardado en favoritos');
   updateFavoritesCount();
 }
@@ -975,6 +978,8 @@ function sendMessage() {
       </div>
     </div>`;
   document.querySelector('.page-content').scrollTop = document.querySelector('.page-content').scrollHeight;
+
+  if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('bot_message_sent');
 
   // Llamar al bot
   if (window.BibleBot) {
@@ -1852,6 +1857,7 @@ async function loadDailyDevotionalBackground() {
     const res  = await fetch(`https://holyverse-api-production.up.railway.app/api/devotional?lang=${lang}`);
     const data = await res.json();
     devotionalData = data;
+    if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('devotional_loaded');
     if (document.getElementById('devotionalTheme')) {
       document.getElementById('devotionalTheme').textContent = data.theme;
       document.getElementById('devotionalVerse').textContent = data.verse;

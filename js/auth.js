@@ -8,12 +8,22 @@ const firebaseConfig = {
   projectId: "holyverse-d2b32",
   storageBucket: "holyverse-d2b32.firebasestorage.app",
   messagingSenderId: "1074473315560",
-  appId: "1:1074473315560:web:7845b4a6eae73d2f83ed5d"
+  appId: "1:1074473315560:web:7845b4a6eae73d2f83ed5d",
+  measurementId: "G-CZV9W7C1Y5"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const analytics = firebase.analytics();
+
+window.logAnalyticsEvent = function(name, params) {
+  try {
+    analytics.logEvent(name, params || {});
+  } catch (err) {
+    console.error('Analytics error:', err);
+  }
+};
 
 const AuthSystem = {
 
@@ -58,6 +68,7 @@ async migrateGuestData(uid) {
   try {
     const cred = await auth.signInWithEmailAndPassword(email, password);
     await this.migrateGuestData(cred.user.uid);
+    logAnalyticsEvent('login', { method: 'email' });
     showToast('✅ Sesión iniciada');
     closeAuthSheet();
     } catch (err) {
@@ -75,6 +86,7 @@ async migrateGuestData(uid) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       await this.migrateGuestData(cred.user.uid);
+      logAnalyticsEvent('sign_up', { method: 'email' });
       showToast('✅ Cuenta creada');
       closeAuthSheet();
     } catch (err) {
@@ -97,6 +109,7 @@ async migrateGuestData(uid) {
         });
       }
       await this.migrateGuestData(user.uid);
+      logAnalyticsEvent('login', { method: 'google' });
       showToast('✅ Sesión iniciada con Google');
       closeAuthSheet();
   } catch (err) {

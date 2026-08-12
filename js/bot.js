@@ -19,11 +19,17 @@ window.BibleBot = {
         body: JSON.stringify({
           message,
           history: this.history.slice(0, -1),
-          lang: window.currentLang || 'es'
+          lang: window.currentLang || 'es',
+          userId: (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.uid : null
         })
       });
 
-      const data  = await res.json();
+      const data = await res.json();
+
+      if (res.status === 429) {
+        return data.error;
+      }
+
       const reply = data.reply || 'No pude obtener respuesta.';
       this.history.push({ role: 'assistant', content: reply });
       return reply;

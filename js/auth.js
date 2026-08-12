@@ -95,13 +95,13 @@ async migrateGuestData(uid) {
   },
 
   async loginWithGoogle() {
-  try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    const result = await auth.signInWithPopup(provider);
-    const user = result.user;
-    const docRef = db.collection('users').doc(user.uid);
-    const doc = await docRef.get();
-    if (!doc.exists) {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      const docRef = db.collection('users').doc(user.uid);
+      const doc = await docRef.get();
+      if (!doc.exists) {
         await docRef.set({
           name: user.displayName || '',
           email: user.email || '',
@@ -112,12 +112,39 @@ async migrateGuestData(uid) {
       logAnalyticsEvent('login', { method: 'google' });
       showToast('✅ Sesión iniciada con Google');
       closeAuthSheet();
-  } catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-      showToast(this.friendlyError(err.code));
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        showToast(this.friendlyError(err.code));
+      }
     }
-  }
-},
+  },
+
+  async loginWithApple() {
+    try {
+      const provider = new firebase.auth.OAuthProvider('apple.com');
+      provider.addScope('email');
+      provider.addScope('name');
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      const docRef = db.collection('users').doc(user.uid);
+      const doc = await docRef.get();
+      if (!doc.exists) {
+        await docRef.set({
+          name: user.displayName || '',
+          email: user.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      await this.migrateGuestData(user.uid);
+      logAnalyticsEvent('login', { method: 'apple' });
+      showToast('✅ Sesión iniciada con Apple');
+      closeAuthSheet();
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        showToast(this.friendlyError(err.code));
+      }
+    }
+  },
 
 async handleRedirectResult() {
   try {
@@ -178,6 +205,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnGoogle = document.getElementById('btnGoogleLogin');
   if (btnGoogle) {
     btnGoogle.addEventListener('click', () => AuthSystem.loginWithGoogle());
+  }
+  const btnApple = document.getElementById('btnAppleLogin');
+  if (btnApple) {
+    btnApple.addEventListener('click', () => AuthSystem.loginWithApple());
   }
 });
 

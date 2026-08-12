@@ -1,0 +1,26 @@
+{
+  "name": "holy_verse",
+  "version": "1.0.0",
+  "description": "Un ecosistema digital que transforma cómo explorar las historias sagradas. No se trata solo de leer versículos, sino de **vivir el universo bíblico** con un toque de tecnología moderna, respeto profundo y cero sermones.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeanvq/holy_verse.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jeanvq/holy_verse/issues"
+  },
+  "homepage": "https://github.com/jeanvq/holy_verse#readme",
+  "dependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0"
+  }
+}

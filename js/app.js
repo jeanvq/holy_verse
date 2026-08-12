@@ -1138,6 +1138,7 @@ function applyLang(lang) {
   // Actualizar versículo del día
   if (window.updateDailyVerseByLang) updateDailyVerseByLang(lang);
   renderBooksGrid();
+  renderCharactersList();
   devotionalData = null;
   loadDailyDevotionalBackground();
 
@@ -1591,7 +1592,18 @@ const CHARACTERS_LIST = [
   { name: 'Pablo',             emoji: '✉️' },
   { name: 'María Magdalena',   emoji: '🌹' },
 ];
+const CHARACTER_NAMES_EN = {
+  'Adán': 'Adam', 'Eva': 'Eve', 'Noé': 'Noah', 'Abraham': 'Abraham', 'Sara': 'Sarah',
+  'Isaac': 'Isaac', 'Jacob': 'Jacob', 'José': 'Joseph', 'Moisés': 'Moses', 'Josué': 'Joshua',
+  'Débora': 'Deborah', 'Sansón': 'Samson', 'Rut': 'Ruth', 'Samuel': 'Samuel', 'David': 'David',
+  'Salomón': 'Solomon', 'Elías': 'Elijah', 'Isaías': 'Isaiah', 'Jeremías': 'Jeremiah', 'Daniel': 'Daniel',
+  'Ester': 'Esther', 'Job': 'Job', 'Jonás': 'Jonah', 'María': 'Mary', 'Juan el Bautista': 'John the Baptist',
+  'Jesús': 'Jesus', 'Pedro': 'Peter', 'Juan': 'John', 'Pablo': 'Paul', 'María Magdalena': 'Mary Magdalene'
+};
 
+function displayCharacterName(name) {
+  return currentLang === 'en' ? (CHARACTER_NAMES_EN[name] || name) : name;
+}
 function renderCharactersList() {
   const list = document.getElementById('charactersList');
   if (!list) return;
@@ -1603,7 +1615,7 @@ function renderCharactersList() {
       transition:all 0.15s;-webkit-tap-highlight-color:transparent">
       
       <div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)">${c.name}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text)">${displayCharacterName(c.name)}</div>
       </div>
       <div style="margin-left:auto;color:var(--text3)">›</div>
     </div>
@@ -1613,19 +1625,21 @@ function renderCharactersList() {
 async function loadCharacterProfile(name) {
   document.getElementById('charactersListView').classList.add('hidden');
   document.getElementById('characterProfileView').classList.remove('hidden');
-  document.getElementById('charProfileName').textContent = name;
+  document.getElementById('charProfileName').textContent = displayCharacterName(name);
   document.getElementById('charProfileContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Cargando perfil...</div>';
 
+  const tribeLabel = currentLang === 'en' ? 'Tribe' : 'Tribu';
+
   try {
-    const res  = await fetch(`${API_CHARACTERS}/api/character/${encodeURIComponent(name)}`);
+    const res  = await fetch(`${API_CHARACTERS}/api/character/${encodeURIComponent(name)}?lang=${currentLang}`);
     const data = await res.json();
 
     document.getElementById('charProfileContent').innerHTML = `
       <div style="text-align:center;margin-bottom:20px">
-        ${data.name === 'Jesús' ? `<div style="font-size:64px;margin-bottom:8px">${data.emoji}</div>` : ''}
+        ${(data.name === 'Jesús' || data.name === 'Jesus') ? `<div style="font-size:64px;margin-bottom:8px">${data.emoji}</div>` : ''}
         <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold)">${data.name}</div>
         <div style="font-size:13px;color:var(--text3);margin-top:4px">${data.role} · ${data.period}</div>
-        ${data.tribe ? `<div style="font-size:12px;color:var(--text3)">Tribu: ${data.tribe}</div>` : ''}
+        ${data.tribe ? `<div style="font-size:12px;color:var(--text3)">${tribeLabel}: ${data.tribe}</div>` : ''}
       </div>
 
       <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">

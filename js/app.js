@@ -1159,11 +1159,11 @@ function applyLang(lang) {
   if (sectionLabels[1]) sectionLabels[1].textContent = t.exploreLabel;
   if (sectionLabels[2]) sectionLabels[2].textContent = t.planLabel;
 
-  // Botones versículo
-  const vBtns = document.querySelectorAll('.v-btn');
-  if (vBtns[0]) vBtns[0].textContent = t.save;
-  if (vBtns[1]) vBtns[1].textContent = t.share;
-  if (vBtns[2]) vBtns[2].textContent = t.read;
+  // Botones versículo (por id, no por posición — btnSaveDaily lo maneja setSaveButtonState aparte)
+  const btnShareDailyEl = document.getElementById('btnShareDaily');
+  if (btnShareDailyEl) btnShareDailyEl.textContent = t.share;
+  const btnReadDailyEl = document.getElementById('btnReadDaily');
+  if (btnReadDailyEl) btnReadDailyEl.textContent = t.read;
 
  // Mood chips
   document.querySelectorAll('.mood-chip').forEach((c, i) => {

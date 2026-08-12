@@ -104,10 +104,10 @@
           <div class="qc-label">Biblia</div>
           <div class="qc-sub">66 libros</div>
         </div>
-        <div class="quick-card" onclick="openStrongsInfo()">
-          <div class="qc-icon">🔤</div>
-          <div class="qc-label">Strong's</div>
-          <div class="qc-sub">Griego · Hebreo</div>
+        <div class="quick-card" onclick="showScreen('context')">
+          <div class="qc-icon">📜</div>
+          <div class="qc-label" id="qcContextLabel">Contexto</div>
+          <div class="qc-sub" id="qcContextDesc">Autor, fecha, temas</div>
         </div>
         <div class="quick-card" onclick="showScreen('characters')">
   <div class="qc-icon">👥</div>
@@ -320,6 +320,37 @@
 
   </div><!-- end page-content -->
 </div><!-- end screen-characters -->
+<!-- ══ CONTEXT ══ -->
+<div id="screen-context" class="screen">
+  <div class="page-content">
+
+    <div id="contextListView">
+      <div id="contextScreenTitle" style="padding:20px 20px 12px;font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold)">
+        Contexto Bíblico
+      </div>
+      <div id="contextScreenSubtitle" style="padding:0 20px 16px;font-size:13px;color:var(--text3)">
+        Selecciona un libro para conocer su contexto
+      </div>
+      <div class="section-label" id="contextOTLabel">Antiguo Testamento</div>
+      <div id="contextOtGrid" class="books-grid"></div>
+      <div class="section-label" id="contextNTLabel">Nuevo Testamento</div>
+      <div id="contextNtGrid" class="books-grid"></div>
+      <div style="height:20px"></div>
+    </div>
+
+    <div id="contextDetailView" class="hidden">
+      <div style="padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+        <button onclick="showContextList()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">←</button>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)" id="contextBookName">-</div>
+      </div>
+      <div id="contextDetailContent" style="padding:20px">
+        <div style="text-align:center;color:var(--text3)">Cargando...</div>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+
+  </div>
+</div>
 
 <!-- ══ MAPS ══ -->
 <div id="screen-maps" class="screen">

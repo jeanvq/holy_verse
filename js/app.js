@@ -62,7 +62,8 @@ function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (name === 'characters') renderCharactersList();
-  if (name === 'characters') renderCharactersList();
+  if (name === 'maps') setTimeout(() => initBibleMap(), 100);
+  if (name === 'context') { renderContextBooksGrid(); showContextList(); }
   if (name === 'maps') setTimeout(() => initBibleMap(), 100);
 
   const screen = document.getElementById('screen-' + name);
@@ -1056,6 +1057,9 @@ const translations = {
     bible: 'Biblia', bibleDesc: '66 libros',
     strongs: 'Strong\'s', strongsDesc: 'Griego · Hebreo', strongsBadge: 'Nuevo',
     characters: 'Personajes', charactersDesc: 'Perfiles de personajes bíblicos',
+    context: 'Contexto', contextDesc: 'Autor, fecha, temas',
+    contextScreenTitle: 'Contexto Bíblico', contextScreenSubtitle: 'Selecciona un libro para conocer su contexto',
+    contextOTLabel: 'Antiguo Testamento', contextNTLabel: 'Nuevo Testamento',
     maps: 'Mapas', mapsDesc: 'Tierra prometida, viajes de Pablo, etc.',
     // Plan
     planTitle: 'Nuevo Testamento en 90 días',
@@ -1112,6 +1116,9 @@ const translations = {
     bible: 'Bible', bibleDesc: '66 books',
     strongs: 'Strong\'s', strongsDesc: 'Greek · Hebrew', strongsBadge: 'New',
     characters: 'Characters', charactersDesc: 'Profiles of biblical characters',
+    context: 'Context', contextDesc: 'Author, date, themes',
+    contextScreenTitle: 'Bible Context', contextScreenSubtitle: 'Select a book to learn its context',
+    contextOTLabel: 'Old Testament', contextNTLabel: 'New Testament',
     maps: 'Maps', mapsDesc: 'Promised Land, Paul\'s journeys, etc.',
     
     // Nav
@@ -1174,8 +1181,8 @@ function applyLang(lang) {
   if (qcLabels[0]) qcLabels[0].textContent = t.bible;
   if (qcSubs[0])   qcSubs[0].textContent   = t.bibleDesc;
   if (qcBadge)     qcBadge.textContent      = t.strongsBadge;
-  if (qcLabels[1]) qcLabels[1].textContent = t.strongs;
-  if (qcSubs[1])   qcSubs[1].textContent   = t.strongsDesc;
+  if (qcLabels[1]) qcLabels[1].textContent = t.context;
+  if (qcSubs[1])   qcSubs[1].textContent   = t.contextDesc;
   if (qcLabels[2]) qcLabels[2].textContent = t.characters;
   if (qcSubs[2])   qcSubs[2].textContent   = t.charactersDesc;
   if (qcLabels[3]) qcLabels[3].textContent = t.maps;
@@ -1248,6 +1255,23 @@ const miLogin = document.getElementById('miLogin');
     const el = document.getElementById(id);
     if (el) el.textContent = t[id];
   });
+  ['mapChip1','mapChip2','mapChip3','mapChip4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t[id];
+  });
+
+  const contextScreenTitle = document.getElementById('contextScreenTitle');
+  if (contextScreenTitle) contextScreenTitle.textContent = t.contextScreenTitle;
+  const contextScreenSubtitle = document.getElementById('contextScreenSubtitle');
+  if (contextScreenSubtitle) contextScreenSubtitle.textContent = t.contextScreenSubtitle;
+  const contextOTLabel = document.getElementById('contextOTLabel');
+  if (contextOTLabel) contextOTLabel.textContent = t.contextOTLabel;
+  const contextNTLabel = document.getElementById('contextNTLabel');
+  if (contextNTLabel) contextNTLabel.textContent = t.contextNTLabel;
+  const qcContextLabel = document.getElementById('qcContextLabel');
+  if (qcContextLabel) qcContextLabel.textContent = t.context;
+  const qcContextDesc = document.getElementById('qcContextDesc');
+  if (qcContextDesc) qcContextDesc.textContent = t.contextDesc;
 }
 
 langBtn.addEventListener('click', () => {
@@ -1693,6 +1717,95 @@ async function loadCharacterProfile(name) {
 function showCharactersList() {
   document.getElementById('charactersListView').classList.remove('hidden');
   document.getElementById('characterProfileView').classList.add('hidden');
+}
+
+// ── CONTEXTO DE LIBROS ──
+function renderContextBooksGrid() {
+  const otGrid = document.getElementById('contextOtGrid');
+  const ntGrid = document.getElementById('contextNtGrid');
+  if (!otGrid || !ntGrid) return;
+
+  otGrid.innerHTML = BOOKS.ot.map(b => `
+    <div class="book-card" onclick="loadBookContext('${b.name}')">
+      <div class="book-card-name">${displayBookName(b.name)}</div>
+    </div>
+  `).join('');
+
+  ntGrid.innerHTML = BOOKS.nt.map(b => `
+    <div class="book-card" onclick="loadBookContext('${b.name}')">
+      <div class="book-card-name">${displayBookName(b.name)}</div>
+    </div>
+  `).join('');
+}
+
+function showContextList() {
+  document.getElementById('contextListView').classList.remove('hidden');
+  document.getElementById('contextDetailView').classList.add('hidden');
+}
+
+async function loadBookContext(name) {
+  document.getElementById('contextListView').classList.add('hidden');
+  document.getElementById('contextDetailView').classList.remove('hidden');
+  document.getElementById('contextBookName').textContent = displayBookName(name);
+  document.getElementById('contextDetailContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Cargando...</div>';
+
+  const labels = currentLang === 'en'
+    ? { author: 'Author', date: 'Date Written', audience: 'Original Audience', genre: 'Genre', themes: 'Themes', keyVerses: 'Key Verses' }
+    : { author: 'Autor', date: 'Fecha de escritura', audience: 'Audiencia original', genre: 'Género', themes: 'Temas', keyVerses: 'Versículos clave' };
+
+  try {
+    const res  = await fetch(`${API_CHARACTERS}/api/book-context/${encodeURIComponent(name)}?lang=${currentLang}`);
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById('contextDetailContent').innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger)">${data.error}</div>`;
+      return;
+    }
+
+    document.getElementById('contextDetailContent').innerHTML = `
+      <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:13px;color:var(--text2);line-height:1.6">${data.summary}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--card);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">${labels.author}</div>
+          <div style="font-size:13px;color:var(--text2)">${data.author}</div>
+        </div>
+        <div style="background:var(--card);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">${labels.date}</div>
+          <div style="font-size:13px;color:var(--text2)">${data.dateWritten}</div>
+        </div>
+        <div style="background:var(--card);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">${labels.audience}</div>
+          <div style="font-size:13px;color:var(--text2)">${data.originalAudience}</div>
+        </div>
+        <div style="background:var(--card);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">${labels.genre}</div>
+          <div style="font-size:13px;color:var(--text2)">${data.genre}</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">${labels.themes}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${data.themes?.map(t => `<span style="background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--gold)">${t}</span>`).join('') || ''}
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">${labels.keyVerses}</div>
+        ${data.keyVerses?.map(v => `
+          <div style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--gold);margin-bottom:4px">${v.reference}</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5;font-style:italic">"${v.text}"</div>
+          </div>
+        `).join('') || ''}
+      </div>
+    `;
+  } catch (err) {
+    document.getElementById('contextDetailContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger)">Error cargando contexto</div>';
+  }
 }
 
 // ── MAPAS BÍBLICOS ──

@@ -4,5 +4,16 @@
   "webDir": "www",
   "ios": {
     "contentInset": "automatic"
+  },
+  "packageClassList": [],
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#0e0e12",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "splashFullScreen": false,
+      "splashImmersive": false
+    }
   }
 }

@@ -94,57 +94,7 @@ async migrateGuestData(uid) {
     }
   },
 
-  async loginWithGoogle() {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(provider);
-      const user = result.user;
-      const docRef = db.collection('users').doc(user.uid);
-      const doc = await docRef.get();
-      if (!doc.exists) {
-        await docRef.set({
-          name: user.displayName || '',
-          email: user.email || '',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-      await this.migrateGuestData(user.uid);
-      logAnalyticsEvent('login', { method: 'google' });
-      showToast('✅ Sesión iniciada con Google');
-      closeAuthSheet();
-    } catch (err) {
-      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-        showToast(this.friendlyError(err.code));
-      }
-    }
-  },
-
-  async loginWithApple() {
-    try {
-      const provider = new firebase.auth.OAuthProvider('apple.com');
-      provider.addScope('email');
-      provider.addScope('name');
-      const result = await auth.signInWithPopup(provider);
-      const user = result.user;
-      const docRef = db.collection('users').doc(user.uid);
-      const doc = await docRef.get();
-      if (!doc.exists) {
-        await docRef.set({
-          name: user.displayName || '',
-          email: user.email || '',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-      await this.migrateGuestData(user.uid);
-      logAnalyticsEvent('login', { method: 'apple' });
-      showToast('✅ Sesión iniciada con Apple');
-      closeAuthSheet();
-    } catch (err) {
-      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-        showToast(this.friendlyError(err.code));
-      }
-    }
-  },
+  
 
 async handleRedirectResult() {
   try {
@@ -166,6 +116,96 @@ async handleRedirectResult() {
     if (err.code) showToast(this.friendlyError(err.code));
   }
 },
+
+  async loginWithGoogle() {
+    try {
+      let user;
+      if (window.Capacitor && Capacitor.isNativePlatform()) {
+        // App nativa: usar el plugin nativo de Google Sign-In
+        const { FirebaseAuthentication } = Capacitor.Plugins;
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        const idToken = result.credential?.idToken;
+        if (!idToken) throw new Error('No se recibió idToken de Google');
+        const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+        const authResult = await auth.signInWithCredential(credential);
+        user = authResult.user;
+      } else {
+        // Web: flujo original con popup
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const authResult = await auth.signInWithPopup(provider);
+        user = authResult.user;
+      }
+      const docRef = db.collection('users').doc(user.uid);
+      const doc = await docRef.get();
+      if (!doc.exists) {
+        await docRef.set({
+          name: user.displayName || '',
+          email: user.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      await this.migrateGuestData(user.uid);
+      logAnalyticsEvent('login', { method: 'google' });
+      showToast('✅ Sesión iniciada con Google');
+      closeAuthSheet();
+    } catch (err) {
+      const cancelled = err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/cancelled-popup-request' ||
+        (err.message && err.message.toLowerCase().includes('cancel'));
+      if (!cancelled) {
+        showToast(this.friendlyError(err.code));
+      }
+    }
+  },
+
+  async loginWithApple() {
+    if (this._appleLoginInProgress) return;
+    this._appleLoginInProgress = true;
+    try {
+      let user;
+      if (window.Capacitor && Capacitor.isNativePlatform()) {
+        // App nativa: usar el plugin nativo de Apple Sign-In
+        const { FirebaseAuthentication } = Capacitor.Plugins;
+        const result = await FirebaseAuthentication.signInWithApple();
+        const idToken = result.credential?.idToken;
+        const rawNonce = result.credential?.nonce;
+        if (!idToken) throw new Error('No se recibió idToken de Apple');
+        const provider = new firebase.auth.OAuthProvider('apple.com');
+        const credential = provider.credential({ idToken, rawNonce });
+        const authResult = await auth.signInWithCredential(credential);
+        user = authResult.user;
+      } else {
+        // Web: flujo original con popup
+        const provider = new firebase.auth.OAuthProvider('apple.com');
+        provider.addScope('email');
+        provider.addScope('name');
+        const authResult = await auth.signInWithPopup(provider);
+        user = authResult.user;
+      }
+      const docRef = db.collection('users').doc(user.uid);
+      const doc = await docRef.get();
+      if (!doc.exists) {
+        await docRef.set({
+          name: user.displayName || '',
+          email: user.email || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      await this.migrateGuestData(user.uid);
+      logAnalyticsEvent('login', { method: 'apple' });
+      showToast('✅ Sesión iniciada con Apple');
+      closeAuthSheet();
+    } catch (err) {
+      const cancelled = err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/cancelled-popup-request' ||
+        (err.message && err.message.toLowerCase().includes('cancel'));
+      if (!cancelled) {
+        showToast(this.friendlyError(err.code));
+      }
+    } finally {
+      this._appleLoginInProgress = false;
+    }
+  },
 
   async forgotPassword(email) {
   if (!email) {

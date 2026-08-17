@@ -1013,7 +1013,8 @@ themeBtn.addEventListener('click', () => {
 });
 
 // ── PERFIL (topbar) ──
-document.getElementById('btnProfile').addEventListener('click', () => showScreen('profile'));
+const btnProfileEl = document.getElementById('btnProfile');
+if (btnProfileEl) btnProfileEl.addEventListener('click', () => showScreen('profile'));
 
 // ── IDIOMA ES/EN ──
 const langBtn = document.getElementById('btnLang');

@@ -192,14 +192,12 @@ a { color: inherit; text-decoration: none; }
 
 /* MOOD */
 .mood-row {
-  display: flex; gap: 8px; padding: 0 20px;
-  overflow-x: auto; scrollbar-width: none;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 20px;
 }
-.mood-row::-webkit-scrollbar { display: none; }
 .mood-chip {
-  flex-shrink: 0; padding: 8px 14px; border-radius: 20px;
+  padding: 8px 6px; border-radius: 20px;
   background: var(--card); border: 1px solid var(--border);
-  font-size: 13px; display: flex; align-items: center; gap: 6px;
+  font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px;
   white-space: nowrap; -webkit-tap-highlight-color: transparent;
 }
 .mood-chip.active {
@@ -514,6 +512,8 @@ a { color: inherit; text-decoration: none; }
   animation: sheetUp 0.3s ease;
 }
 @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+/* Easing más "vivo" tipo iOS para el sheet */
+.modal-sheet { animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1) !important; }
 .modal-handle {
   width: 36px; height: 4px; border-radius: 2px;
   background: var(--border2); margin: 12px auto 16px;
@@ -904,4 +904,20 @@ body.light .bubble.bot {
 @keyframes menuDropIn {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Transiciones táctiles suaves (feel nativo) */
+.icon-btn, .avatar-btn, .v-btn, .quick-card, .mood-chip,
+.menu-item, .ch-btn, .book-card, .result-card, .filter-chip,
+.map-chip, .auth-provider-btn, .submit-btn, .chat-send,
+.search-btn, .nav-item, .strong-tag, .sw-pill {
+  transition: background-color 0.12s ease, opacity 0.12s ease, transform 0.1s ease;
+}
+
+
+/* Sombras sutiles en tarjetas (profundidad nativa) */
+.quick-card, .verse-hero, .plan-strip, .result-card, .book-card,
+.streak-hero, .strongs-panel, .menu-item {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }

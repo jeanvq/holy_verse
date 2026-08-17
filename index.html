@@ -61,9 +61,7 @@
   <header class="topbar">
     <div class="topbar-logo">HolyVerse</div>
     <div class="topbar-actions">
-      <button class="icon-btn" id="btnLang" title="Idioma">ES</button>
-      <button class="icon-btn" id="btnTheme" title="Tema">🌙</button>
-      <button class="avatar-btn" id="btnProfile" title="Perfil">👤</button>
+      <button class="icon-btn" id="btnMenu" title="Menú" onclick="toggleMenuSheet()">☰</button>
     </div>
   </header>
 
@@ -522,6 +520,36 @@
   </div>
 </div>
 
+<!-- Menu Sheet -->
+<div class="modal-overlay hidden" id="menuModal" onclick="closeMenuSheet(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Menú</div>
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
+      <div class="menu-item" onclick="closeMenuSheet();openAuthSheet()">
+        <div class="mi-icon">🔑</div>
+        <div class="mi-label">Iniciar sesión</div>
+        <div class="mi-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="closeMenuSheet();showScreen('profile')">
+        <div class="mi-icon">👤</div>
+        <div class="mi-label">Mi perfil</div>
+        <div class="mi-arrow">›</div>
+      </div>
+      <div class="menu-item" style="cursor:default">
+        <div class="mi-icon">🌐</div>
+        <div class="mi-label">Idioma</div>
+        <button class="icon-btn" id="btnLang" title="Idioma" style="margin-left:auto">ES</button>
+      </div>
+      <div class="menu-item" style="cursor:default">
+        <div class="mi-icon">🌙</div>
+        <div class="mi-label">Tema</div>
+        <button class="icon-btn" id="btnTheme" title="Tema" style="margin-left:auto">🌙</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Auth Sheet -->
 <div class="modal-overlay hidden" id="authModal" onclick="closeAuthSheet(event)">
   <div class="modal-sheet" onclick="event.stopPropagation()">
@@ -637,6 +665,15 @@ if ('serviceWorker' in navigator) {
       .then(() => console.log('SW registered'))
       .catch(err => console.log('SW error', err));
   });
+}
+</script>
+<script>
+function toggleMenuSheet() {
+  document.getElementById('menuModal').classList.toggle('hidden');
+}
+function closeMenuSheet(event) {
+  if (event) event.stopPropagation();
+  document.getElementById('menuModal').classList.add('hidden');
 }
 </script>
 <!-- Verse Menu -->

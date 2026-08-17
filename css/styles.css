@@ -884,3 +884,24 @@ body.light .bubble.bot {
 .onboarding-dot.active { background: var(--gold); }
 .onboarding-actions { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; }
 .onboarding-skip { color: var(--text3); font-size: 14px; cursor: pointer; }
+
+/* Menu dropdown (desde arriba, no bottom sheet) */
+#menuModal {
+  align-items: flex-start;
+  background: rgba(0,0,0,0.5);
+}
+#menuModal .modal-sheet {
+  margin-top: calc(64px + env(safe-area-inset-top, 0px));
+  margin-right: 12px;
+  margin-left: auto;
+  width: auto;
+  min-width: 220px;
+  max-width: 280px;
+  border-radius: var(--r-lg);
+  animation: menuDropIn 0.18s ease;
+}
+#menuModal .modal-handle { display: none; }
+@keyframes menuDropIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

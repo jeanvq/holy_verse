@@ -202,21 +202,13 @@
     <option value="esv">ESV</option>
   </optgroup>
 </select>
-        <div class="font-size-control">
-          <button class="font-size-btn" onclick="decreaseFontSize()">A-</button>
-          <button class="font-size-btn" onclick="increaseFontSize()" style="font-size:19px">A+</button>
-        </div>
-        <button class="icon-btn" id="btnFontFamily" title="Tipografia" onclick="toggleFontModal()">Aa</button>
-        <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
-          <div class="toggle-dot"></div>
-          Strong's
-        </div>
+        <button class="icon-btn" id="btnReadingSettings" title="Ajustes de lectura" onclick="toggleReadingSettings()">⚙️</button>
       </div>
     </div>
 
     <div class="strongs-panel" id="strongsPanel">
       <div class="strongs-placeholder" id="strongsPlaceholder">
-        📜 Toca cualquier versículo para ver sus palabras originales en griego
+        📜 Toca cualquier versículo para ver sus palabras originales en griego o hebreo
       </div>
       <div class="strongs-content hidden" id="strongsContent">
         <div class="strongs-top">
@@ -257,7 +249,7 @@
       <!-- Strong's panel -->
       <div class="strongs-panel" id="strongsPanel">
         <div class="strongs-placeholder" id="strongsPlaceholder">
-  📜 Toca cualquier versículo para ver sus palabras originales en griego
+  📜 Toca cualquier versículo para ver sus palabras originales en griego o hebreo
 </div>
         <div class="strongs-content hidden" id="strongsContent">
           <div class="strongs-top">
@@ -613,11 +605,17 @@
   </div>
 </div>
 
-<!-- Font Sheet -->
-<div class="modal-overlay hidden" id="fontModal" onclick="closeFontModal(event)">
+<!-- Reading Settings Sheet -->
+<div class="modal-overlay hidden" id="readingSettingsModal" onclick="closeReadingSettings(event)">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-title">Tipografia</div>
+    <div class="modal-title">Ajustes de lectura</div>
+    <div style="padding:0 20px 8px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em">Tamaño de letra</div>
+    <div style="padding:0 20px 20px;display:flex;gap:8px">
+      <button class="v-btn" onclick="decreaseFontSize()" style="flex:1">A-</button>
+      <button class="v-btn" onclick="increaseFontSize()" style="flex:1;font-size:17px">A+</button>
+    </div>
+    <div style="padding:0 20px 8px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em">Tipografia</div>
     <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
       <div class="menu-item font-option" id="fontOpt-cormorant" onclick="setVerseFont('cormorant')">
         <div class="mi-label" style="font-family:'Cormorant Garamond',serif;font-size:17px">Cormorant Garamond</div>
@@ -630,6 +628,12 @@
       </div>
       <div class="menu-item font-option" id="fontOpt-dmsans" onclick="setVerseFont('dmsans')">
         <div class="mi-label" style="font-family:'DM Sans',sans-serif;font-size:17px">DM Sans</div>
+      </div>
+    </div>
+    <div style="padding:0 20px 20px">
+      <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()" style="width:100%;box-sizing:border-box;justify-content:center">
+        <div class="toggle-dot"></div>
+        Strong's
       </div>
     </div>
   </div>
@@ -716,14 +720,13 @@ function applyVerseFont(fontId) {
 function setVerseFont(fontId) {
   localStorage.setItem('hv_verse_font', fontId);
   applyVerseFont(fontId);
-  closeFontModal();
 }
-function toggleFontModal() {
-  document.getElementById('fontModal').classList.toggle('hidden');
+function toggleReadingSettings() {
+  document.getElementById('readingSettingsModal').classList.toggle('hidden');
 }
-function closeFontModal(event) {
+function closeReadingSettings(event) {
   if (event) event.stopPropagation();
-  document.getElementById('fontModal').classList.add('hidden');
+  document.getElementById('readingSettingsModal').classList.add('hidden');
 }
 document.addEventListener('DOMContentLoaded', () => {
   applyVerseFont(localStorage.getItem('hv_verse_font') || 'cormorant');

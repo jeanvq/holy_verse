@@ -59,6 +59,8 @@ function updateOnboardingLang(lang) {
 
   // ── NAVEGACIÓN ──
 function showScreen(name) {
+  const strongsFloatEl = document.getElementById('strongsFloating');
+  if (strongsFloatEl) strongsFloatEl.classList.add('hidden');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (name === 'characters') renderCharactersList();
@@ -1239,7 +1241,7 @@ const miLogin = document.getElementById('miLogin');
   if (nextBtn) nextBtn.textContent = t.nextChapter;
 
   // Strong's hint
-  const strHint = document.querySelector('.legend-bar span:last-child');
+  const strHint = document.querySelector('.legend-bar > span:last-child');
   if (strHint) strHint.textContent = t.strHint;
 
   // Bot
@@ -1388,6 +1390,8 @@ function showBooksView() {
   const chapterView = document.getElementById('chapterView');
   if (booksView)   booksView.classList.remove('hidden');
   if (chapterView) chapterView.classList.add('hidden');
+  const strongsFloatEl = document.getElementById('strongsFloating');
+  if (strongsFloatEl) strongsFloatEl.classList.add('hidden');
 }
 
 function showChapterView() {
@@ -1424,7 +1428,7 @@ async function handleVerseClick(e, verseEl) {
 
   try {
     const NT_BOOKS = ['Mateo','Marcos','Lucas','Juan','Hechos','Romanos','1 Corintios','2 Corintios','Gálatas','Efesios','Filipenses','Colosenses','1 Tesalonicenses','2 Tesalonicenses','1 Timoteo','2 Timoteo','Tito','Filemón','Hebreos','Santiago','1 Pedro','2 Pedro','1 Juan','2 Juan','3 Juan','Judas','Apocalipsis'];
-    const isNT     = NT_BOOKS.includes(book);
+    const isNT     = NT_BOOKS.includes(currentBookName);
     const endpoint = isNT
       ? `https://holyverse-api-production.up.railway.app/api/strongswords/${encodeURIComponent(book)}/${chapter}/${verse}`
       : `https://holyverse-api-production.up.railway.app/api/at-strongswords/${encodeURIComponent(book)}/${chapter}/${verse}`;
@@ -1482,7 +1486,7 @@ async function handleVerseClick(e, verseEl) {
     // Mostrar panel con resumen
     floatContent.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:11px;color:var(--text3);text-transform:uppercase">${book} ${chapter}:${verse} · ${isNT ? 'Griego' : 'Hebreo'} original · Toca una palabra azul</span>
+        <span style="font-size:11px;color:var(--text3);text-transform:uppercase">${book} ${chapter}:${verse} · ${isNT ? 'Griego' : 'Hebreo'} original · Toca una palabra resaltada</span>
         <button onclick="closeStrongsFloat()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
       </div>
       <div id="wordDefBox" style="display:none;padding-top:8px">

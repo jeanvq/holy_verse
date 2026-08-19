@@ -940,3 +940,15 @@ body.light .bubble.bot {
   background: rgba(212,168,67,0.1);
   border: 1px solid rgba(212,168,67,0.3);
 }
+
+
+/* Bloquea scroll horizontal accidental de toda la pagina */
+.page-content { overflow-x: hidden; }
+.app { overflow-x: hidden; }
+
+
+/* Evitar que la leyenda Griego/Hebreo se corte por overflow-x:hidden */
+.legend-bar {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}

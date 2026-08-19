@@ -1072,6 +1072,7 @@ const translations = {
     // Profile
     profileGuest: 'Inicia sesión para guardar tu progreso',
     menuLogin: 'Iniciar sesión', menuFavs: 'Mis favoritos',
+    menuTitle: 'Menú', menuProfile: 'Mi perfil', menuLang: 'Idioma', menuTheme: 'Tema',
     menuNotes: 'Mis Versículos Resaltados',
     menuMyNotes: 'Mis notas',
     menuLang: 'Idioma', menuLogout: 'Cerrar sesión',
@@ -1129,6 +1130,7 @@ const translations = {
     // Profile
     profileGuest: 'Sign in to save your progress',
     menuLogin: 'Sign in', menuFavs: 'My favorites',
+    menuTitle: 'Menu', menuProfile: 'My profile', menuLang: 'Language', menuTheme: 'Theme',
     menuNotes: 'My highlighted verses',
     menuMyNotes: 'My Notes',
     menuLang: 'Language', menuLogout: 'Sign out',
@@ -1205,6 +1207,20 @@ function applyLang(lang) {
   if (profileEmail && profileEmail.textContent.includes('sesión') || profileEmail && profileEmail.textContent.includes('Sign')) {
     profileEmail.textContent = t.profileGuest;
   }
+const bibleOTLabelEl = document.getElementById('bibleOTLabel');
+  if (bibleOTLabelEl) bibleOTLabelEl.textContent = t.contextOTLabel;
+  const bibleNTLabelEl = document.getElementById('bibleNTLabel');
+  if (bibleNTLabelEl) bibleNTLabelEl.textContent = t.contextNTLabel;
+const menuTitleEl = document.getElementById('menuModalTitle');
+  if (menuTitleEl) menuTitleEl.textContent = t.menuTitle;
+  const menuLoginEl = document.getElementById('menuItemLogin');
+  if (menuLoginEl) menuLoginEl.textContent = t.menuLogin;
+  const menuProfileEl = document.getElementById('menuItemProfile');
+  if (menuProfileEl) menuProfileEl.textContent = t.menuProfile;
+  const menuLangEl = document.getElementById('menuItemLang');
+  if (menuLangEl) menuLangEl.textContent = t.menuLang;
+  const menuThemeEl = document.getElementById('menuItemTheme');
+  if (menuThemeEl) menuThemeEl.textContent = t.menuTheme;
 const miLogin = document.getElementById('miLogin');
   if (miLogin) miLogin.textContent = t.menuLogin;
   const miFavs = document.getElementById('miFavs');
@@ -1901,8 +1917,10 @@ function initBibleMap() {
     zoomControl: true
   });
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
   }).addTo(bibleMap);
 
   loadMap('holy-land');

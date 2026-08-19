@@ -167,10 +167,10 @@
       <input class="search-input" id="bookSearchBar" placeholder="Juan 3:16 o buscar libro..." oninput="filterBooksGrid(this.value)" style="width:100%;border-radius:10px;padding:10px 14px">
     </div>
 
-    <div class="section-label">Antiguo Testamento</div>
+    <div class="section-label" id="bibleOTLabel">Antiguo Testamento</div>
     <div id="otGrid" class="books-grid"></div>
 
-    <div class="section-label">Nuevo Testamento</div>
+    <div class="section-label" id="bibleNTLabel">Nuevo Testamento</div>
     <div id="ntGrid" class="books-grid"></div>
   </div>
 
@@ -206,6 +206,7 @@
           <button class="font-size-btn" onclick="decreaseFontSize()">A-</button>
           <button class="font-size-btn" onclick="increaseFontSize()" style="font-size:19px">A+</button>
         </div>
+        <button class="icon-btn" id="btnFontFamily" title="Tipografia" onclick="toggleFontModal()">Aa</button>
         <div class="strongs-toggle" id="strongsToggle" onclick="toggleStrongs()">
           <div class="toggle-dot"></div>
           Strong's
@@ -524,26 +525,26 @@
 <div class="modal-overlay hidden" id="menuModal" onclick="closeMenuSheet(event)">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-title">Menú</div>
+    <div class="modal-title" id="menuModalTitle">Menú</div>
     <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
       <div class="menu-item" onclick="closeMenuSheet();openAuthSheet()">
         <div class="mi-icon">🔑</div>
-        <div class="mi-label">Iniciar sesión</div>
+        <div class="mi-label" id="menuItemLogin">Iniciar sesión</div>
         <div class="mi-arrow">›</div>
       </div>
       <div class="menu-item" onclick="closeMenuSheet();showScreen('profile')">
         <div class="mi-icon">👤</div>
-        <div class="mi-label">Mi perfil</div>
+        <div class="mi-label" id="menuItemProfile">Mi perfil</div>
         <div class="mi-arrow">›</div>
       </div>
       <div class="menu-item" style="cursor:default">
         <div class="mi-icon">🌐</div>
-        <div class="mi-label">Idioma</div>
+        <div class="mi-label" id="menuItemLang">Idioma</div>
         <button class="icon-btn" id="btnLang" title="Idioma" style="margin-left:auto">ES</button>
       </div>
       <div class="menu-item" style="cursor:default">
         <div class="mi-icon">🌙</div>
-        <div class="mi-label">Tema</div>
+        <div class="mi-label" id="menuItemTheme">Tema</div>
         <button class="icon-btn" id="btnTheme" title="Tema" style="margin-left:auto">🌙</button>
       </div>
     </div>
@@ -612,6 +613,28 @@
   </div>
 </div>
 
+<!-- Font Sheet -->
+<div class="modal-overlay hidden" id="fontModal" onclick="closeFontModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Tipografia</div>
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
+      <div class="menu-item font-option" id="fontOpt-cormorant" onclick="setVerseFont('cormorant')">
+        <div class="mi-label" style="font-family:'Cormorant Garamond',serif;font-size:17px">Cormorant Garamond</div>
+      </div>
+      <div class="menu-item font-option" id="fontOpt-georgia" onclick="setVerseFont('georgia')">
+        <div class="mi-label" style="font-family:Georgia,'Times New Roman',serif;font-size:17px">Georgia</div>
+      </div>
+      <div class="menu-item font-option" id="fontOpt-system" onclick="setVerseFont('system')">
+        <div class="mi-label" style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:17px">Sistema (San Francisco)</div>
+      </div>
+      <div class="menu-item font-option" id="fontOpt-dmsans" onclick="setVerseFont('dmsans')">
+        <div class="mi-label" style="font-family:'DM Sans',sans-serif;font-size:17px">DM Sans</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Nota personal -->
 <div class="modal-overlay hidden" id="noteModal" onclick="closeNoteModal(event)">
   <div class="modal-sheet" onclick="event.stopPropagation()">
@@ -675,6 +698,36 @@ function closeMenuSheet(event) {
   if (event) event.stopPropagation();
   document.getElementById('menuModal').classList.add('hidden');
 }
+</script>
+<script>
+const FONT_STACKS = {
+  cormorant: "'Cormorant Garamond', serif",
+  georgia: "Georgia, 'Times New Roman', serif",
+  system: "-apple-system, BlinkMacSystemFont, sans-serif",
+  dmsans: "'DM Sans', sans-serif"
+};
+function applyVerseFont(fontId) {
+  const stack = FONT_STACKS[fontId] || FONT_STACKS.cormorant;
+  document.documentElement.style.setProperty('--verse-font', stack);
+  document.querySelectorAll('.font-option').forEach(el => el.classList.remove('active'));
+  const opt = document.getElementById('fontOpt-' + fontId);
+  if (opt) opt.classList.add('active');
+}
+function setVerseFont(fontId) {
+  localStorage.setItem('hv_verse_font', fontId);
+  applyVerseFont(fontId);
+  closeFontModal();
+}
+function toggleFontModal() {
+  document.getElementById('fontModal').classList.toggle('hidden');
+}
+function closeFontModal(event) {
+  if (event) event.stopPropagation();
+  document.getElementById('fontModal').classList.add('hidden');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  applyVerseFont(localStorage.getItem('hv_verse_font') || 'cormorant');
+});
 </script>
 <!-- Verse Menu -->
 <div class="modal-overlay hidden" id="verseMenuModal" onclick="closeVerseMenu()">

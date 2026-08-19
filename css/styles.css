@@ -930,3 +930,13 @@ body.light .bubble.bot {
   display: block;
 }
 .nav-item.active .nav-icon svg { stroke: var(--gold); }
+
+
+/* Selector de tipografia para versiculos */
+.vr-text {
+  font-family: var(--verse-font, 'Cormorant Garamond', serif);
+}
+.font-option.active {
+  background: rgba(212,168,67,0.1);
+  border: 1px solid rgba(212,168,67,0.3);
+}

@@ -224,6 +224,33 @@ async handleRedirectResult() {
     await auth.signOut();
     showToast('Sesión cerrada');
   },
+  async deleteAccount() {
+    const user = auth.currentUser;
+    if (!user) return;
+    const uid = user.uid;
+    try {
+      // Borrar subcolecciones de datos del usuario
+      const subcollections = ['favoritos', 'notas', 'subrayados'];
+      for (const sub of subcollections) {
+        const snap = await db.collection('users').doc(uid).collection(sub).get();
+        const batch = db.batch();
+        snap.forEach(docSnap => batch.delete(docSnap.ref));
+        if (!snap.empty) await batch.commit();
+      }
+      // Borrar el documento principal del usuario
+      await db.collection('users').doc(uid).delete();
+      // Borrar la cuenta de autenticación
+      await user.delete();
+      showToast('Cuenta eliminada');
+      return { success: true };
+    } catch (err) {
+      if (err.code === 'auth/requires-recent-login') {
+        return { success: false, requiresRecentLogin: true };
+      }
+      showToast(this.friendlyError(err.code) || 'Error al eliminar la cuenta');
+      return { success: false, error: err.code };
+    }
+  },
 
   friendlyError(code) {
     const messages = {

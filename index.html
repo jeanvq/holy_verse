@@ -471,9 +471,29 @@
           <div class="mi-label" id="miLogout">Cerrar sesión</div>
           <div class="mi-arrow">›</div>
         </div>
+        <div class="menu-item danger hidden" id="btnDeleteAccountMenu" onclick="openDeleteAccountConfirm()" style="margin-top:8px;border-top:1px solid var(--border);padding-top:16px">
+          <div class="mi-icon">🗑️</div>
+          <div class="mi-label" id="miDeleteAccount">Eliminar cuenta</div>
+          <div class="mi-arrow">›</div>
+        </div>
       </div>
-
     </div><!-- end screen-profile -->
+
+    <!-- Delete Account Confirm Modal -->
+    <div class="modal-overlay hidden" id="deleteAccountModal" onclick="closeDeleteAccountConfirm(event)">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title" id="deleteAccountTitle">⚠️ Eliminar cuenta</div>
+        <div id="deleteAccountBody" style="padding:0 20px 8px;font-size:14px;color:var(--text2);line-height:1.5">
+          Esta acción es permanente. Se eliminarán tu cuenta, tus favoritos, notas y versículos resaltados. No se puede deshacer.
+        </div>
+        <div style="padding:12px 20px 20px;display:flex;flex-direction:column;gap:10px">
+          <button class="ch-btn" id="deleteAccountConfirmBtn" style="background:var(--danger);color:#fff;border:none" onclick="confirmDeleteAccount()">Sí, eliminar mi cuenta</button>
+          <button class="ch-btn" id="deleteAccountCancelBtn" onclick="closeDeleteAccountConfirm()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    </div>
 
   </div><!-- end page-content -->
 

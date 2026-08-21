@@ -801,6 +801,26 @@ function signupWithEmail() {
 function logout() {
   if (window.AuthSystem) AuthSystem.logout();
 }
+function openDeleteAccountConfirm() {
+  document.getElementById('deleteAccountModal').classList.remove('hidden');
+}
+function closeDeleteAccountConfirm(e) {
+  if (!e || e.target === document.getElementById('deleteAccountModal')) {
+    document.getElementById('deleteAccountModal').classList.add('hidden');
+  }
+}
+async function confirmDeleteAccount() {
+  if (!window.AuthSystem) return;
+  const result = await AuthSystem.deleteAccount();
+  if (result && result.success) {
+    closeDeleteAccountConfirm();
+  } else if (result && result.requiresRecentLogin) {
+    closeDeleteAccountConfirm();
+    showToast(currentLang === 'en'
+      ? 'For your security, please log out and sign in again, then retry deleting your account.'
+      : 'Por seguridad, cierra sesión e inicia sesión de nuevo, luego intenta eliminar tu cuenta otra vez.');
+  }
+}
 function forgotPassword() {
   const email = document.getElementById('loginEmail').value;
   AuthSystem.forgotPassword(email);
@@ -858,6 +878,7 @@ function updateProfileUI(user) {
     document.getElementById('profileAvatar').textContent = (user.displayName || 'U')[0].toUpperCase();
     document.getElementById('btnLoginMenu').classList.add('hidden');
     document.getElementById('btnLogoutMenu').classList.remove('hidden');
+    document.getElementById('btnDeleteAccountMenu').classList.remove('hidden');
     const menuLoginItem = document.getElementById('menuItemLogin');
     if (menuLoginItem) {
       menuLoginItem.textContent = user.email || user.displayName || 'Mi cuenta';
@@ -870,6 +891,7 @@ function updateProfileUI(user) {
     document.getElementById('profileAvatar').textContent = '👤';
     document.getElementById('btnLoginMenu').classList.remove('hidden');
     document.getElementById('btnLogoutMenu').classList.add('hidden');
+    document.getElementById('btnDeleteAccountMenu').classList.add('hidden');
     const menuLoginItem2 = document.getElementById('menuItemLogin');
     if (menuLoginItem2) {
       menuLoginItem2.textContent = currentLang === 'en' ? 'Log in' : 'Iniciar sesión';
@@ -1089,7 +1111,11 @@ const translations = {
     menuTitle: 'Menú', menuProfile: 'Mi perfil', menuLang: 'Idioma', menuTheme: 'Tema',
     menuNotes: 'Mis Versículos Resaltados',
     menuMyNotes: 'Mis notas',
-    menuLang: 'Idioma', menuLogout: 'Cerrar sesión',
+    menuLang: 'Idioma', menuLogout: 'Cerrar sesión', miDeleteAccount: 'Eliminar cuenta',
+    deleteAccountTitle: '⚠️ Eliminar cuenta',
+    deleteAccountBody: 'Esta acción es permanente. Se eliminarán tu cuenta, tus favoritos, notas y versículos resaltados. No se puede deshacer.',
+    deleteAccountConfirmBtn: 'Sí, eliminar mi cuenta',
+    deleteAccountCancelBtn: 'Cancelar',
     // Bible
     strLabel: 'Strong\'s', strHint: 'toca las palabras',
     prevChapter: '← Anterior', nextChapter: 'Siguiente →',
@@ -1147,7 +1173,11 @@ const translations = {
     menuTitle: 'Menu', menuProfile: 'My profile', menuLang: 'Language', menuTheme: 'Theme',
     menuNotes: 'My highlighted verses',
     menuMyNotes: 'My Notes',
-    menuLang: 'Language', menuLogout: 'Sign out',
+    menuLang: 'Language', menuLogout: 'Sign out', miDeleteAccount: 'Delete account',
+    deleteAccountTitle: '⚠️ Delete account',
+    deleteAccountBody: 'This action is permanent. Your account, favorites, notes, and highlighted verses will be deleted. This cannot be undone.',
+    deleteAccountConfirmBtn: 'Yes, delete my account',
+    deleteAccountCancelBtn: 'Cancel',
     // Bible
     strLabel: 'Strong\'s', strHint: 'tap highlighted words',
     prevChapter: '← Previous', nextChapter: 'Next →',
@@ -1245,6 +1275,16 @@ const miLogin = document.getElementById('miLogin');
   if (miNotes) miNotes.textContent = t.menuMyNotes;
   const miLogout = document.getElementById('miLogout');
   if (miLogout) miLogout.textContent = t.menuLogout;
+  const miDeleteAccountEl = document.getElementById('miDeleteAccount');
+  if (miDeleteAccountEl) miDeleteAccountEl.textContent = t.miDeleteAccount;
+  const deleteAccountTitleEl = document.getElementById('deleteAccountTitle');
+  if (deleteAccountTitleEl) deleteAccountTitleEl.textContent = t.deleteAccountTitle;
+  const deleteAccountBodyEl = document.getElementById('deleteAccountBody');
+  if (deleteAccountBodyEl) deleteAccountBodyEl.textContent = t.deleteAccountBody;
+  const deleteAccountConfirmBtnEl = document.getElementById('deleteAccountConfirmBtn');
+  if (deleteAccountConfirmBtnEl) deleteAccountConfirmBtnEl.textContent = t.deleteAccountConfirmBtn;
+  const deleteAccountCancelBtnEl = document.getElementById('deleteAccountCancelBtn');
+  if (deleteAccountCancelBtnEl) deleteAccountCancelBtnEl.textContent = t.deleteAccountCancelBtn;
 
   // Bible chapter nav
   const prevBtn = document.getElementById('btnPrevChapter');

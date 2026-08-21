@@ -858,12 +858,24 @@ function updateProfileUI(user) {
     document.getElementById('profileAvatar').textContent = (user.displayName || 'U')[0].toUpperCase();
     document.getElementById('btnLoginMenu').classList.add('hidden');
     document.getElementById('btnLogoutMenu').classList.remove('hidden');
+    const menuLoginItem = document.getElementById('menuItemLogin');
+    if (menuLoginItem) {
+      menuLoginItem.textContent = user.email || user.displayName || 'Mi cuenta';
+      const menuLoginParent = menuLoginItem.closest('.menu-item');
+      if (menuLoginParent) menuLoginParent.onclick = () => { closeMenuSheet(); showScreen('profile'); };
+    }
   } else {
     document.getElementById('profileName').textContent  = 'Usuario';
     document.getElementById('profileEmail').textContent = 'Inicia sesión para guardar tu progreso';
     document.getElementById('profileAvatar').textContent = '👤';
     document.getElementById('btnLoginMenu').classList.remove('hidden');
     document.getElementById('btnLogoutMenu').classList.add('hidden');
+    const menuLoginItem2 = document.getElementById('menuItemLogin');
+    if (menuLoginItem2) {
+      menuLoginItem2.textContent = currentLang === 'en' ? 'Log in' : 'Iniciar sesión';
+      const menuLoginParent2 = menuLoginItem2.closest('.menu-item');
+      if (menuLoginParent2) menuLoginParent2.onclick = () => { closeMenuSheet(); openAuthSheet(); };
+    }
   }
   
   // Stats
@@ -1216,7 +1228,7 @@ const bibleOTLabelEl = document.getElementById('bibleOTLabel');
 const menuTitleEl = document.getElementById('menuModalTitle');
   if (menuTitleEl) menuTitleEl.textContent = t.menuTitle;
   const menuLoginEl = document.getElementById('menuItemLogin');
-  if (menuLoginEl) menuLoginEl.textContent = t.menuLogin;
+  if (menuLoginEl && !(auth && auth.currentUser)) menuLoginEl.textContent = t.menuLogin;
   const menuProfileEl = document.getElementById('menuItemProfile');
   if (menuProfileEl) menuProfileEl.textContent = t.menuProfile;
   const menuLangEl = document.getElementById('menuItemLang');

@@ -764,7 +764,7 @@ function selectBook(name, chapters) {
 
 function updateBibleHeader() {
   document.getElementById('currentBook').textContent = `${currentBookName} ${currentChapter}`;
-  document.getElementById('chapterTitle').textContent = `${currentBookName} — Capítulo ${currentChapter} · RVR 1960`;
+  document.getElementById('chapterTitle').textContent = `${currentBookName} — Capítulo ${currentChapter} · ${(BibleAPI.currentTranslation || 'nbla').toUpperCase()}`;
 }
 
 // ── AUTH SHEET ──

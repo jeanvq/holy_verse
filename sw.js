@@ -1,5 +1,5 @@
 // Service Worker for HolyVerse PWA - Optimized for Performance
-const CACHE_NAME = 'holyverse-v16';
+const CACHE_NAME = 'holyverse-v17';
 const STATIC_CACHE = 'holyverse-static-v14';
 const DYNAMIC_CACHE = 'holyverse-dynamic-v14';
 const IMAGE_CACHE = 'holyverse-images-v14';

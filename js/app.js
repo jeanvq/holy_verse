@@ -86,14 +86,53 @@ function showScreen(name) {
 
 
 // ── TOAST ──
-function showToast(msg, duration = 2500) {
+function showToast(msg, duration = 2500, onClick = null) {
   const existing = document.querySelector('.toast');
   if (existing) existing.remove();
   const toast = document.createElement('div');
   toast.className = 'toast';
   toast.textContent = msg;
+  if (onClick) {
+    toast.classList.add('clickable');
+    toast.style.cursor = 'pointer';
+    toast.addEventListener('click', () => {
+      onClick();
+      toast.remove();
+    });
+  }
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), duration);
+}
+// ── Abre un capítulo/versículo a partir de una referencia tipo "Libro Cap:Vers" ──
+function openVerseFromReference(reference) {
+  const match = reference.match(/^(.+?)\s+(\d+):(\d+)/);
+  if (!match) return;
+  const book    = match[1].trim();
+  const chapter = parseInt(match[2]);
+  const verse   = parseInt(match[3]);
+  showScreen('bible');
+  showChapterView();
+  BibleAPI.loadChapter(book, chapter).then(() => {
+    setTimeout(() => {
+      const verseEls = document.querySelectorAll('.verse-row');
+      let target = null;
+      let closest = null;
+      let closestNum = 0;
+      verseEls.forEach(el => {
+        const num = el.querySelector('.vr-num');
+        if (!num) return;
+        const n = parseInt(num.textContent);
+        if (n === verse) target = el;
+        if (n <= verse && n > closestNum) { closest = el; closestNum = n; }
+      });
+      const scrollTarget = target || closest;
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        scrollTarget.classList.add('hl');
+        setTimeout(() => scrollTarget.classList.remove('hl'), 3000);
+      }
+    }, 300);
+  });
 }
 
 // ── MOOD ──

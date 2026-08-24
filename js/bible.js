@@ -186,7 +186,7 @@ window.BibleAPI = {
   const btn = document.getElementById('btnSaveDaily');
   isFavorited(data.reference).then(saved => setSaveButtonState(btn, saved));
   document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'smooth' });
-  showToast('📖 ' + data.reference);
+  showToast('📖 ' + data.reference + ' · toca para leer', 3000, () => openVerseFromReference(data.reference));
 }
     } catch (err) {
       console.error('Mood verse error:', err);

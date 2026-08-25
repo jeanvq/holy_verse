@@ -1494,7 +1494,14 @@ function showChapterView() {
 
 // ── STRONG'S INLINE (palabras del versículo resaltadas directamente en el texto) ──
 async function handleVerseClick(e, verseEl) {
-  if (!strongsEnabled) return;
+  if (!strongsEnabled) {
+    if (typeof showVerseMenu !== 'function') return;
+    const textEl = verseEl.querySelector('.vr-text');
+    const text = textEl ? textEl.textContent : '';
+    const reference = `${verseEl.dataset.book} ${verseEl.dataset.chapter}:${verseEl.dataset.verse}`;
+    showVerseMenu(e, reference, text);
+    return;
+  }
   if (e.target.closest('.sw-inline')) return;
 
   const book    = verseEl.dataset.book;

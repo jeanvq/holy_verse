@@ -1103,9 +1103,9 @@ const translations = {
     exploreLabel:'Explorar',
     planLabel:   'Devocional del dia',
     save:        '♡ Guardar',
-    share:       '↗ Compartir',
-    read:        '📖 Leer',
-    moods:       ['🌅 Esperanzado','🌪️ Ansioso','🌧️ Dolido','✨ Alegre','🌀 Confundido','🌿 Tranquilo'],
+    share:       'Compartir',
+    read:        'Leer',
+    moods:       ['Esperanzado','Ansioso','Dolido','Alegre','Confundido','Tranquilo'],
     botGreeting: 'Hola 👋 Soy tu guía del universo bíblico. ¿En qué te puedo ayudar?',
     botPlaceholder: 'Pregunta sobre la Biblia...',
     searchPlaceholder: 'Juan 3:16 o \'amor\'...',
@@ -1167,9 +1167,9 @@ const translations = {
     exploreLabel:'Explore',
     planLabel:   'Daily devotional',
     save:        '♡ Save',
-    share:       '↗ Share',
-    read:        '📖 Read',
-    moods:       ['🌅 Hopeful','🌪️ Anxious','🌧️ Grieving','✨ Joyful','🌀 Confused','🌿 Peaceful'],
+    share:       'Share',
+    read:        'Read',
+    moods:       ['Hopeful','Anxious','Grieving','Joyful','Confused','Peaceful'],
     botGreeting: 'Hi 👋 I\'m your biblical universe guide. How can I help you?',
     botPlaceholder: 'Ask about the Bible...',
     searchPlaceholder: 'John 3:16 or \'love\'...',
@@ -1247,15 +1247,15 @@ function applyLang(lang) {
 
   // Botones versículo (por id, no por posición — btnSaveDaily lo maneja setSaveButtonState aparte)
   const btnShareDailyEl = document.getElementById('btnShareDaily');
-  if (btnShareDailyEl) btnShareDailyEl.textContent = t.share;
+  if (btnShareDailyEl) { const lbl = btnShareDailyEl.querySelector('.btn-label'); if (lbl) lbl.textContent = t.share; }
   const btnReadDailyEl = document.getElementById('btnReadDaily');
-  if (btnReadDailyEl) btnReadDailyEl.textContent = t.read;
+  if (btnReadDailyEl) { const lbl = btnReadDailyEl.querySelector('.btn-label'); if (lbl) lbl.textContent = t.read; }
 
  // Mood chips
   document.querySelectorAll('.mood-chip').forEach((c, i) => {
     if (t.moods[i]) {
       const mood = c.dataset.mood;
-      c.textContent = t.moods[i];
+      const lbl = c.querySelector('.mc-label'); if (lbl) lbl.textContent = t.moods[i]; else c.textContent = t.moods[i];
       c.dataset.mood = mood;
     }
   });

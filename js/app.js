@@ -920,14 +920,14 @@ function updateProfileUI(user) {
     document.getElementById('btnDeleteAccountMenu').classList.remove('hidden');
     const menuLoginItem = document.getElementById('menuItemLogin');
     if (menuLoginItem) {
-      menuLoginItem.textContent = user.email || user.displayName || 'Mi cuenta';
+      menuLoginItem.textContent = user.displayName || user.email || 'Mi cuenta';
       const menuLoginParent = menuLoginItem.closest('.menu-item');
       if (menuLoginParent) menuLoginParent.onclick = () => { closeMenuSheet(); showScreen('profile'); };
     }
   } else {
     document.getElementById('profileName').textContent  = 'Usuario';
     document.getElementById('profileEmail').textContent = 'Inicia sesión para guardar tu progreso';
-    document.getElementById('profileAvatar').textContent = '👤';
+    document.getElementById('profileAvatar').innerHTML = "<svg class=\"isvg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7\"/></svg>";
     document.getElementById('btnLoginMenu').classList.remove('hidden');
     document.getElementById('btnLogoutMenu').classList.add('hidden');
     document.getElementById('btnDeleteAccountMenu').classList.add('hidden');
@@ -1075,15 +1075,17 @@ function sendMessage() {
 }
 // ── TEMA CLARO/OSCURO ──
 const themeBtn = document.getElementById('btnTheme');
+const THEME_SUN_SVG = "<svg class=\"isvg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4 12H2M22 12h-2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4\"/></svg>";
+const THEME_MOON_SVG = "<svg class=\"isvg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z\"/></svg>";
 const savedTheme = localStorage.getItem('hv_theme') || 'dark';
 if (savedTheme === 'light') {
   document.body.classList.add('light');
-  themeBtn.textContent = '☀️';
+  themeBtn.innerHTML = THEME_SUN_SVG;
 }
 
 themeBtn.addEventListener('click', () => {
   const isLight = document.body.classList.toggle('light');
-  themeBtn.textContent = isLight ? '☀️' : '🌙';
+  themeBtn.innerHTML = isLight ? THEME_SUN_SVG : THEME_MOON_SVG;
   localStorage.setItem('hv_theme', isLight ? 'light' : 'dark');
 });
 

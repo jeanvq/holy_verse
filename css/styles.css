@@ -890,7 +890,7 @@ body.light .bubble.bot {
 .onboarding-dots { display: flex; justify-content: center; gap: 8px; margin: 16px 0; }
 .onboarding-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.2s; }
 .onboarding-dot.active { background: var(--gold); }
-.onboarding-actions { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; }
+.onboarding-actions { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; gap: 20px; }
 .onboarding-skip { color: var(--text3); font-size: 14px; cursor: pointer; }
 
 /* Menu dropdown (desde arriba, no bottom sheet) */

@@ -13,6 +13,16 @@ let currentChapter  = 3;
 const ONBOARDING_SLIDE_COUNT = 4;
 let onboardingIndex = 0;
 
+let screenHistory = [];
+const GATED_SCREENS = ['bot', 'yearplan', 'characters', 'context'];
+function updateBackButton() {
+  const btn = document.getElementById('btnBack');
+  if (btn) btn.classList.toggle('hidden', screenHistory.length === 0);
+}
+function goBack() {
+  const prev = screenHistory.pop();
+  if (prev) showScreen(prev, { fromBack: true });
+}
 function checkOnboarding() {
   if (localStorage.getItem('hv_onboarding_seen')) return;
   document.getElementById('onboardingModal').classList.remove('hidden');
@@ -58,7 +68,18 @@ function updateOnboardingLang(lang) {
 }
 
   // ── NAVEGACIÓN ──
-function showScreen(name) {
+function showScreen(name, opts) {
+  opts = opts || {};
+  if (GATED_SCREENS.includes(name) && !(auth && auth.currentUser)) {
+    showToast(currentLang === 'en' ? 'Sign in to use this feature' : 'Iniciá sesión para usar esta función');
+    openAuthSheet();
+    return;
+  }
+  const _prevScreenEl = document.querySelector('.screen.active');
+  const _prevScreenName = _prevScreenEl ? _prevScreenEl.id.replace('screen-', '') : null;
+  if (!opts.fromBack && _prevScreenName && _prevScreenName !== name) {
+    screenHistory.push(_prevScreenName);
+  }
   const strongsFloatEl = document.getElementById('strongsFloating');
   if (strongsFloatEl) strongsFloatEl.classList.add('hidden');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -83,6 +104,7 @@ function showScreen(name) {
   // Renderizar libros cuando se abre la pantalla Biblia
   if (name === 'bible') renderBooksGrid();
   if (name === 'yearplan' && window.YearPlan) YearPlan.renderScreen();
+  updateBackButton();
 }
 
 

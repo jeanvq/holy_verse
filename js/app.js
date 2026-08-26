@@ -840,6 +840,25 @@ function signupWithEmail() {
 function logout() {
   if (window.AuthSystem) AuthSystem.logout();
 }
+function openEditNameModal() {
+  const user = auth.currentUser;
+  const input = document.getElementById('editNameInput');
+  if (input) input.value = (user && user.displayName) || '';
+  document.getElementById('editNameModal').classList.remove('hidden');
+}
+function closeEditNameModal(e) {
+  if (!e || e.target === document.getElementById('editNameModal')) {
+    document.getElementById('editNameModal').classList.add('hidden');
+  }
+}
+async function confirmEditName() {
+  if (!window.AuthSystem) return;
+  const input = document.getElementById('editNameInput');
+  const newName = input ? input.value.trim() : '';
+  if (!newName) return;
+  const result = await AuthSystem.updateDisplayName(newName);
+  if (result && result.success) closeEditNameModal();
+}
 function openDeleteAccountConfirm() {
   document.getElementById('deleteAccountModal').classList.remove('hidden');
 }
@@ -918,6 +937,7 @@ function updateProfileUI(user) {
     document.getElementById('btnLoginMenu').classList.add('hidden');
     document.getElementById('btnLogoutMenu').classList.remove('hidden');
     document.getElementById('btnDeleteAccountMenu').classList.remove('hidden');
+    document.getElementById('btnEditName').classList.remove('hidden');
     const menuLoginItem = document.getElementById('menuItemLogin');
     if (menuLoginItem) {
       menuLoginItem.textContent = user.displayName || user.email || 'Mi cuenta';
@@ -931,6 +951,7 @@ function updateProfileUI(user) {
     document.getElementById('btnLoginMenu').classList.remove('hidden');
     document.getElementById('btnLogoutMenu').classList.add('hidden');
     document.getElementById('btnDeleteAccountMenu').classList.add('hidden');
+    document.getElementById('btnEditName').classList.add('hidden');
     const menuLoginItem2 = document.getElementById('menuItemLogin');
     if (menuLoginItem2) {
       menuLoginItem2.textContent = currentLang === 'en' ? 'Log in' : 'Iniciar sesión';

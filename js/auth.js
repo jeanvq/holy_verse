@@ -64,6 +64,20 @@ async migrateGuestData(uid) {
   showToast('✅ Tus favoritos y subrayados de invitado se sincronizaron con tu cuenta');
 },
   
+  async updateDisplayName(newName) {
+    try {
+      const user = auth.currentUser;
+      if (!user) return { success: false };
+      await user.updateProfile({ displayName: newName });
+      await db.collection('users').doc(user.uid).set({ name: newName }, { merge: true });
+      if (typeof updateProfileUI === 'function') updateProfileUI(auth.currentUser);
+      showToast('✅ Nombre actualizado');
+      return { success: true };
+    } catch (err) {
+      showToast(this.friendlyError ? this.friendlyError(err.code) : 'No se pudo actualizar el nombre');
+      return { success: false };
+    }
+  },
   async loginWithEmail(email, password) {
   try {
     const cred = await auth.signInWithEmailAndPassword(email, password);

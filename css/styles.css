@@ -976,3 +976,56 @@ body.light .bubble.bot {
   margin-right: 0;
   color: var(--gold);
 }
+
+/* ── BIBLIA EN UN AÑO ── */
+.yp-home-card {
+  margin: 20px 20px 20px;
+  background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.02));
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.yp-home-icon { flex-shrink: 0; color: var(--gold); }
+.yp-home-icon .isvg { width: 28px; height: 28px; margin-right: 0; }
+.yp-home-text { flex: 1; min-width: 0; }
+.yp-home-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; color: var(--text); }
+.yp-home-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.yp-home-bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); margin-top: 8px; overflow: hidden; }
+.yp-home-bar-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.3s ease; }
+
+.yp-setup { padding: 8px 0 24px; }
+.yp-setup-intro { font-size: 14px; color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
+.yp-setup-label { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin: 16px 0 8px; }
+.yp-testament-row { display: flex; gap: 8px; }
+.yp-test-btn {
+  flex: 1; padding: 12px 8px; border-radius: var(--r-sm);
+  border: 1px solid var(--border2); background: var(--card);
+  color: var(--text2); font-size: 13px; font-weight: 500;
+}
+.yp-test-btn.active { background: rgba(212,168,67,0.12); border-color: rgba(212,168,67,0.3); color: var(--gold); }
+.yp-strongs-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); margin-top: 16px; }
+
+.yp-progress-card, .yp-today-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 16px; margin-bottom: 14px;
+}
+.yp-day-label { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.yp-progress-text { font-size: 12px; color: var(--text3); margin-top: 6px; }
+.yp-today-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.yp-today-reading { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--gold); margin: 6px 0 14px; }
+.yp-today-actions { display: flex; gap: 10px; }
+.yp-today-actions .ch-btn { flex: 1; }
+
+.yp-daylist-title { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin: 20px 0 10px; }
+.yp-daylist { display: flex; flex-direction: column; gap: 2px; padding-bottom: 20px; }
+.yp-day-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; font-size: 13px;
+}
+.yp-day-row.current { background: rgba(212,168,67,0.08); }
+.yp-day-row.done { opacity: 0.55; }
+.yp-day-num { width: 30px; flex-shrink: 0; color: var(--text3); font-size: 12px; }
+.yp-day-reading { flex: 1; color: var(--text2); }
+.yp-day-check { width: 18px; color: var(--gold); flex-shrink: 0; text-align: center; }

@@ -82,6 +82,7 @@ function showScreen(name) {
 
   // Renderizar libros cuando se abre la pantalla Biblia
   if (name === 'bible') renderBooksGrid();
+  if (name === 'yearplan' && window.YearPlan) YearPlan.renderScreen();
 }
 
 
@@ -846,6 +847,11 @@ function openEditNameModal() {
   if (input) input.value = (user && user.displayName) || '';
   document.getElementById('editNameModal').classList.remove('hidden');
 }
+function closeYpPrefsModal(e) {
+  if (!e || e.target === document.getElementById('ypPrefsModal')) {
+    document.getElementById('ypPrefsModal').classList.add('hidden');
+  }
+}
 function closeEditNameModal(e) {
   if (!e || e.target === document.getElementById('editNameModal')) {
     document.getElementById('editNameModal').classList.add('hidden');
@@ -1257,6 +1263,7 @@ function applyLang(lang) {
   renderCharactersList();
   devotionalData = null;
   loadDailyDevotionalBackground();
+  if (window.YearPlan) YearPlan.renderHomeCard();
 
   // Verse hero
   const verseTag = document.querySelector('.verse-tag');
@@ -1405,6 +1412,9 @@ const miLogin = document.getElementById('miLogin');
   if (qcContextLabel) qcContextLabel.textContent = t.context;
   const qcContextDesc = document.getElementById('qcContextDesc');
   if (qcContextDesc) qcContextDesc.textContent = t.contextDesc;
+  const ypTitleEl = document.getElementById('yearPlanScreenTitle');
+  if (ypTitleEl) ypTitleEl.textContent = (lang === 'en' ? 'Bible in a Year' : 'Biblia en un año');
+  if (window.YearPlan) { YearPlan.renderHomeCard(); const ypScreen = document.getElementById('screen-yearplan'); if (ypScreen && ypScreen.classList.contains('active')) YearPlan.renderScreen(); }
 }
 
 langBtn.addEventListener('click', () => {
@@ -2204,3 +2214,4 @@ function saveDevotionalFavorite() {
 
 // ── INIT ──
 loadDailyDevotionalBackground();
+if (window.YearPlan) YearPlan.renderHomeCard();

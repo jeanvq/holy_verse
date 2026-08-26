@@ -112,9 +112,8 @@ function openBibleAt(bookName, chapterNum, translation, wantStrongs) {
   currentChapter = chapterNum;
   showScreen('bible');
   showChapterView();
-  updateBibleHeader();
   if (translation) {
-    BibleAPI.setTranslation(translation); // ya llama a loadChapter con currentBookName/currentChapter
+    BibleAPI.setTranslation(translation); // ya llama a loadChapter con currentBookName/currentChapter, y esa función actualiza el header correctamente
   } else {
     BibleAPI.loadChapter(bookName, chapterNum);
   }
@@ -151,6 +150,10 @@ const YearPlan = {
       this._planCache = { testament, days: _ypBuildPlan(testament) };
     }
     return this._planCache.days;
+  },
+
+  _chaptersInDay(dayData) {
+    return dayData && dayData.entries ? dayData.entries.length : 0;
   },
 
   getTodayDayNumber(config) {
@@ -202,6 +205,37 @@ const YearPlan = {
     showToast(_ypLang() === 'en' ? '✅ Preferences updated' : '✅ Preferencias actualizadas');
   },
 
+  _activeDay: null,
+  _activeDayLast: null,
+
+  isAtBoundary() {
+    return !!(this._activeDay && this._activeDayLast &&
+      currentBookName === this._activeDayLast.book &&
+      currentChapter === this._activeDayLast.chapter);
+  },
+
+  refreshBoundaryUI() {
+    const nextBtn = document.getElementById('btnNextChapter');
+    if (!nextBtn) return;
+    const lang = _ypLang();
+    if (this.isAtBoundary()) {
+      nextBtn.textContent = lang === 'en' ? "✓ Mark as read" : '✓ Marcar como leído';
+      nextBtn.classList.add('yp-boundary-btn');
+    } else {
+      nextBtn.classList.remove('yp-boundary-btn');
+      nextBtn.textContent = (translations[lang] && translations[lang].nextChapter) || (lang === 'en' ? 'Next →' : 'Siguiente →');
+    }
+  },
+
+  async completeActiveDayAndContinue() {
+    const day = this._activeDay;
+    if (!day) return;
+    await this.markComplete(day);
+    this._activeDay = null;
+    this._activeDayLast = null;
+    showScreen('yearplan');
+  },
+
   async start(testament, translation, strongs) {
     const config = {
       testament, translation, strongs,
@@ -240,6 +274,9 @@ const YearPlan = {
     const dayData = plan[dayNumber - 1];
     if (!dayData || !dayData.entries.length) return;
     const first = dayData.entries[0];
+    const alreadyDone = config.completedDays.includes(dayNumber);
+    this._activeDay = alreadyDone ? null : dayNumber;
+    this._activeDayLast = dayData.entries[dayData.entries.length - 1];
     openBibleAt(first.book, first.chapter, config.translation, config.strongs);
   },
 
@@ -259,7 +296,10 @@ const YearPlan = {
       return;
     }
     const dayNum = this.getTodayDayNumber(config);
-    const pct = Math.round((config.completedDays.length / 365) * 100);
+    const planForPct = this.getPlan(config.testament);
+    const totalChapters = planForPct.reduce((sum, d) => sum + this._chaptersInDay(d), 0);
+    const readChapters = config.completedDays.reduce((sum, dnum) => sum + this._chaptersInDay(planForPct[dnum - 1]), 0);
+    const pct = totalChapters ? Math.round((readChapters / totalChapters) * 100) : 0;
     el.innerHTML = `
       <div class="yp-home-icon"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.5 5 8 4.5 3 4.5v14c5 0 7.5.5 9 2 1.5-1.5 4-2 9-2v-14c-5 0-7.5.5-9 2z"/><path d="M12 6.5v14"/></svg></div>
       <div class="yp-home-text">
@@ -303,7 +343,9 @@ const YearPlan = {
     const dayData = plan[dayNum - 1];
     const isDone = config.completedDays.includes(dayNum);
     const readingText = _ypFormatReading(dayData.entries, lang);
-    const pct = Math.round((config.completedDays.length / 365) * 100);
+    const totalChapters2 = plan.reduce((sum, d) => sum + this._chaptersInDay(d), 0);
+    const readChapters2 = config.completedDays.reduce((sum, dnum) => sum + this._chaptersInDay(plan[dnum - 1]), 0);
+    const pct = totalChapters2 ? Math.round((readChapters2 / totalChapters2) * 100) : 0;
 
     const daysListHTML = plan.map(d => {
       const done = config.completedDays.includes(d.day);

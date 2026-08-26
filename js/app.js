@@ -795,6 +795,7 @@ function renderBookList(query) {
 }
 
 function selectBook(name, chapters) {
+  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; }
   currentBookName = name;
   currentChapter  = 1;
   closeBookPicker();
@@ -805,6 +806,7 @@ function selectBook(name, chapters) {
 function updateBibleHeader() {
   document.getElementById('currentBook').textContent = `${currentBookName} ${currentChapter}`;
   document.getElementById('chapterTitle').textContent = `${currentBookName} — Capítulo ${currentChapter} · ${(BibleAPI.currentTranslation || 'nbla').toUpperCase()}`;
+  if (window.YearPlan) YearPlan.refreshBoundaryUI();
 }
 
 // ── AUTH SHEET ──
@@ -1041,6 +1043,10 @@ document.getElementById('btnPrevChapter').addEventListener('click', () => {
   }
 });
 document.getElementById('btnNextChapter').addEventListener('click', () => {
+  if (window.YearPlan && YearPlan.isAtBoundary()) {
+    YearPlan.completeActiveDayAndContinue();
+    return;
+  }
   currentChapter++;
   updateBibleHeader();
   BibleAPI.loadChapter(currentBookName, currentChapter);
@@ -1474,6 +1480,7 @@ function filterBooksGrid(query) {
 }
 
 function selectBookFromGrid(name, totalChapters) {
+  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; }
   currentBookName = name;
 
   // Mostrar selector de capítulos

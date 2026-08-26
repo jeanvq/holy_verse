@@ -20,6 +20,12 @@ function updateBackButton() {
   if (btn) btn.classList.toggle('hidden', screenHistory.length === 0);
 }
 function goBack() {
+  const bibleScreenEl = document.getElementById('screen-bible');
+  const chapterViewEl = document.getElementById('chapterView');
+  if (bibleScreenEl && bibleScreenEl.classList.contains('active') && chapterViewEl && !chapterViewEl.classList.contains('hidden')) {
+    showBooksView();
+    return;
+  }
   const prev = screenHistory.pop();
   if (prev) showScreen(prev, { fromBack: true });
 }

@@ -1,2 +1,7 @@
 node_modules
 www
+# Android release keystore — NUNCA subir a git
+*.jks
+*.keystore
+android/app/google-services.json
+android/keystore.properties

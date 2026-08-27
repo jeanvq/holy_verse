@@ -20,8 +20,12 @@
   "homepage": "https://github.com/jeanvq/holy_verse#readme",
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.4.0",
+    "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
     "@capacitor/ios": "^8.5.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
   }
 }

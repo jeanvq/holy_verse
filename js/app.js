@@ -15,6 +15,7 @@ let onboardingIndex = 0;
 
 let screenHistory = [];
 const GATED_SCREENS = ['bot', 'yearplan', 'characters', 'context'];
+const MAIN_NAV_SCREENS = ['home', 'bible', 'search', 'bot'];
 function updateBackButton() {
   const btn = document.getElementById('btnBack');
   if (btn) btn.classList.toggle('hidden', screenHistory.length === 0);
@@ -83,7 +84,9 @@ function showScreen(name, opts) {
   }
   const _prevScreenEl = document.querySelector('.screen.active');
   const _prevScreenName = _prevScreenEl ? _prevScreenEl.id.replace('screen-', '') : null;
-  if (!opts.fromBack && _prevScreenName && _prevScreenName !== name) {
+  if (MAIN_NAV_SCREENS.includes(name)) {
+    screenHistory = [];
+  } else if (!opts.fromBack && _prevScreenName && _prevScreenName !== name) {
     screenHistory.push(_prevScreenName);
   }
   const strongsFloatEl = document.getElementById('strongsFloating');

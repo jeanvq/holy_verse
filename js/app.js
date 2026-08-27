@@ -18,7 +18,11 @@ const GATED_SCREENS = ['bot', 'yearplan', 'characters', 'context'];
 const MAIN_NAV_SCREENS = ['home', 'bible', 'search', 'bot'];
 function updateBackButton() {
   const btn = document.getElementById('btnBack');
-  if (btn) btn.classList.toggle('hidden', screenHistory.length === 0);
+  if (!btn) return;
+  const bibleScreenEl = document.getElementById('screen-bible');
+  const chapterViewEl = document.getElementById('chapterView');
+  const inChapter = bibleScreenEl && bibleScreenEl.classList.contains('active') && chapterViewEl && !chapterViewEl.classList.contains('hidden');
+  btn.classList.toggle('hidden', screenHistory.length === 0 && !inChapter);
 }
 function goBack() {
   const bibleScreenEl = document.getElementById('screen-bible');
@@ -1554,6 +1558,7 @@ function showBooksView() {
   if (chapterView) chapterView.classList.add('hidden');
   const strongsFloatEl = document.getElementById('strongsFloating');
   if (strongsFloatEl) strongsFloatEl.classList.add('hidden');
+  updateBackButton();
 }
 
 function showChapterView() {
@@ -1561,6 +1566,7 @@ function showChapterView() {
   const chapterView = document.getElementById('chapterView');
   if (booksView)   booksView.classList.add('hidden');
   if (chapterView) chapterView.classList.remove('hidden');
+  updateBackButton();
 }
 
 // ── STRONG'S INLINE (palabras del versículo resaltadas directamente en el texto) ──

@@ -2258,7 +2258,8 @@ function saveDevotionalFavorite() {
 
 // ── INIT ──
 loadDailyDevotionalBackground();
-if (window.YearPlan) YearPlan.renderHomeCard();\n
+if (window.YearPlan) YearPlan.renderHomeCard();
+
 // ── BOTÓN FÍSICO/GESTO ATRÁS DE ANDROID ──
 if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) {
   Capacitor.Plugins.App.addListener('backButton', () => {

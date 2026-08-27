@@ -2258,4 +2258,23 @@ function saveDevotionalFavorite() {
 
 // ── INIT ──
 loadDailyDevotionalBackground();
-if (window.YearPlan) YearPlan.renderHomeCard();
+if (window.YearPlan) YearPlan.renderHomeCard();\n
+// ── BOTÓN FÍSICO/GESTO ATRÁS DE ANDROID ──
+if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) {
+  Capacitor.Plugins.App.addListener('backButton', () => {
+    const openModal = Array.from(document.querySelectorAll('.modal-overlay'))
+      .find(m => !m.classList.contains('hidden'));
+    if (openModal) {
+      openModal.classList.add('hidden');
+      return;
+    }
+    const bibleScreenEl = document.getElementById('screen-bible');
+    const chapterViewEl = document.getElementById('chapterView');
+    const inChapter = bibleScreenEl && bibleScreenEl.classList.contains('active') && chapterViewEl && !chapterViewEl.classList.contains('hidden');
+    if (screenHistory.length > 0 || inChapter) {
+      goBack();
+      return;
+    }
+    Capacitor.Plugins.App.exitApp();
+  });
+}

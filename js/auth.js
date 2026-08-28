@@ -25,6 +25,18 @@ window.logAnalyticsEvent = function(name, params) {
   }
 };
 
+// ── Se dispara cada vez que Firebase confirma el estado real de sesión
+// (al abrir la app con sesión ya guardada, tras login, o logout) — evita
+// que otras partes de la app lean datos viejos de localStorage antes de
+// que auth.currentUser esté realmente confirmado.
+auth.onAuthStateChanged((user) => {
+  if (typeof updateProfileUI === 'function') updateProfileUI(user);
+  if (window.YearPlan) {
+    YearPlan.renderHomeCard();
+    const ypScreen = document.getElementById('screen-yearplan');
+    if (ypScreen && ypScreen.classList.contains('active')) YearPlan.renderScreen();
+  }
+});
 const AuthSystem = {
 
 async migrateGuestData(uid) {

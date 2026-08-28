@@ -25,6 +25,11 @@ function updateBackButton() {
   btn.classList.toggle('hidden', screenHistory.length === 0 && !inChapter);
 }
 function goBack() {
+  if (window.YearPlan && YearPlan._openedFromPlan) {
+    YearPlan._openedFromPlan = false;
+    showScreen('yearplan');
+    return;
+  }
   const bibleScreenEl = document.getElementById('screen-bible');
   const chapterViewEl = document.getElementById('chapterView');
   if (bibleScreenEl && bibleScreenEl.classList.contains('active') && chapterViewEl && !chapterViewEl.classList.contains('hidden')) {
@@ -830,7 +835,7 @@ function renderBookList(query) {
 }
 
 function selectBook(name, chapters) {
-  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; }
+  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; YearPlan._openedFromPlan = false; }
   currentBookName = name;
   currentChapter  = 1;
   closeBookPicker();
@@ -1515,7 +1520,7 @@ function filterBooksGrid(query) {
 }
 
 function selectBookFromGrid(name, totalChapters) {
-  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; }
+  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; YearPlan._openedFromPlan = false; }
   currentBookName = name;
 
   // Mostrar selector de capítulos

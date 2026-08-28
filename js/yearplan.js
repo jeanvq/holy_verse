@@ -277,6 +277,7 @@ const YearPlan = {
     const alreadyDone = config.completedDays.includes(dayNumber);
     this._activeDay = alreadyDone ? null : dayNumber;
     this._activeDayLast = dayData.entries[dayData.entries.length - 1];
+    this._openedFromPlan = true;
     openBibleAt(first.book, first.chapter, config.translation, config.strongs);
   },
 

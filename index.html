@@ -674,7 +674,10 @@
 <div class="modal-overlay hidden" id="readingSettingsModal" onclick="closeReadingSettings(event)">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-title">Ajustes de lectura</div>
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Ajustes de lectura</span>
+      <button class="icon-btn" onclick="closeReadingSettings()" title="Cerrar" style="width:28px;height:28px"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+    </div>
     <div style="padding:0 20px 8px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em">Tamaño de letra</div>
     <div style="padding:0 20px 20px;display:flex;gap:8px">
       <button class="v-btn" onclick="decreaseFontSize()" style="flex:1">A-</button>

@@ -106,6 +106,7 @@ async migrateGuestData(uid) {
     try {
       const cred = await auth.createUserWithEmailAndPassword(email, password);
       await cred.user.updateProfile({ displayName: name });
+      if (typeof updateProfileUI === 'function') updateProfileUI(auth.currentUser);
       await db.collection('users').doc(cred.user.uid).set({
         name,
         email,

@@ -835,7 +835,7 @@ function renderBookList(query) {
 }
 
 function selectBook(name, chapters) {
-  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; YearPlan._openedFromPlan = false; }
+  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; YearPlan._activeDayEntries = null; YearPlan._openedFromPlan = false; }
   currentBookName = name;
   currentChapter  = 1;
   closeBookPicker();
@@ -1520,7 +1520,7 @@ function filterBooksGrid(query) {
 }
 
 function selectBookFromGrid(name, totalChapters) {
-  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; YearPlan._openedFromPlan = false; }
+  if (window.YearPlan) { YearPlan._activeDay = null; YearPlan._activeDayLast = null; YearPlan._activeDayEntries = null; YearPlan._openedFromPlan = false; }
   currentBookName = name;
 
   // Mostrar selector de capítulos

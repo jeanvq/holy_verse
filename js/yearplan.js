@@ -26,6 +26,7 @@ const YP_STR = {
     markDoneBtn: 'Marcar como leído',
     doneLabel: '✓ Completado',
     allDaysTitle: 'Todos los días',
+    chapterProgress: (i, n) => `Lectura ${i} de ${n}`,
     prefsTitle: 'Preferencias del plan',
     prefsTranslationLabel: 'Traducción',
     prefsStrongsLabel: "Activar Strong's (griego/hebreo)",
@@ -52,6 +53,7 @@ const YP_STR = {
     markDoneBtn: 'Mark as read',
     doneLabel: '✓ Completed',
     allDaysTitle: 'All days',
+    chapterProgress: (i, n) => `Reading ${i} of ${n}`,
     prefsTitle: 'Plan preferences',
     prefsTranslationLabel: 'Translation',
     prefsStrongsLabel: "Enable Strong's (Greek/Hebrew)",
@@ -218,6 +220,24 @@ const YearPlan = {
     const nextBtn = document.getElementById('btnNextChapter');
     if (!nextBtn) return;
     const lang = _ypLang();
+    const S = YP_STR[lang];
+    let progressEl = document.getElementById('ypChapterProgress');
+    if (this._activeDay && this._activeDayLast) {
+      if (!progressEl) {
+        progressEl = document.createElement('div');
+        progressEl.id = 'ypChapterProgress';
+        progressEl.style.cssText = 'text-align:center;font-size:12px;color:var(--text3);padding:6px 0;';
+        nextBtn.parentElement.insertAdjacentElement('beforebegin', progressEl);
+      }
+      const config_ = this._activeDayEntries;
+      if (config_) {
+        const idx = config_.findIndex(e => e.book === currentBookName && e.chapter === currentChapter);
+        if (idx >= 0) progressEl.textContent = S.chapterProgress(idx + 1, config_.length);
+      }
+      progressEl.style.display = '';
+    } else if (progressEl) {
+      progressEl.style.display = 'none';
+    }
     if (this.isAtBoundary()) {
       nextBtn.textContent = lang === 'en' ? "✓ Mark as read" : '✓ Marcar como leído';
       nextBtn.classList.add('yp-boundary-btn');
@@ -233,6 +253,7 @@ const YearPlan = {
     await this.markComplete(day);
     this._activeDay = null;
     this._activeDayLast = null;
+    this._activeDayEntries = null;
     showScreen('yearplan');
   },
 
@@ -277,6 +298,7 @@ const YearPlan = {
     const alreadyDone = config.completedDays.includes(dayNumber);
     this._activeDay = alreadyDone ? null : dayNumber;
     this._activeDayLast = dayData.entries[dayData.entries.length - 1];
+    this._activeDayEntries = alreadyDone ? null : dayData.entries;
     this._openedFromPlan = true;
     openBibleAt(first.book, first.chapter, config.translation, config.strongs);
   },
@@ -368,10 +390,9 @@ const YearPlan = {
         <div class="yp-today-label">${S.todayLabel}</div>
         <div class="yp-today-reading">${readingText}</div>
         <div class="yp-today-actions">
-          <button class="ch-btn" onclick="YearPlan.openToday()">${S.readBtn}</button>
           ${isDone
-            ? `<button class="ch-btn" disabled style="opacity:0.6">${S.doneLabel}</button>`
-            : `<button class="ch-btn" style="background:var(--gold);color:var(--ink);border:none" onclick="YearPlan.markComplete(${dayNum})">${S.markDoneBtn}</button>`
+            ? `<button class="ch-btn" disabled style="opacity:0.6;flex:1">${S.doneLabel}</button>`
+            : `<button class="ch-btn" style="background:var(--gold);color:var(--ink);border:none;flex:1" onclick="YearPlan.openToday()">${S.readBtn}</button>`
           }
         </div>
       </div>

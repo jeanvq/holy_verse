@@ -845,7 +845,7 @@ function selectBook(name, chapters) {
 
 function updateBibleHeader() {
   document.getElementById('currentBook').textContent = `${currentBookName} ${currentChapter}`;
-  document.getElementById('chapterTitle').textContent = `${currentBookName} — Capítulo ${currentChapter} · ${(BibleAPI.currentTranslation || 'nbla').toUpperCase()}`;
+  document.getElementById('chapterTitle').textContent = `${currentBookName} — Capítulo ${currentChapter}`;
   if (window.YearPlan) YearPlan.refreshBoundaryUI();
 }
 

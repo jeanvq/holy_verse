@@ -36,8 +36,8 @@ window.BibleAPI = {
 
       // Actualizar header
       document.getElementById('currentBook').textContent = `${displayName} ${chapter}`;
-      document.getElementById('chapterTitle').textContent = `${displayName} — Capítulo ${chapter} · ${this.currentTranslation.toUpperCase()}`;
-      document.getElementById('currentTranslation').textContent = this.currentTranslation.toUpperCase();
+      document.getElementById('chapterTitle').textContent = `${displayName} — Capítulo ${chapter}`;
+      document.getElementById('currentTranslation').textContent = '';
       document.querySelectorAll('#translationSelect, .translation-inline-select').forEach(sel => { sel.value = this.currentTranslation; });
 
       // Renderizar versículos

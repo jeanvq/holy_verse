@@ -201,7 +201,7 @@ let activeVerse = null;
 let activeNoteVerse = null;
 let longPressTimer = null;
 
-function showVerseMenu(e, reference, text) {
+async function showVerseMenu(e, reference, text) {
   e.preventDefault();
   const row = e.currentTarget || e.target.closest('.verse-row');
   activeVerse = {
@@ -214,6 +214,14 @@ function showVerseMenu(e, reference, text) {
   document.getElementById('verseMenuRef').textContent = reference;
   document.getElementById('verseMenuText').textContent = text.replace(/\[\d+\]/g, '');
   document.getElementById('verseMenuModal').classList.remove('hidden');
+  const highlightLabel = document.getElementById('verseMenuHighlightLabel');
+  if (highlightLabel) {
+    const lang = window.currentLang || 'es';
+    const already = await isHighlighted(reference);
+    highlightLabel.textContent = already
+      ? (lang === 'en' ? 'Remove highlight' : 'Quitar resaltado')
+      : (lang === 'en' ? 'Highlight' : 'Subrayar');
+  }
 }
 
 function closeVerseMenu() {

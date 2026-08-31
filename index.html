@@ -179,6 +179,10 @@
 
   <!-- Vista capítulo -->
   <div id="chapterView" class="hidden">
+    <div class="chapter-float-nav">
+      <button class="chapter-float-btn" onclick="document.getElementById('btnPrevChapter').click()" title="Capítulo anterior"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="chapter-float-btn primary" onclick="document.getElementById('btnNextChapter').click()" title="Capítulo siguiente"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+    </div>
     <div class="bible-header">
       <div class="bible-picker" id="biblePicker" onclick="showBooksView()">
         <div>

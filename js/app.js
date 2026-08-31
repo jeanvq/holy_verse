@@ -103,6 +103,7 @@ function showScreen(name, opts) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (name === 'characters') renderCharactersList();
+  if (name === 'search') restoreLastSearch();
   if (name === 'maps') setTimeout(() => initBibleMap(), 100);
   if (name === 'context') { renderContextBooksGrid(); showContextList(); }
   if (name === 'maps') setTimeout(() => initBibleMap(), 100);
@@ -1061,8 +1062,30 @@ document.querySelectorAll('.filter-chip').forEach((chip, i) => {
   });
 });
 
+function restoreLastSearch() {
+  const raw = sessionStorage.getItem('hv_last_search');
+  if (!raw) return;
+  try {
+    const { query, filter } = JSON.parse(raw);
+    const input = document.getElementById('searchInput');
+    if (input && query && !input.value) {
+      input.value = query;
+      if (filter && filter !== 'all') {
+        const idx = ['all', 'ot', 'nt', 'saved'].indexOf(filter);
+        const chips = document.querySelectorAll('.filter-chip');
+        if (chips[idx]) {
+          chips.forEach(c => c.classList.remove('active'));
+          chips[idx].classList.add('active');
+          currentSearchFilter = filter;
+        }
+      }
+      doSearch();
+    }
+  } catch (e) {}
+}
 function doSearch() {
   const query = document.getElementById('searchInput').value.trim();
+  sessionStorage.setItem('hv_last_search', JSON.stringify({ query, filter: currentSearchFilter }));
   if (!query) { showToast('Escribe algo para buscar'); return; }
   if (window.BibleAPI) {
     BibleAPI.search(query, currentSearchFilter);

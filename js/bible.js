@@ -145,7 +145,7 @@ window.BibleAPI = {
       }
 
       results.innerHTML = verses.map(v => `
-        <div class="result-card fade-up">
+        <div class="result-card fade-up" onclick="openVerseFromReference('${v.reference.replace(/'/g,"\\'")}')" style="cursor:pointer">
           <div class="result-ref">${v.reference}</div>
           <div class="result-text">${v.text}</div>
         </div>

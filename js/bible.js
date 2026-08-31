@@ -270,6 +270,11 @@ async function toggleHighlightFromMenu() {
       showToast('🖍️ Versículo subrayado');
     }
     applyHighlightsToChapter();
+    const highlightsEl = document.getElementById('statHighlights');
+    if (highlightsEl && typeof getHighlights === 'function') {
+      const highlights = await getHighlights();
+      highlightsEl.textContent = highlights.length;
+    }
   } catch (err) {
     console.error('Highlight error:', err);
     showToast('⚠️ No se pudo subrayar');

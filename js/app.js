@@ -633,6 +633,11 @@ async function renderHighlights() {
 async function removeHighlightFromProfile(id) {
   await removeHighlight(id);
   await renderHighlights();
+  const highlightsEl = document.getElementById('statHighlights');
+  if (highlightsEl) {
+    const highlights = await getHighlights();
+    highlightsEl.textContent = highlights.length;
+  }
   showToast('Subrayado eliminado');
 }
 

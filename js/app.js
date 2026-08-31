@@ -663,6 +663,7 @@ function toggleStrongs() {
   toggle.classList.toggle('on', strongsEnabled);
   panel.classList.toggle('visible', strongsEnabled);
   legend.classList.toggle('hidden', !strongsEnabled);
+  if (strongsEnabled) { panel.classList.add('hidden'); }
 
   if (!strongsEnabled) {
     document.getElementById('strongsPlaceholder').classList.remove('hidden');

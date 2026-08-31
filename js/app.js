@@ -396,30 +396,23 @@ async function updateFavoritesCount() {
 }
 
 async function renderFavorites() {
+  showScreen('mycontent');
+  const title = document.getElementById('myContentTitle');
+  if (title) title.textContent = currentLang === 'en' ? 'My favorites' : 'Mis favoritos';
   const favs = await getFavorites();
-  const menu = document.querySelector('.menu-list');
-
-  const existing = document.getElementById('favoritesList');
-  if (existing) existing.remove();
-
+  const body = document.getElementById('myContentBody');
+  if (!body) return;
   if (!favs.length) {
-    showToast('No tienes favoritos aún');
+    body.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--text3);font-size:14px">${currentLang === 'en' ? 'No favorites yet' : 'No tienes favoritos aún'}</div>`;
     return;
   }
-
-  const list = document.createElement('div');
-  list.id = 'favoritesList';
-  list.style.cssText = 'padding: 0 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;';
-
-  list.innerHTML = favs.map(v => `
+  body.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` + favs.map(v => `
     <div class="result-card fade-up" style="position:relative">
       <div class="result-ref">${v.reference}</div>
       <div class="result-text">${v.text}</div>
-      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Remove this favorite?' : '¿Eliminar este favorito?', () => removeFavorite('${v.id}'))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Remove this favorite?' : '¿Eliminar este favorito?', () => removeFavorite('${v.id}').then(renderFavorites))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
     </div>
-  `).join('');
-
-  menu.after(list);
+  `).join('') + `</div>`;
 }
 
 async function isFavorited(reference) {
@@ -521,31 +514,24 @@ async function updateNotesCount() {
 }
 
 async function renderNotes() {
+  showScreen('mycontent');
+  const title = document.getElementById('myContentTitle');
+  if (title) title.textContent = currentLang === 'en' ? 'My notes' : 'Mis notas';
   const notes = await getNotes();
-  const menu = document.querySelector('.menu-list');
-
-  const existing = document.getElementById('notesList');
-  if (existing) existing.remove();
-
+  const body = document.getElementById('myContentBody');
+  if (!body) return;
   if (!notes.length) {
-    showToast('No tienes notas aún');
+    body.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--text3);font-size:14px">${currentLang === 'en' ? 'No notes yet' : 'No tienes notas aún'}</div>`;
     return;
   }
-
-  const list = document.createElement('div');
-  list.id = 'notesList';
-  list.style.cssText = 'padding: 0 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;';
-
-  list.innerHTML = notes.map(n => `
+  body.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` + notes.map(n => `
     <div class="result-card fade-up" style="position:relative">
       <div class="result-ref">${n.reference}</div>
       <div class="result-text" style="font-style:italic;opacity:0.8">${n.text}</div>
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)">${n.note}</div>
-      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Delete this note?' : '¿Eliminar esta nota?', () => removeNoteFromProfile('${n.id}'))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Delete this note?' : '¿Eliminar esta nota?', () => removeNoteFromProfile('${n.id}').then(renderNotes))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
     </div>
-  `).join('');
-
-  menu.after(list);
+  `).join('') + `</div>`;
 }
 
 async function removeNoteFromProfile(id) {
@@ -609,30 +595,23 @@ async function isHighlighted(reference) {
 }
 
 async function renderHighlights() {
+  showScreen('mycontent');
+  const title = document.getElementById('myContentTitle');
+  if (title) title.textContent = currentLang === 'en' ? 'My highlights' : 'Mis resaltados';
   const highlights = await getHighlights();
-  const menu = document.querySelector('.menu-list');
-
-  const existing = document.getElementById('highlightsList');
-  if (existing) existing.remove();
-
+  const body = document.getElementById('myContentBody');
+  if (!body) return;
   if (!highlights.length) {
-    showToast('No tienes versículos subrayados aún');
+    body.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--text3);font-size:14px">${currentLang === 'en' ? 'No highlights yet' : 'No tienes versículos subrayados aún'}</div>`;
     return;
   }
-
-  const list = document.createElement('div');
-  list.id = 'highlightsList';
-  list.style.cssText = 'padding: 0 20px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;';
-
-  list.innerHTML = highlights.map(v => `
+  body.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` + highlights.map(v => `
     <div class="result-card fade-up" style="position:relative;border-left:3px solid var(--gold)">
       <div class="result-ref">${v.reference}</div>
       <div class="result-text">${v.text}</div>
-      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Remove this highlight?' : '¿Quitar este resaltado?', () => removeHighlightFromProfile('${v.id}'))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Remove this highlight?' : '¿Quitar este resaltado?', () => removeHighlightFromProfile('${v.id}').then(renderHighlights))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
     </div>
-  `).join('');
-
-  menu.after(list);
+  `).join('') + `</div>`;
 }
 
 async function removeHighlightFromProfile(id) {

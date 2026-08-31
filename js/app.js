@@ -1009,6 +1009,7 @@ function updateProfileUI(user) {
     document.getElementById('btnLoginMenu').classList.add('hidden');
     document.getElementById('btnLogoutMenu').classList.remove('hidden');
     document.getElementById('btnDeleteAccountMenu').classList.remove('hidden');
+    const myContentRow = document.getElementById('menuItemMyContentRow'); if (myContentRow) myContentRow.style.display = '';
     document.getElementById('btnEditName').classList.remove('hidden');
     const menuLoginItem = document.getElementById('menuItemLogin');
     if (menuLoginItem) {
@@ -1023,6 +1024,7 @@ function updateProfileUI(user) {
     document.getElementById('btnLoginMenu').classList.remove('hidden');
     document.getElementById('btnLogoutMenu').classList.add('hidden');
     document.getElementById('btnDeleteAccountMenu').classList.add('hidden');
+    const myContentRow2 = document.getElementById('menuItemMyContentRow'); if (myContentRow2) myContentRow2.style.display = 'none';
     document.getElementById('btnEditName').classList.add('hidden');
     const menuLoginItem2 = document.getElementById('menuItemLogin');
     if (menuLoginItem2) {

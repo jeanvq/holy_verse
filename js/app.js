@@ -86,6 +86,10 @@ function updateOnboardingLang(lang) {
   // ── NAVEGACIÓN ──
 function showScreen(name, opts) {
   opts = opts || {};
+  if (name !== 'bible') {
+    const floatNav = document.getElementById('chapterFloatNav');
+    if (floatNav) floatNav.classList.add('hidden');
+  }
   if (GATED_SCREENS.includes(name) && !(auth && auth.currentUser)) {
     showToast(currentLang === 'en' ? 'Sign in to use this feature' : 'Iniciá sesión para usar esta función');
     openAuthSheet();

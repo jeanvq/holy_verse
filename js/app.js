@@ -410,7 +410,7 @@ async function renderFavorites() {
     <div class="result-card fade-up" style="position:relative">
       <div class="result-ref">${v.reference}</div>
       <div class="result-text">${v.text}</div>
-      <button onclick="removeFavorite('${v.id}')" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Remove this favorite?' : '¿Eliminar este favorito?', () => removeFavorite('${v.id}'))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
     </div>
   `).join('');
 
@@ -536,7 +536,7 @@ async function renderNotes() {
       <div class="result-ref">${n.reference}</div>
       <div class="result-text" style="font-style:italic;opacity:0.8">${n.text}</div>
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)">${n.note}</div>
-      <button onclick="removeNoteFromProfile('${n.id}')" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Delete this note?' : '¿Eliminar esta nota?', () => removeNoteFromProfile('${n.id}'))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
     </div>
   `).join('');
 
@@ -623,7 +623,7 @@ async function renderHighlights() {
     <div class="result-card fade-up" style="position:relative;border-left:3px solid var(--gold)">
       <div class="result-ref">${v.reference}</div>
       <div class="result-text">${v.text}</div>
-      <button onclick="removeHighlightFromProfile('${v.id}')" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+      <button onclick="openGenericConfirm(currentLang === 'en' ? 'Remove this highlight?' : '¿Quitar este resaltado?', () => removeHighlightFromProfile('${v.id}'))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
     </div>
   `).join('');
 
@@ -911,6 +911,23 @@ async function confirmEditName() {
   if (!newName) return;
   const result = await AuthSystem.updateDisplayName(newName);
   if (result && result.success) closeEditNameModal();
+}
+let _genericDeleteAction = null;
+function openGenericConfirm(message, onConfirm) {
+  const bodyEl = document.getElementById('genericConfirmBody');
+  if (bodyEl) bodyEl.textContent = message;
+  _genericDeleteAction = onConfirm;
+  document.getElementById('genericConfirmModal').classList.remove('hidden');
+}
+function closeGenericConfirm(e) {
+  if (!e || e.target === document.getElementById('genericConfirmModal')) {
+    document.getElementById('genericConfirmModal').classList.add('hidden');
+    _genericDeleteAction = null;
+  }
+}
+function confirmGenericDelete() {
+  if (typeof _genericDeleteAction === 'function') _genericDeleteAction();
+  closeGenericConfirm();
 }
 function openDeleteAccountConfirm() {
   document.getElementById('deleteAccountModal').classList.remove('hidden');

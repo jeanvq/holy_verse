@@ -657,6 +657,27 @@ async function applyHighlightsToChapter() {
     row.classList.toggle('highlighted', match);
   });
 }
+async function applyNoteIndicatorsToChapter() {
+  const notes = await getNotes();
+  document.querySelectorAll('.verse-row').forEach(row => {
+    const hasNote = notes.some(n =>
+      n.book === row.dataset.book &&
+      String(n.chapter) === String(row.dataset.chapter) &&
+      String(n.verse) === String(row.dataset.verse)
+    );
+    let dot = row.querySelector('.note-dot');
+    if (hasNote) {
+      if (!dot) {
+        dot = document.createElement('span');
+        dot.className = 'note-dot';
+        dot.title = 'Tiene una nota';
+        row.querySelector('.vr-text')?.insertAdjacentElement('afterend', dot);
+      }
+    } else if (dot) {
+      dot.remove();
+    }
+  });
+}
 
 // ── STRONG'S TOGGLE ──
 function toggleStrongs() {

@@ -60,6 +60,7 @@ window.BibleAPI = {
       currentBookName = book;
       currentChapter  = chapter;
       applyHighlightsToChapter();
+      applyNoteIndicatorsToChapter();
 
     } catch (err) {
       verseList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--danger)">Error de conexión</div>';
@@ -279,6 +280,7 @@ async function toggleHighlightFromMenu() {
       showToast('🖍️ Versículo subrayado');
     }
     applyHighlightsToChapter();
+      applyNoteIndicatorsToChapter();
     const highlightsEl = document.getElementById('statHighlights');
     if (highlightsEl && typeof getHighlights === 'function') {
       const highlights = await getHighlights();
@@ -327,6 +329,7 @@ async function saveNoteFromModal() {
     showToast('📝 Nota guardada');
     document.getElementById('noteModal').classList.add('hidden');
     updateNotesCount();
+    applyNoteIndicatorsToChapter();
   } catch (err) {
     console.error('Note error:', err);
     showToast('⚠️ No se pudo guardar la nota');

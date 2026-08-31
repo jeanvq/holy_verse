@@ -1062,3 +1062,8 @@ body.light .bubble.bot {
 .chapter-float-nav { transition: opacity 0.2s ease, transform 0.2s ease; }
 .chapter-float-nav.at-bottom { opacity: 0; transform: translateY(10px); pointer-events: none; }
 .chapter-float-nav.at-bottom .chapter-float-btn { pointer-events: none; }
+
+.note-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold); margin-left: 6px; vertical-align: middle;
+}

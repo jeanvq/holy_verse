@@ -2316,6 +2316,18 @@ function saveDevotionalFavorite() {
 loadDailyDevotionalBackground();
 if (window.YearPlan) YearPlan.renderHomeCard();
 
+// ── OCULTAR NAV FLOTANTE DE CAPÍTULO CERCA DEL FINAL ──
+(function() {
+  const content = document.querySelector('.page-content');
+  if (!content) return;
+  content.addEventListener('scroll', () => {
+    const floatNav = document.querySelector('.chapter-float-nav');
+    const chapterViewEl = document.getElementById('chapterView');
+    if (!floatNav || !chapterViewEl || chapterViewEl.classList.contains('hidden')) return;
+    const nearBottom = content.scrollHeight - content.scrollTop - content.clientHeight < 180;
+    floatNav.classList.toggle('at-bottom', nearBottom);
+  });
+})();
 // ── BOTÓN FÍSICO/GESTO ATRÁS DE ANDROID ──
 if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) {
   Capacitor.Plugins.App.addListener('backButton', () => {

@@ -1041,7 +1041,7 @@ body.light .bubble.bot {
 .chapter-float-nav {
   position: fixed;
   left: 0; right: 0;
-  bottom: calc(var(--nav-h) + var(--nav-gap) + 90px);
+  bottom: calc(var(--nav-gap) + var(--safe-bottom) + (var(--nav-h) / 2) - 23px);
   display: flex; justify-content: space-between;
   padding: 0 16px;
   pointer-events: none;

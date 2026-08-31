@@ -1614,6 +1614,8 @@ function showBooksView() {
   if (chapterView) chapterView.classList.add('hidden');
   const strongsFloatEl = document.getElementById('strongsFloating');
   if (strongsFloatEl) strongsFloatEl.classList.add('hidden');
+  const floatNav = document.getElementById('chapterFloatNav');
+  if (floatNav) floatNav.classList.add('hidden');
   updateBackButton();
 }
 
@@ -1622,6 +1624,8 @@ function showChapterView() {
   const chapterView = document.getElementById('chapterView');
   if (booksView)   booksView.classList.add('hidden');
   if (chapterView) chapterView.classList.remove('hidden');
+  const floatNav = document.getElementById('chapterFloatNav');
+  if (floatNav) { floatNav.classList.remove('hidden'); floatNav.classList.remove('at-bottom'); }
   updateBackButton();
 }
 

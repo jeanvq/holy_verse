@@ -122,7 +122,8 @@ window.BibleAPI = {
   // ── Búsqueda ──
 
   // ── Búsqueda ──
-  async search(query) {
+  async search(query, filter) {
+    filter = filter || 'all';
     const results = document.getElementById('searchResults');
     results.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)">Buscando...</div>';
 
@@ -130,12 +131,20 @@ window.BibleAPI = {
       const res  = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}&translation=${this.currentTranslation}`);
       const data = await res.json();
 
-      if (!data.verses?.length) {
+      let verses = data.verses || [];
+      if (filter === 'ot' || filter === 'nt') {
+        const bookSet = new Set((typeof BOOKS !== 'undefined' ? BOOKS[filter] : []).map(b => b.name));
+        verses = verses.filter(v => {
+          const bookName = v.reference.replace(/\s+\d+:\d+.*$/, '').trim();
+          return bookSet.has(bookName);
+        });
+      }
+      if (!verses.length) {
         results.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)">Sin resultados</div>';
         return;
       }
 
-      results.innerHTML = data.verses.map(v => `
+      results.innerHTML = verses.map(v => `
         <div class="result-card fade-up">
           <div class="result-ref">${v.reference}</div>
           <div class="result-text">${v.text}</div>

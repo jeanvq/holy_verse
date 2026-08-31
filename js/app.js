@@ -1051,10 +1051,13 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') doSearch();
 });
 
-document.querySelectorAll('.filter-chip').forEach(chip => {
+let currentSearchFilter = 'all';
+document.querySelectorAll('.filter-chip').forEach((chip, i) => {
   chip.addEventListener('click', function () {
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
     this.classList.add('active');
+    currentSearchFilter = ['all', 'ot', 'nt', 'saved'][i] || 'all';
+    if (document.getElementById('searchInput').value.trim()) doSearch();
   });
 });
 
@@ -1062,7 +1065,7 @@ function doSearch() {
   const query = document.getElementById('searchInput').value.trim();
   if (!query) { showToast('Escribe algo para buscar'); return; }
   if (window.BibleAPI) {
-    BibleAPI.search(query);
+    BibleAPI.search(query, currentSearchFilter);
   } else {
     showSearchResults(searchLocal(query));
   }

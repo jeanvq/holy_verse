@@ -8,7 +8,7 @@ const STRONGS_API_BASE = 'https://holyverse-api-production.up.railway.app';
 
 window.BibleAPI = {
 
-  currentTranslation: 'nbla',
+  currentTranslation: localStorage.getItem('hv_translation') || 'nbla',
 
   // ── Cargar capítulo ──
   async loadChapter(book, chapter) {
@@ -36,7 +36,7 @@ window.BibleAPI = {
 
       // Actualizar header
       document.getElementById('currentBook').textContent = `${displayName} ${chapter}`;
-      document.getElementById('chapterTitle').textContent = `${displayName} — Capítulo ${chapter}`;
+      document.getElementById('chapterTitle').textContent = `${displayName} — ${(window.currentLang === 'en') ? 'Chapter' : 'Capítulo'} ${chapter}`;
       document.getElementById('currentTranslation').textContent = '';
       document.querySelectorAll('#translationSelect, .translation-inline-select').forEach(sel => { sel.value = this.currentTranslation; });
 
@@ -88,7 +88,7 @@ window.BibleAPI = {
       }
 
       document.getElementById('currentBook').textContent = `${book} ${chapter}`;
-      document.getElementById('chapterTitle').textContent = `${book} — Capítulo ${chapter} · Griego Original`;
+      document.getElementById('chapterTitle').textContent = `${book} — ${(window.currentLang === 'en') ? 'Chapter' : 'Capítulo'} ${chapter} · ${(window.currentLang === 'en') ? 'Original Greek' : 'Griego Original'}`;
       document.getElementById('currentTranslation').textContent = 'STRONG\'S';
 
       const verseNumbers = Object.keys(data.verses).sort((a, b) => parseInt(a) - parseInt(b));
@@ -176,6 +176,7 @@ window.BibleAPI = {
   // ── Cambiar traducción ──
   setTranslation(translationId) {
     this.currentTranslation = translationId;
+    localStorage.setItem('hv_translation', translationId);
     this.loadChapter(currentBookName, currentChapter);
   },
 

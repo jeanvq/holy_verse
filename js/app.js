@@ -16,6 +16,24 @@ let onboardingIndex = 0;
 let screenHistory = [];
 const GATED_SCREENS = ['bot', 'yearplan', 'characters', 'context'];
 const MAIN_NAV_SCREENS = ['home', 'bible', 'search', 'bot'];
+function positionChapterFloatNav() {
+  const pill = document.querySelector('.bottom-nav');
+  const leftBtn = document.querySelector('.chapter-float-btn:not(.primary)');
+  const rightBtn = document.querySelector('.chapter-float-btn.primary');
+  if (!pill || !leftBtn || !rightBtn) return;
+  const rect = pill.getBoundingClientRect();
+  const gap = 12;
+  const btnSize = 46;
+  const centerY = rect.top + rect.height / 2 - btnSize / 2;
+  leftBtn.style.top = centerY + 'px';
+  leftBtn.style.left = Math.max(16, rect.left - btnSize - gap) + 'px';
+  rightBtn.style.top = centerY + 'px';
+  rightBtn.style.left = Math.min(window.innerWidth - btnSize - 16, rect.right + gap) + 'px';
+}
+window.addEventListener('resize', () => {
+  const floatNav = document.getElementById('chapterFloatNav');
+  if (floatNav && !floatNav.classList.contains('hidden')) positionChapterFloatNav();
+});
 function updateBackButton() {
   const btn = document.getElementById('btnBack');
   if (!btn) return;
@@ -856,7 +874,7 @@ function selectBook(name, chapters) {
 
 function updateBibleHeader() {
   document.getElementById('currentBook').textContent = `${currentBookName} ${currentChapter}`;
-  document.getElementById('chapterTitle').textContent = `${currentBookName} — Capítulo ${currentChapter}`;
+  document.getElementById('chapterTitle').textContent = `${currentBookName} — ${(currentLang === 'en') ? 'Chapter' : 'Capítulo'} ${currentChapter}`;
   if (window.YearPlan) YearPlan.refreshBoundaryUI();
 }
 
@@ -1522,6 +1540,19 @@ langBtn.addEventListener('click', () => {
   currentLang = currentLang === 'es' ? 'en' : 'es';
   langBtn.textContent = currentLang.toUpperCase();
   localStorage.setItem('hv_lang', currentLang);
+  const EN_TRANSLATIONS = ['kjv', 'esv'];
+  const isCurrentlyEnglish = EN_TRANSLATIONS.includes(BibleAPI.currentTranslation);
+  if (currentLang === 'en' && !isCurrentlyEnglish) {
+    BibleAPI.currentTranslation = 'kjv';
+    localStorage.setItem('hv_translation', 'kjv');
+  } else if (currentLang === 'es' && isCurrentlyEnglish) {
+    BibleAPI.currentTranslation = 'nbla';
+    localStorage.setItem('hv_translation', 'nbla');
+  }
+  document.querySelectorAll('#translationSelect, .translation-inline-select').forEach(sel => { sel.value = BibleAPI.currentTranslation; });
+  if (currentBookName && currentChapter) {
+    BibleAPI.loadChapter(currentBookName, currentChapter);
+  }
   applyLang(currentLang);
   showToast(currentLang === 'en' ? '🇺🇸 English' : '🇪🇸 Español');
 });
@@ -1630,6 +1661,7 @@ function showChapterView() {
   if (chapterView) chapterView.classList.remove('hidden');
   const floatNav = document.getElementById('chapterFloatNav');
   if (floatNav) { floatNav.classList.remove('hidden'); floatNav.classList.remove('at-bottom'); }
+  setTimeout(positionChapterFloatNav, 50);
   updateBackButton();
 }
 

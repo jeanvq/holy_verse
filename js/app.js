@@ -612,6 +612,123 @@ async function isHighlighted(reference) {
   return highlights.some(h => h.reference === reference);
 }
 
+async function saveBookmark(verse) {
+  const id = sanitizeFavId(verse.reference);
+  const user = auth.currentUser;
+  if (user) {
+    await db.collection('users').doc(user.uid).collection('bookmarks').doc(id).set({
+      reference: verse.reference,
+      text: verse.text,
+      book: verse.book,
+      chapter: verse.chapter,
+      verse: verse.verse,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } else {
+    const bookmarks = JSON.parse(localStorage.getItem('hv_bookmarks') || '[]');
+    if (!bookmarks.some(b => b.reference === verse.reference)) {
+      bookmarks.unshift({ id, ...verse, savedAt: new Date().toISOString() });
+      localStorage.setItem('hv_bookmarks', JSON.stringify(bookmarks));
+    }
+  }
+  const el = document.getElementById('statBookmarks');
+  if (el) { const bms = await getBookmarks(); el.textContent = bms.length; }
+}
+
+async function removeBookmark(id) {
+  const user = auth.currentUser;
+  if (user) {
+    await db.collection('users').doc(user.uid).collection('bookmarks').doc(id).delete();
+  } else {
+    const bookmarks = JSON.parse(localStorage.getItem('hv_bookmarks') || '[]');
+    localStorage.setItem('hv_bookmarks', JSON.stringify(bookmarks.filter(b => b.id !== id)));
+  }
+  const el = document.getElementById('statBookmarks');
+  if (el) { const bms = await getBookmarks(); el.textContent = bms.length; }
+}
+
+async function getBookmarks() {
+  const user = auth.currentUser;
+  if (user) {
+    const snap = await db.collection('users').doc(user.uid).collection('bookmarks').orderBy('savedAt', 'desc').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+  return JSON.parse(localStorage.getItem('hv_bookmarks') || '[]');
+}
+
+async function isBookmarked(reference) {
+  const id = sanitizeFavId(reference);
+  const user = auth.currentUser;
+  if (user) {
+    const doc = await db.collection('users').doc(user.uid).collection('bookmarks').doc(id).get();
+    return doc.exists;
+  }
+  const bookmarks = JSON.parse(localStorage.getItem('hv_bookmarks') || '[]');
+  return bookmarks.some(b => b.reference === reference);
+}
+
+async function toggleBookmarkFromMenu() {
+  if (!activeVerse) return;
+  try {
+    const marked = await isBookmarked(activeVerse.reference);
+    if (marked) {
+      await removeBookmark(sanitizeFavId(activeVerse.reference));
+      showToast(currentLang === 'en' ? 'Bookmark removed' : 'Marcador quitado');
+    } else {
+      await saveBookmark(activeVerse);
+      if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('verse_bookmarked', { reference: activeVerse.reference });
+      showToast(currentLang === 'en' ? 'Bookmark saved' : 'Marcador guardado');
+    }
+    applyBookmarkIndicatorsToChapter();
+  } catch (err) {
+    console.error('Bookmark error:', err);
+    showToast(currentLang === 'en' ? '⚠️ Could not save bookmark' : '⚠️ No se pudo guardar el marcador');
+  }
+  closeVerseMenu();
+}
+
+async function applyBookmarkIndicatorsToChapter() {
+  const bookmarks = await getBookmarks();
+  document.querySelectorAll('.verse-row').forEach(row => {
+    const hasBookmark = bookmarks.some(b =>
+      b.book === row.dataset.book &&
+      String(b.chapter) === String(row.dataset.chapter) &&
+      String(b.verse) === String(row.dataset.verse)
+    );
+    let dot = row.querySelector('.bookmark-dot');
+    if (hasBookmark) {
+      if (!dot) {
+        dot = document.createElement('span');
+        dot.className = 'bookmark-dot';
+        dot.title = currentLang === 'en' ? 'Bookmarked' : 'Marcado';
+        row.querySelector('.vr-text')?.insertAdjacentElement('afterend', dot);
+      }
+    } else if (dot) {
+      dot.remove();
+    }
+  });
+}
+
+async function renderBookmarks() {
+  showScreen('mycontent');
+  const title = document.getElementById('myContentTitle');
+  if (title) title.textContent = currentLang === 'en' ? 'My bookmarks' : 'Mis marcadores';
+  const bookmarks = await getBookmarks();
+  const body = document.getElementById('myContentBody');
+  if (!body) return;
+  if (!bookmarks.length) {
+    body.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--text3);font-size:14px">${currentLang === 'en' ? 'No bookmarks yet' : 'No tienes marcadores aún'}</div>`;
+    return;
+  }
+  body.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` + bookmarks.map(b => `
+    <div class="result-card fade-up" style="position:relative;cursor:pointer" onclick="openVerseFromReference('${b.reference.replace(/'/g,"\\'")}')">
+      <div class="result-ref">${b.reference}</div>
+      <div class="result-text">${b.text}</div>
+      <button onclick="event.stopPropagation();openGenericConfirm(currentLang === 'en' ? 'Remove this bookmark?' : '¿Quitar este marcador?', () => removeBookmark('${b.id}').then(renderBookmarks))" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer">✕</button>
+    </div>
+  `).join('') + `</div>`;
+}
+
 async function renderHighlights() {
   showScreen('mycontent');
   const title = document.getElementById('myContentTitle');
@@ -1018,6 +1135,12 @@ async function renderStreakStats(streak, totalDays) {
   if (highlightsEl) {
     const highlights = await getHighlights();
     highlightsEl.textContent = highlights.length;
+  }
+
+  const bookmarksEl = document.getElementById('statBookmarks');
+  if (bookmarksEl) {
+    const bookmarks = await getBookmarks();
+    bookmarksEl.textContent = bookmarks.length;
   }
 }
 

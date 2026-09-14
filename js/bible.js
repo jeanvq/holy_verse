@@ -61,6 +61,7 @@ window.BibleAPI = {
       currentChapter  = chapter;
       applyHighlightsToChapter();
       applyNoteIndicatorsToChapter();
+      applyBookmarkIndicatorsToChapter();
 
     } catch (err) {
       verseList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--danger)">Error de conexión</div>';
@@ -233,6 +234,14 @@ async function showVerseMenu(e, reference, text) {
       ? (lang === 'en' ? 'Remove highlight' : 'Quitar resaltado')
       : (lang === 'en' ? 'Highlight' : 'Subrayar');
   }
+  const bookmarkLabel = document.getElementById('verseMenuBookmarkLabel');
+  if (bookmarkLabel) {
+    const lang2 = window.currentLang || 'es';
+    const alreadyMarked = await isBookmarked(reference);
+    bookmarkLabel.textContent = alreadyMarked
+      ? (lang2 === 'en' ? 'Remove bookmark' : 'Quitar marcador')
+      : (lang2 === 'en' ? 'Bookmark page' : 'Marcar página');
+  }
 }
 
 function closeVerseMenu() {
@@ -282,6 +291,7 @@ async function toggleHighlightFromMenu() {
     }
     applyHighlightsToChapter();
       applyNoteIndicatorsToChapter();
+      applyBookmarkIndicatorsToChapter();
     const highlightsEl = document.getElementById('statHighlights');
     if (highlightsEl && typeof getHighlights === 'function') {
       const highlights = await getHighlights();
@@ -331,6 +341,7 @@ async function saveNoteFromModal() {
     document.getElementById('noteModal').classList.add('hidden');
     updateNotesCount();
     applyNoteIndicatorsToChapter();
+      applyBookmarkIndicatorsToChapter();
   } catch (err) {
     console.error('Note error:', err);
     showToast('⚠️ No se pudo guardar la nota');

@@ -1064,3 +1064,7 @@ body.light .bubble.bot {
   display: inline-block; width: 6px; height: 6px; border-radius: 50%;
   background: var(--gold); margin-left: 6px; vertical-align: middle;
 }
+.bookmark-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal); margin-left: 6px; vertical-align: middle;
+}

@@ -460,6 +460,12 @@
           <div class="mi-count" id="statFavorites">0</div>
           <div class="mi-arrow">›</div>
         </div>
+        <div class="menu-item" onclick="renderBookmarks()">
+          <div class="mi-icon"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></div>
+          <div class="mi-label" id="miBookmarks">Mis marcadores</div>
+          <div class="mi-count" id="statBookmarks">0</div>
+          <div class="mi-arrow">›</div>
+        </div>
         <div class="menu-item" onclick="renderHighlights()">
           <div class="mi-icon"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4z"/><path d="M14 7l3 3"/></svg></div>
           <div class="mi-label" id="miHighlights">Mis Versículos Resaltados</div>
@@ -840,6 +846,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="menu-item" onclick="saveVerseFromMenu()">
         <div class="mi-icon"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-9C1 8.5 2 5 5.5 5c2 0 3.5 1.5 4.5 3 1-1.5 2.5-3 4.5-3 3.5 0 4.5 3.5 3 7-2.5 4.65-9.5 9-9.5 9z"/></svg></div>
         <div class="mi-label">Guardar en favoritos</div>
+      </div>
+      <div class="menu-item" onclick="toggleBookmarkFromMenu()">
+        <div class="mi-icon"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></div>
+        <div class="mi-label" id="verseMenuBookmarkLabel">Marcar página</div>
       </div>
       <div class="menu-item" onclick="toggleHighlightFromMenu()">
         <div class="mi-icon"><svg class="isvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4z"/><path d="M14 7l3 3"/></svg></div>

@@ -193,6 +193,7 @@ window.BibleAPI = {
       const data = await res.json();
 
       if (data.text) {
+  if (window.cancelPendingDailyVerse) window.cancelPendingDailyVerse();
   document.getElementById('dailyVerseText').textContent = data.text;
   document.getElementById('dailyVerseRef').textContent  = `${data.reference} · ${data.translation}`;
   document.querySelector('.verse-tag').textContent = 'Versículo para tu momento';

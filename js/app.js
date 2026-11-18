@@ -219,10 +219,13 @@ function loadMoodVerse(mood) {
 }
 
 // ── VERSÍCULO DEL DÍA ──
+// 366 referencias únicas (js/daily-verses-data.js) → una por día del año, sin repetirse.
+// El texto se pide a la API en el idioma/traducción del usuario y se cachea por día.
 function loadDailyVerse() {
   const textEl = document.getElementById('dailyVerseText');
   const refEl  = document.getElementById('dailyVerseRef');
 
+  // Respaldo offline (si la API no responde y no hay caché)
   const fallback = {
     es: [
       { text: 'Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.', reference: 'Juan 3:16 · RVR 1960' },
@@ -244,40 +247,84 @@ function loadDailyVerse() {
     ]
   };
 
-  const day = new Date().getDate();
+  const EN_TRANSLATIONS = ['kjv', 'esv', 'niv'];
+  const now = new Date();
+  const dayOfYear = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(now.getFullYear(), 0, 0)) / 86400000) - 1; // 0..365
+  const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  let requestToken = 0;
+
+  function showVerse(verse) {
+    if (textEl) textEl.textContent = verse.text;
+    if (refEl)  refEl.textContent  = verse.reference;
+    const btn = document.getElementById('btnSaveDaily');
+    isFavorited(verse.reference).then(saved => setSaveButtonState(btn, saved));
+  }
 
   window.updateDailyVerseByLang = function(lang) {
-  const verse = fallback[lang][day % fallback[lang].length];
-  if (textEl) textEl.textContent = verse.text;
-  if (refEl)  refEl.textContent  = verse.reference;
+    lang = lang === 'en' ? 'en' : 'es';
+    const token = ++requestToken;
+    try {
 
-  const btn = document.getElementById('btnSaveDaily');
-  isFavorited(verse.reference).then(saved => setSaveButtonState(btn, saved));
-};
+    const pool = (typeof DAILY_VERSE_REFS !== 'undefined' && DAILY_VERSE_REFS.length) ? DAILY_VERSE_REFS : null;
+    if (!pool) { showVerse(fallback[lang][dayOfYear % fallback[lang].length]); return; }
 
-  window.updateDailyVerseByLang(currentLang);
-}
-  // Fallback verses mientras carga la API
-  const fallback = {
-    es: [
-      { text: 'Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.', reference: 'Juan 3:16 · RVR 1960' },
-      { text: 'Todo lo puedo en Cristo que me fortalece.', reference: 'Filipenses 4:13 · RVR 1960' },
-      { text: 'El Señor es mi pastor; nada me faltará.', reference: 'Salmos 23:1 · RVR 1960' },
-      { text: 'Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia.', reference: 'Proverbios 3:5 · RVR 1960' },
-      { text: 'Mas buscad primeramente el reino de Dios y su justicia, y todas estas cosas os serán añadidas.', reference: 'Mateo 6:33 · RVR 1960' },
-      { text: 'No os afanéis por nada; sino sean conocidas vuestras peticiones delante de Dios en toda oración.', reference: 'Filipenses 4:6 · RVR 1960' },
-      { text: 'Y conoceréis la verdad, y la verdad os hará libres.', reference: 'Juan 8:32 · RVR 1960' },
-    ],
-    en: [
-      { text: 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.', reference: 'John 3:16 · KJV' },
-      { text: 'I can do all things through Christ which strengtheneth me.', reference: 'Philippians 4:13 · KJV' },
-      { text: 'The Lord is my shepherd; I shall not want.', reference: 'Psalms 23:1 · KJV' },
-      { text: 'Trust in the Lord with all thine heart; and lean not unto thine own understanding.', reference: 'Proverbs 3:5 · KJV' },
-      { text: 'But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.', reference: 'Matthew 6:33 · KJV' },
-      { text: 'Be careful for nothing; but in every thing by prayer let your requests be made known unto God.', reference: 'Philippians 4:6 · KJV' },
-      { text: 'And ye shall know the truth, and the truth shall make you free.', reference: 'John 8:32 · KJV' },
-    ]
+    const [book, chapter, verseNum] = pool[dayOfYear % pool.length];
+    const current = (window.BibleAPI && BibleAPI.currentTranslation) || localStorage.getItem('hv_translation') || 'nbla';
+    const isEnCurrent = EN_TRANSLATIONS.includes(current);
+    const translation = lang === 'en' ? (isEnCurrent ? current : 'kjv') : (isEnCurrent ? 'nbla' : current);
+    const displayName = lang === 'en' ? (BOOK_NAMES_EN[book] || book) : book;
+    const apiBook = EN_TRANSLATIONS.includes(translation) ? (BOOK_NAMES_EN[book] || book) : book;
+    const cacheKey = `hv_daily_${dateKey}_${lang}_${translation}`;
+
+    // 1) Caché del día → instantáneo y sin red
+    try {
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if (cached && cached.text) { showVerse(cached); return; }
+    } catch (e) {}
+
+    // 2) Pedir el capítulo a la API y extraer el versículo
+    const apiBase = (typeof API_BASE !== 'undefined') ? API_BASE : 'https://holyverse-api-production.up.railway.app';
+    fetch(`${apiBase}/api/bible/${encodeURIComponent(apiBook)}/${chapter}?translation=${translation}`)
+      .then(r => r.json())
+      .then(data => {
+        if (token !== requestToken) return; // llegó tarde (cambio de idioma/mood)
+        if (!data || data.error || !Array.isArray(data.verses)) throw new Error(data && data.error || 'no verses');
+        let match = data.verses.find(v => parseInt(v.number) === verseNum);
+        if (!match) {
+          // Algunas traducciones agrupan versículos en bloques → tomar el bloque que lo contiene
+          match = data.verses
+            .filter(v => parseInt(v.number) <= verseNum)
+            .sort((a, b) => parseInt(b.number) - parseInt(a.number))[0];
+        }
+        if (!match || !match.text) throw new Error('verse not found');
+        const verse = {
+          text: String(match.text).replace(/\s+/g, ' ').trim(),
+          reference: `${displayName} ${chapter}:${verseNum} · ${translation.toUpperCase()}`
+        };
+        try {
+          // limpiar cachés de días anteriores
+          Object.keys(localStorage).forEach(k => { if (k.startsWith('hv_daily_') && !k.startsWith(`hv_daily_${dateKey}_`)) localStorage.removeItem(k); });
+          localStorage.setItem(cacheKey, JSON.stringify(verse));
+        } catch (e) {}
+        showVerse(verse);
+      })
+      .catch(err => {
+        console.warn('Daily verse API failed, using fallback:', err);
+        if (token !== requestToken) return;
+        showVerse(fallback[lang][dayOfYear % fallback[lang].length]);
+      });
+    } catch (err) {
+      console.warn('Daily verse error, using fallback:', err);
+      showVerse(fallback[lang][dayOfYear % fallback[lang].length]);
+    }
   };
+
+  // Si el usuario elige un mood mientras carga, no sobrescribir su versículo
+  window.cancelPendingDailyVerse = function() { requestToken++; };
+
+  // Diferido: BOOK_NAMES_EN / BibleAPI se declaran más abajo (evita error de TDZ)
+  setTimeout(() => window.updateDailyVerseByLang(currentLang), 0);
+}
 // Renderizar en el idioma actual
 loadDailyVerse();
 // Botones del versículo del día
@@ -1301,6 +1348,74 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMessage();
 });
 
+// ── Chat: lleva la conversación al último mensaje ──
+function scrollChatToBottom() {
+  const area = document.getElementById('chatArea');
+  if (area) area.scrollTop = area.scrollHeight;
+  const pc = document.querySelector('.page-content');
+  if (pc) pc.scrollTop = pc.scrollHeight;
+}
+
+// ── Chat: teclado (iOS + Android) ──
+// Problema: al tocar el campo, iOS/Android desplazaban TODA la pantalla hacia arriba
+// (y la barra de navegación flotaba encima), así que había que deslizar para ver lo escrito.
+// Solución: mientras el teclado está abierto, la app ocupa exactamente el área visible
+// (visualViewport), se ocultan las tabs y el chat se queda pegado al último mensaje.
+(function setupChatKeyboard() {
+  const input = document.getElementById('chatInput');
+  const app   = document.querySelector('.app');
+  if (!input || !app) return;
+  const vv = window.visualViewport;
+  let open = false;
+
+  function sync() {
+    if (!open) return;
+    // Deshacer el desplazamiento automático del documento
+    if (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+    const h   = vv ? vv.height : window.innerHeight;
+    const top = vv ? vv.offsetTop : 0;
+    app.style.height    = h + 'px';
+    app.style.transform = top ? `translateY(${top}px)` : '';
+    const pc = document.querySelector('.page-content');
+    if (pc) pc.scrollTop = 0;
+    const area = document.getElementById('chatArea');
+    if (area) area.scrollTop = area.scrollHeight;
+  }
+
+  function onFocus() {
+    open = true;
+    document.body.classList.add('keyboard-open');
+    sync();
+    // El teclado anima su apertura: re-sincronizar mientras termina
+    [50, 150, 300, 500].forEach(ms => setTimeout(sync, ms));
+  }
+
+  function onBlur() {
+    open = false;
+    document.body.classList.remove('keyboard-open');
+    app.style.height = '';
+    app.style.transform = '';
+    window.scrollTo(0, 0);
+  }
+
+  input.addEventListener('focus', onFocus);
+  input.addEventListener('blur', onBlur);
+  if (vv) {
+    vv.addEventListener('resize', sync);
+    vv.addEventListener('scroll', sync);
+  }
+  window.addEventListener('resize', sync);
+
+  // Tocar "enviar" no debe cerrar el teclado (evita el salto de pantalla entre mensajes)
+  const sendBtn = document.getElementById('btnSend');
+  if (sendBtn) sendBtn.addEventListener('mousedown', e => e.preventDefault());
+  if (sendBtn) sendBtn.addEventListener('touchstart', e => { e.preventDefault(); sendMessage(); }, { passive: false });
+})();
+
 function sendMessage() {
   const input = document.getElementById('chatInput');
   const msg   = input.value.trim();
@@ -1322,7 +1437,7 @@ function sendMessage() {
         <div class="typing-dot"></div>
       </div>
     </div>`;
-  document.querySelector('.page-content').scrollTop = document.querySelector('.page-content').scrollHeight;
+  scrollChatToBottom();
 
   if (typeof logAnalyticsEvent === 'function') logAnalyticsEvent('bot_message_sent');
 
@@ -1330,7 +1445,7 @@ function sendMessage() {
   if (window.BibleBot) {
     BibleBot.ask(msg).then(reply => {
       document.getElementById(typingId).outerHTML = `<div class="bubble bot fade-up">${formatBotReply(reply)}</div>`;
-      document.querySelector('.page-content').scrollTop = document.querySelector('.page-content').scrollHeight;
+      scrollChatToBottom();
     });
   } else {
     setTimeout(() => {
@@ -1338,7 +1453,7 @@ function sendMessage() {
         <div class="bubble bot fade-up">
           El Bible Bot se está configurando. Por favor conecta tu API key de Anthropic en <code>js/bot.js</code>.
         </div>`;
-      document.querySelector('.page-content').scrollTop = document.querySelector('.page-content').scrollHeight;
+      scrollChatToBottom();
     }, 1000);
   }
 }

@@ -1,8 +1,8 @@
 // Service Worker for HolyVerse PWA - Optimized for Performance
-const CACHE_NAME = 'holyverse-v28';
-const STATIC_CACHE = 'holyverse-static-v16';
-const DYNAMIC_CACHE = 'holyverse-dynamic-v16';
-const IMAGE_CACHE = 'holyverse-images-v16';
+const CACHE_NAME = 'holyverse-v29';
+const STATIC_CACHE = 'holyverse-static-v17';
+const DYNAMIC_CACHE = 'holyverse-dynamic-v17';
+const IMAGE_CACHE = 'holyverse-images-v17';
 
 const STATIC_ASSETS = [
   '',
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
   'js/i18n.js',
   'js/api.js',
   'js/bot.js',
+  'js/daily-verses-data.js',
   'js/app.js',
   'js/yearplan.js',
   'js/auth.js',

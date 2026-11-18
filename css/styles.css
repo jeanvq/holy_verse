@@ -70,6 +70,7 @@ a { color: inherit; text-decoration: none; }
   flex: 1;
   overflow-y: auto;
   padding-bottom: calc(var(--nav-h) + var(--nav-gap) + 16px + var(--safe-bottom));
+  position: relative;
 }
 
 /* TOPBAR */
@@ -143,7 +144,7 @@ a { color: inherit; text-decoration: none; }
 
 .section-label {
   padding: 20px 20px 10px;
-  font-size: 12px; font-weight: 500;
+  font-size: 12px; font-weight: 700;
   letter-spacing: 0.14em; color: var(--text3); text-transform: uppercase;
 }
 
@@ -608,8 +609,8 @@ body.light {
   --border2:   rgba(0,0,0,0.14);
   --text:      #1a1814;
   --text2:     #5a5650;
-  --text3:     #6e6a64;
-  --gold:      #b8860b;
+  --text3:     #4a453e;
+  --gold:      #7a5c0f;
   --gold2:     #c9971c;
   --gold-glow: rgba(184,134,11,0.12);
   --teal:      #2a9d8f;
@@ -846,7 +847,10 @@ body.light .bubble.bot {
 #screen-bot.screen.active {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  bottom: calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom));
+  padding-bottom: 0;
   overflow: hidden;
 }
 

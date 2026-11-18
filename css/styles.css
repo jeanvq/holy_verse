@@ -883,6 +883,7 @@ body.light .bubble.bot {
 body.keyboard-open .bottom-nav { display: none; }
 body.keyboard-open .page-content { padding-bottom: 0; }
 body.keyboard-open #screen-bot .chat-input-row { padding-bottom: 10px; }
+body.keyboard-open #screen-bot.screen.active { bottom: 0; }
 
 .verse-row.highlighted {
   background: rgba(212,168,67,0.15);
